@@ -7,7 +7,7 @@ export default function HeroSection() {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center text-center py-20 bg-secondary">
       <Image
-        src="https://i.ibb.co/qY9FppW0/Stock-Cake-Digital-Queen-Rising-1749057820.jpg" 
+        src="https://i.ibb.co/qY9FppW0/Stock-Cake-Digital-Queen-Rising-1749057820.jpg"
         alt="Abstract chess background"
         layout="fill"
         objectFit="cover"
@@ -22,11 +22,11 @@ export default function HeroSection() {
         <p className="font-body text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
           Unlock your potential with personalized chess coaching from kgchess. Strategy, tactics, and mindset – all tailored to your success.
         </p>
-        <div className="space-x-4">
-          <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
+        <div className="flex flex-col space-y-4 max-w-xs mx-auto sm:max-w-sm">
+          <Button asChild size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
             <Link href="/classes">Explore Classes</Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
+          <Button asChild variant="outline" size="lg" className="w-full transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
             <Link href="/contact">Book a Consultation</Link>
           </Button>
         </div>
