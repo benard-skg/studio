@@ -1,15 +1,15 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, CheckCircle2 } from 'lucide-react'; // Changed Package to GraduationCap
+import { GraduationCap, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
-const classesData = [ // Renamed from packages to classesData
+const classesData = [
   {
-    name: "Beginner's Gambit",
+    name: "Introductory Class (0–1500 Rating)",
     price: "$99",
     frequency: "/month",
-    description: "Perfect for new players looking to understand the fundamentals of chess.",
+    description: "Introductory Class (0–1500 Rating)",
     features: [
       "4 one-on-one sessions (1 hour each)",
       "Personalized opening repertoire basics",
@@ -18,53 +18,25 @@ const classesData = [ // Renamed from packages to classesData
     ],
     aiHint: "chess board beginner"
   },
-  {
-    name: "Intermediate Strategy",
-    price: "$199",
-    frequency: "/month",
-    description: "Develop deeper strategic understanding and refine your middlegame play.",
-    features: [
-      "4 one-on-one sessions (1.5 hours each)",
-      "Advanced opening analysis",
-      "Middlegame planning and positional play",
-      "In-depth game analysis",
-      "Access to curated study materials",
-    ],
-    aiHint: "chess strategy book"
-  },
-  {
-    name: "Advanced Mastery",
-    price: "$349",
-    frequency: "/month",
-    description: "For serious players aiming for tournament success and peak performance.",
-    features: [
-      "Unlimited one-on-one sessions (flexible scheduling)",
-      "Customized tournament preparation",
-      "Advanced endgame studies",
-      "Psychological aspects of chess mastery",
-      "Direct line support with coach",
-    ],
-    aiHint: "chess tournament trophy"
-  },
 ];
 
-export default function ClassShowcaseSection() { // Renamed from PackageShowcaseSection
+export default function ClassShowcaseSection() {
   return (
-    <section id="classes" className="py-16 md:py-24 bg-secondary"> {/* id changed to "classes" */}
+    <section id="classes" className="py-16 md:py-24 bg-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" /> {/* Icon changed */}
+          <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
           <h2 className="font-headline text-4xl md:text-5xl font-bold">
-            Coaching Classes {/* Text changed */}
+            Coaching Classes
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Choose the plan that best suits your chess journey.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {classesData.map((cls) => ( // Renamed pkg to cls, packages to classesData
-            <Card key={cls.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+          {classesData.map((cls) => (
+            <Card key={cls.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden max-w-md md:col-span-1 lg:col-span-1">
               <CardHeader className="bg-card">
                 <CardTitle className="font-headline text-2xl">{cls.name}</CardTitle>
                 <CardDescription className="font-body text-sm">{cls.description}</CardDescription>

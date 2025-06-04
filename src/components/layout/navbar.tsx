@@ -10,7 +10,7 @@ import { Menu, X, Crown } from 'lucide-react';
 const navItems = [
   { href: '/about', label: 'About' },
   { href: '/classes', label: 'Classes' },
-  { href: '/testimonials', label: 'Testimonials' },
+  // { href: '/testimonials', label: 'Testimonials' }, // Removed
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];

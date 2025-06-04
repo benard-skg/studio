@@ -1,22 +1,11 @@
 
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserCircle2, Award, Briefcase } from 'lucide-react';
+import { UserCircle2 } from 'lucide-react';
 
 const coachData = {
   name: "K.G.",
   title: "Certified Chess Coach & Strategist",
-  bio: "With over a decade of competitive chess experience and a passion for teaching, K.G. is dedicated to helping players of all levels elevate their game. K.G. believes in a personalized approach, focusing on individual strengths and weaknesses to build a comprehensive understanding of chess strategy and tactics.",
-  experience: [
-    "10+ years of competitive chess playing",
-    "5+ years of coaching students from beginner to advanced levels",
-    "Expert in opening theory, middlegame strategy, and endgame technique",
-  ],
-  credentials: [
-    "Certified National Chess Instructor",
-    "FIDE Rated Player",
-    "Regular contributor to leading chess publications",
-  ],
   imageSrc: "https://i.ibb.co/GzyZvGj/20250512-215848.jpg", 
   imageAlt: "Portrait of Coach K.G.",
   imageAiHint: "chess coach portrait"
@@ -46,6 +35,7 @@ export default function CoachProfileSection() {
                 height={400}
                 className="object-cover w-full h-full"
                 data-ai-hint={coachData.imageAiHint}
+                priority // Ensure coach image loads quickly
               />
             </div>
             <div className="md:w-2/3">
@@ -53,32 +43,24 @@ export default function CoachProfileSection() {
                 <CardTitle className="font-headline text-3xl">{coachData.name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <p className="font-body text-base leading-relaxed">
-                  {coachData.bio}
-                </p>
-                
-                <div>
-                  <h3 className="font-headline text-xl font-semibold mb-3 flex items-center">
-                    <Briefcase className="h-5 w-5 mr-2 text-accent" />
-                    Experience
-                  </h3>
-                  <ul className="font-body list-disc list-inside space-y-1 text-base">
-                    {coachData.experience.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
+                <div className="font-body text-base leading-relaxed space-y-4">
+                  <p>
+                    With <strong>over 20 years of competitive chess experience</strong> and <strong>5+ years coaching students</strong>, I bring deep tactical knowledge and a passion for nurturing talent. I’ve:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 pl-4">
+                    <li>
+                      <strong>Represented Limpopo at national levels</strong> (Junior Teams: <em>2001–2012</em> / Senior Team &amp; Polokwane Chess Club).
+                    </li>
+                    <li>
+                      <strong>Ranked as a top player</strong> for Polokwane Chess Club (First Team).
+                    </li>
+                    <li>
+                      <strong>Certified Level-1 National Chess Instructor</strong> (FIDE-rated).
+                    </li>
                   </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-headline text-xl font-semibold mb-3 flex items-center">
-                    <Award className="h-5 w-5 mr-2 text-accent" />
-                    Credentials
-                  </h3>
-                  <ul className="font-body list-disc list-inside space-y-1 text-base">
-                    {coachData.credentials.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
+                  <p>
+                    My coaching blends <strong>elite tournament insights</strong> with structured training to help players <em>think sharper, react faster, and win more</em>.
+                  </p>
                 </div>
               </CardContent>
             </div>
