@@ -15,9 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Loader2 } from 'lucide-react';
+import { Mail, Send } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useState } from 'react';
 
 const ContactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -28,7 +27,6 @@ type ContactFormData = z.infer<typeof ContactFormSchema>;
 
 export default function ContactSection() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ContactFormData>({ 
     resolver: zodResolver(ContactFormSchema), 
@@ -39,45 +37,15 @@ export default function ContactSection() {
     },
   });
 
+  // This is the original onSubmit function before backend integration
   async function onSubmit(values: ContactFormData) { 
-    setIsSubmitting(true);
-    try {
-      const response = await fetch('http://localhost:3001/contactSubmissions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "Your message has been submitted locally.",
-          variant: "default",
-        });
-        form.reset();
-      } else {
-        toast({
-          title: "Submission Error",
-          description: `Failed to submit message: ${response.statusText}`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      let errorMessage = "An unknown error occurred during submission.";
-      if (error instanceof Error) {
-        errorMessage = `Network error: ${error.message}. Is json-server running?`;
-      }
-      toast({
-        title: "Submission Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      console.error("Submission error:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    console.log("Form submitted (client-side only):", values);
+    toast({
+      title: "Message Sent! (Locally)",
+      description: "Your message has been logged to the console. No backend is connected yet.",
+      variant: "default", 
+    });
+    form.reset(); 
   }
 
   return (
@@ -143,18 +111,8 @@ export default function ContactSection() {
                 type="submit" 
                 size="lg" 
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
-                disabled={isSubmitting}
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    Send Message <Send className="ml-2 h-4 w-4" />
-                  </>
-                )}
+                Send Message <Send className="ml-2 h-4 w-4" />
               </Button>
             </form>
           </Form>
