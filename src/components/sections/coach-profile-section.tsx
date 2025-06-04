@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2 } from 'lucide-react';
 
 const coachData = {
-  name: "K.G.",
+  name: "Mahomole S.K",
   title: "Certified Chess Coach & Strategist",
-  imageSrc: "https://i.ibb.co/GzyZvGj/20250512-215848.jpg", 
-  imageAlt: "Portrait of Coach K.G.",
+  imageSrc: "https://i.ibb.co/GzyZvGj/20250512-215848.jpg",
+  imageAlt: "Portrait of Coach Mahomole S.K.",
   imageAiHint: "chess coach portrait"
 };
 
@@ -40,7 +40,17 @@ export default function CoachProfileSection() {
             </div>
             <div className="md:w-2/3">
               <CardHeader>
-                <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter leading-tight">{coachData.name}</CardTitle>
+                <div>
+                  <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter leading-tight">
+                    {coachData.name}
+                  </CardTitle>
+                  <p className="font-body text-sm text-muted-foreground leading-tight mt-1">
+                    193019609 (Chess SA ID)
+                  </p>
+                  <p className="font-body text-sm text-muted-foreground leading-tight mt-0.5">
+                    14310155 (FIDE ID)
+                  </p>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="font-body text-base leading-relaxed space-y-4">
