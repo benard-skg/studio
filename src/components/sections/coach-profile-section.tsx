@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2, Award, Briefcase } from 'lucide-react';
@@ -16,7 +17,7 @@ const coachData = {
     "FIDE Rated Player",
     "Regular contributor to leading chess publications",
   ],
-  imageSrc: "https://placehold.co/400x400.png",
+  imageSrc: "https://i.ibb.co/YOUR_DIRECT_IMAGE_PATH_FOR_COACH.png", // <-- IMPORTANT: Replace this with your actual direct ImgBB URL
   imageAlt: "Portrait of Coach K.G.",
   imageAiHint: "chess coach portrait"
 };

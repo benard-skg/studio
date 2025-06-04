@@ -7,7 +7,7 @@ export default function HeroSection() {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center text-center py-20 bg-secondary">
       <Image
-        src="https://placehold.co/1920x1080.png"
+        src="https://i.ibb.co/YOUR_DIRECT_IMAGE_PATH_FOR_HERO.png" // <-- IMPORTANT: Replace this with your actual direct ImgBB URL
         alt="Abstract chess background"
         layout="fill"
         objectFit="cover"
@@ -34,4 +34,3 @@ export default function HeroSection() {
     </section>
   );
 }
-

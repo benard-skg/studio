@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co', // Added for ImgBB direct image links
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   webpack: (config, { isServer }) => {
