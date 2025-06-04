@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -71,6 +72,57 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      typography: (theme: (path: string) => string) => ({ // Add this typography configuration
+        DEFAULT: {
+          css: {
+            color: theme('colors.foreground'),
+            a: {
+              color: theme('colors.primary.DEFAULT'),
+              '&:hover': {
+                color: theme('colors.primary.DEFAULT / 0.9'),
+              },
+            },
+            h1: { color: theme('colors.foreground') },
+            h2: { color: theme('colors.foreground') },
+            h3: { color: theme('colors.foreground') },
+            h4: { color: theme('colors.foreground') },
+            strong: { color: theme('colors.foreground') },
+            code: { color: theme('colors.foreground') },
+            figcaption: { color: theme('colors.muted.foreground') },
+            blockquote: {
+              color: theme('colors.muted.foreground'),
+              borderLeftColor: theme('colors.border'),
+            },
+          },
+        },
+        invert: { // For dark mode, ensure foreground colors are light
+          css: {
+            color: theme('colors.foreground'), // Should be light
+            a: {
+              color: theme('colors.accent.DEFAULT'), // Use accent for links in dark mode
+              '&:hover': {
+                color: theme('colors.accent.DEFAULT / 0.8'),
+              },
+            },
+            h1: { color: theme('colors.foreground') },
+            h2: { color: theme('colors.foreground') },
+            h3: { color: theme('colors.foreground') },
+            h4: { color: theme('colors.foreground') },
+            strong: { color: theme('colors.foreground') },
+            code: { backgroundColor: theme('colors.muted.DEFAULT'), color: theme('colors.foreground'), padding: '0.2em 0.4em', borderRadius: '0.25rem' },
+            figcaption: { color: theme('colors.muted.foreground') }, // Should be a lighter gray
+            blockquote: {
+              color: theme('colors.muted.foreground'), // Lighter gray for blockquote text
+              borderLeftColor: theme('colors.border'), // Border color
+            },
+            ul: {
+              '> li::marker': {
+                 color: theme('colors.muted.foreground'), // Style list bullets
+              }
+            }
+          },
+        },
+      }),
       keyframes: {
         'accordion-down': {
           from: {
@@ -95,5 +147,8 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'), // Add this line
+  ],
 } satisfies Config;

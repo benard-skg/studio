@@ -9,38 +9,12 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { ScrollText, CalendarDays } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
+import { blogPosts, type BlogPost } from '@/lib/blog-data'; // Import from centralized data
 
-const blogPosts = [
-  {
-    title: "Mastering the Sicilian Defense: Key Ideas",
-    date: "October 26, 2023",
-    excerpt: "An in-depth look at common structures and strategic plans in the Sicilian Defense, one of chess's most popular openings.",
-    imageSrc: "https://placehold.co/600x400.png",
-    imageAiHint: "chess opening strategy",
-    slug: "/blog/sicilian-defense-ideas"
-  },
-  {
-    title: "Endgame Essentials: Rook and Pawn Endings",
-    date: "November 5, 2023",
-    excerpt: "Unlock the secrets to navigating complex rook and pawn endgames, a critical skill for any serious chess player.",
-    imageSrc: "https://placehold.co/600x400.png",
-    imageAiHint: "chess endgame pawn",
-    slug: "/blog/rook-pawn-endgames"
-  },
-  {
-    title: "The Art of Calculation: Improving Your Tactical Vision",
-    date: "November 18, 2023",
-    excerpt: "Learn effective techniques to enhance your calculation abilities and spot winning combinations with greater accuracy.",
-    imageSrc: "https://placehold.co/600x400.png",
-    imageAiHint: "chess tactics puzzle",
-    slug: "/blog/improving-calculation"
-  },
-];
-
-function BlogPostCard({ post }: { post: typeof blogPosts[0] }) {
+function BlogPostCard({ post }: { post: BlogPost }) { // Use BlogPost type
   return (
     <Card className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden h-full">
-      <Link href={post.slug} aria-label={`Read more about ${post.title}`}>
+      <Link href={`/blog/${post.slug}`} aria-label={`Read more about ${post.title}`}>
         <Image
           src={post.imageSrc}
           alt={`Blog post image for ${post.title}`}
@@ -51,7 +25,7 @@ function BlogPostCard({ post }: { post: typeof blogPosts[0] }) {
         />
       </Link>
       <CardHeader>
-        <Link href={post.slug} aria-label={`Read more about ${post.title}`}>
+        <Link href={`/blog/${post.slug}`} aria-label={`Read more about ${post.title}`}>
           <CardTitle className="font-headline text-xl hover:text-accent transition-colors">{post.title}</CardTitle>
         </Link>
         <div className="flex items-center text-xs text-muted-foreground pt-1">
@@ -64,7 +38,7 @@ function BlogPostCard({ post }: { post: typeof blogPosts[0] }) {
       </CardContent>
       <CardFooter>
         <Button asChild variant="link" className="p-0 text-accent hover:underline">
-          <Link href={post.slug}>Read More &rarr;</Link>
+          <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
         </Button>
       </CardFooter>
     </Card>
@@ -89,7 +63,8 @@ export default function BlogSection() {
 
         {blogPosts.length > 0 && (
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-             <div className="md:col-start-2 lg:col-start-2"> {/* Center the single preview card */}
+             {/* Display first post prominently, or adjust logic as needed. For now, let's ensure it's centered if it's the only one initially visible. */}
+             <div className={blogPosts.length === 1 ? "md:col-span-2 lg:col-span-3 flex justify-center" : (blogPosts.length > 1 ? "md:col-start-2 lg:col-start-2" : "md:col-start-2 lg:col-start-2")}>
                 <BlogPostCard post={blogPosts[0]} />
              </div>
            </div>
@@ -108,7 +83,7 @@ export default function BlogSection() {
                 <AccordionTrigger
                   className={cn(
                     buttonVariants({ variant: 'outline', size: 'lg' }),
-                    "w-auto mx-auto hover:no-underline bg-card text-card-foreground border-border" // Added background for better visibility on bg-secondary
+                    "w-auto mx-auto hover:no-underline bg-card text-card-foreground border-border"
                   )}
                 >
                   {openAccordionItem === 'more-blog-posts' ? 'Show Less' : 'View All Posts'}
@@ -116,6 +91,7 @@ export default function BlogSection() {
               </div>
               <AccordionContent className="pt-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {/* Ensure we don't repeat the first post if it was already shown above */}
                   {blogPosts.slice(1).map((post) => (
                     <BlogPostCard key={post.title} post={post} />
                   ))}
