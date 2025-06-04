@@ -17,7 +17,7 @@ export default function CoachProfileSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <UserCircle2 className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-bold">
+          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
             Meet Your Coach
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -40,7 +40,7 @@ export default function CoachProfileSection() {
             </div>
             <div className="md:w-2/3">
               <CardHeader>
-                <CardTitle className="font-headline text-3xl">{coachData.name}</CardTitle>
+                <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter leading-tight">{coachData.name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="font-body text-base leading-relaxed space-y-4">

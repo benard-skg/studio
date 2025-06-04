@@ -3,7 +3,6 @@ import Navbar from '@/components/layout/navbar';
 import HeroSection from '@/components/sections/hero-section';
 import CoachProfileSection from '@/components/sections/coach-profile-section';
 import ClassShowcaseSection from '@/components/sections/class-showcase-section';
-import BlogSection from '@/components/sections/blog-section';
 import ContactSection from '@/components/sections/contact-section';
 import Footer from '@/components/layout/footer';
 
@@ -15,7 +14,6 @@ export default function Home() {
         <HeroSection />
         <CoachProfileSection />
         <ClassShowcaseSection />
-        <BlogSection />
         <ContactSection />
       </main>
       <Footer />

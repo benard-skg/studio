@@ -26,7 +26,7 @@ export default function ClassShowcaseSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-bold">
+          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
             Coaching Classes
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -38,7 +38,7 @@ export default function ClassShowcaseSection() {
           {classesData.map((cls) => (
             <Card key={cls.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden max-w-md md:col-span-1 lg:col-span-1">
               <CardHeader className="bg-card">
-                <CardTitle className="font-headline text-2xl">{cls.name}</CardTitle>
+                <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter leading-tight">{cls.name}</CardTitle>
                 <CardDescription className="font-body text-sm">{cls.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow space-y-4 pt-4">

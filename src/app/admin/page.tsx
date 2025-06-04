@@ -85,7 +85,7 @@ export default function AdminPage() {
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-10 text-center">
-          <h1 className="font-headline text-4xl md:text-5xl font-bold">
+          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
             Admin - Contact Submissions
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-2">

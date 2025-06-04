@@ -127,7 +127,7 @@ export default function ContactSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Mail className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-bold">
+          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
             Get in Touch
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
