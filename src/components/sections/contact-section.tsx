@@ -38,8 +38,7 @@ export default function ContactSection() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // PLEASE REPLACE 'YOUR_WHATSAPP_NUMBER_HERE' with your actual WhatsApp number including the country code, e.g., '12345678900'
-  const whatsappNumber = "YOUR_WHATSAPP_NUMBER_HERE"; 
+  const whatsappNumber = "+27834544862"; 
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(ContactFormSchema),
@@ -226,5 +225,6 @@ export default function ContactSection() {
     </section>
   );
 }
+    
 
     
