@@ -4,13 +4,12 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu, X, Crown } from 'lucide-react';
 
 const navItems = [
   { href: '/about', label: 'About' },
   { href: '/classes', label: 'Classes' },
-  // { href: '/testimonials', label: 'Testimonials' }, // Removed
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -61,18 +60,17 @@ export default function Navbar() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] bg-background p-6">
-                <div className="flex flex-col space-y-6">
-                  <div className="flex justify-between items-center">
+                <SheetHeader className="text-left mb-6">
+                  <SheetTitle asChild>
                     <Link href="/" className="flex items-center space-x-2 text-xl font-headline font-bold">
                       <Crown className="h-6 w-6 text-accent" />
                       <span>kgchess</span>
                     </Link>
-                    <SheetClose asChild>
-                       <Button variant="ghost" size="icon">
-                          <X className="h-6 w-6" />
-                       </Button>
-                    </SheetClose>
-                  </div>
+                  </SheetTitle>
+                  {/* The default SheetContent close button will be used.
+                      The SheetClose component below is still necessary for closing the sheet when a nav item is clicked. */}
+                </SheetHeader>
+                <div className="flex flex-col space-y-6">
                   {navItems.map((item) => (
                     <SheetClose key={item.label} asChild>
                       <Link
