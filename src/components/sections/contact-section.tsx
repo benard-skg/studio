@@ -3,6 +3,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod"; // Re-added for local schema definition
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,21 +15,24 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Loader2 } from 'lucide-react';
+import { Mail, Send } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+// Removed useState for isSubmitting and Loader2 import
 
-// Import the server action from the flow file
-import { submitContactForm } from '@/ai/flows/contact-form-flow';
-// Import the schema and type from the new schema file
-import { ContactFormInputSchema, type ContactFormInput } from '@/lib/schemas/contact-form-schemas';
+// Define schema locally as it was before backend integration
+const ContactFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  message: z.string().min(10, { message: "Message must be at least 10 characters." }).max(500, { message: "Message must not exceed 500 characters." }),
+});
+type ContactFormData = z.infer<typeof ContactFormSchema>;
 
 export default function ContactSection() {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Removed isSubmitting state
 
-  const form = useForm<ContactFormInput>({ 
-    resolver: zodResolver(ContactFormInputSchema), 
+  const form = useForm<ContactFormData>({ 
+    resolver: zodResolver(ContactFormSchema), 
     defaultValues: {
       name: "",
       email: "",
@@ -36,35 +40,16 @@ export default function ContactSection() {
     },
   });
 
-  async function onSubmit(values: ContactFormInput) { 
-    setIsSubmitting(true);
-    try {
-      const result = await submitContactForm(values);
-
-      if (result.success) {
-        toast({
-          title: "Message Sent!",
-          description: result.message,
-          variant: "default",
-        });
-        form.reset();
-      } else {
-        toast({
-          title: "Submission Failed",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast({
-        title: "An Error Occurred",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Reverted onSubmit to client-side only logic
+  async function onSubmit(values: ContactFormData) { 
+    console.log("Form submitted:", values); // Original behavior
+    toast({
+      title: "Message Sent!",
+      description: "Thank you for your message. We will get back to you soon.", // Original simple message
+      variant: "default",
+    });
+    form.reset();
+    // Removed setIsSubmitting logic and backend call
   }
 
   return (
@@ -90,7 +75,7 @@ export default function ContactSection() {
                   <FormItem>
                     <FormLabel className="font-body">Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} className="font-body" disabled={isSubmitting} />
+                      <Input placeholder="Your Name" {...field} className="font-body" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,7 +88,7 @@ export default function ContactSection() {
                   <FormItem>
                     <FormLabel className="font-body">Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} className="font-body" disabled={isSubmitting} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} className="font-body" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -120,24 +105,15 @@ export default function ContactSection() {
                         placeholder="Your questions or booking inquiry..."
                         className="resize-none font-body min-h-[120px]"
                         {...field}
-                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    Send Message <Send className="ml-2 h-4 w-4" />
-                  </>
-                )}
+              {/* Reverted button to original state */}
+              <Button type="submit" size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md">
+                Send Message <Send className="ml-2 h-4 w-4" />
               </Button>
             </form>
           </Form>
