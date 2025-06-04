@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -23,13 +24,14 @@ export default function HeroSection() {
         </p>
         <div className="space-x-4">
           <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
-            <Link href="#packages">Explore Packages</Link>
+            <Link href="/classes">Explore Classes</Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
-            <Link href="#contact">Book a Consultation</Link>
+            <Link href="/contact">Book a Consultation</Link>
           </Button>
         </div>
       </div>
     </section>
   );
 }
+

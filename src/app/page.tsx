@@ -1,7 +1,8 @@
+
 import Navbar from '@/components/layout/navbar';
 import HeroSection from '@/components/sections/hero-section';
 import CoachProfileSection from '@/components/sections/coach-profile-section';
-import PackageShowcaseSection from '@/components/sections/package-showcase-section';
+import ClassShowcaseSection from '@/components/sections/class-showcase-section'; // Renamed import
 import TestimonialsSection from '@/components/sections/testimonials-section';
 import BlogSection from '@/components/sections/blog-section';
 import ContactSection from '@/components/sections/contact-section';
@@ -14,7 +15,7 @@ export default function Home() {
       <main className="flex-grow pt-20"> {/* Add pt-20 to account for fixed navbar height */}
         <HeroSection />
         <CoachProfileSection />
-        <PackageShowcaseSection />
+        <ClassShowcaseSection /> {/* Renamed component */}
         <TestimonialsSection />
         <BlogSection />
         <ContactSection />

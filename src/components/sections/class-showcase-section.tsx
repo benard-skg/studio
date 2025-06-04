@@ -1,10 +1,10 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, CheckCircle2 } from 'lucide-react';
+import { GraduationCap, CheckCircle2 } from 'lucide-react'; // Changed Package to GraduationCap
 import Link from 'next/link';
 
-const packages = [
+const classesData = [ // Renamed from packages to classesData
   {
     name: "Beginner's Gambit",
     price: "$99",
@@ -48,14 +48,14 @@ const packages = [
   },
 ];
 
-export default function PackageShowcaseSection() {
+export default function ClassShowcaseSection() { // Renamed from PackageShowcaseSection
   return (
-    <section id="packages" className="py-16 md:py-24 bg-secondary">
+    <section id="classes" className="py-16 md:py-24 bg-secondary"> {/* id changed to "classes" */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <Package className="mx-auto h-12 w-12 text-accent mb-4" />
+          <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" /> {/* Icon changed */}
           <h2 className="font-headline text-4xl md:text-5xl font-bold">
-            Coaching Packages
+            Coaching Classes {/* Text changed */}
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Choose the plan that best suits your chess journey.
@@ -63,19 +63,19 @@ export default function PackageShowcaseSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {packages.map((pkg) => (
-            <Card key={pkg.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden">
+          {classesData.map((cls) => ( // Renamed pkg to cls, packages to classesData
+            <Card key={cls.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden">
               <CardHeader className="bg-card">
-                <CardTitle className="font-headline text-2xl">{pkg.name}</CardTitle>
-                <CardDescription className="font-body text-sm">{pkg.description}</CardDescription>
+                <CardTitle className="font-headline text-2xl">{cls.name}</CardTitle>
+                <CardDescription className="font-body text-sm">{cls.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow space-y-4 pt-4">
                 <div className="text-center">
-                  <span className="font-headline text-4xl font-bold">{pkg.price}</span>
-                  <span className="font-body text-muted-foreground">{pkg.frequency}</span>
+                  <span className="font-headline text-4xl font-bold">{cls.price}</span>
+                  <span className="font-body text-muted-foreground">{cls.frequency}</span>
                 </div>
                 <ul className="font-body space-y-2 text-sm">
-                  {pkg.features.map((feature, index) => (
+                  {cls.features.map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 mt-0.5 shrink-0" />
                       <span>{feature}</span>
@@ -85,7 +85,7 @@ export default function PackageShowcaseSection() {
               </CardContent>
               <CardFooter className="bg-card pt-4">
                 <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md">
-                  <Link href="#contact">Choose Plan</Link>
+                  <Link href="/contact">Choose Plan</Link>
                 </Button>
               </CardFooter>
             </Card>

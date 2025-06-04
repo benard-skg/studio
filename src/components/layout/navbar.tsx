@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -7,12 +8,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { Menu, X, Crown } from 'lucide-react';
 
 const navItems = [
-  { href: '#hero', label: 'Home' },
-  { href: '#profile', label: 'About' },
-  { href: '#packages', label: 'Packages' },
-  { href: '#testimonials', label: 'Testimonials' },
-  { href: '#blog', label: 'Blog' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/about', label: 'About' },
+  { href: '/classes', label: 'Classes' },
+  { href: '/testimonials', label: 'Testimonials' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 export default function Navbar() {
