@@ -3,7 +3,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod"; // Re-added for local schema definition
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,11 +15,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send } from 'lucide-react';
+import { Mail, Send, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-// Removed useState for isSubmitting and Loader2 import
+import { useState } from 'react';
 
-// Define schema locally as it was before backend integration
 const ContactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -29,7 +28,7 @@ type ContactFormData = z.infer<typeof ContactFormSchema>;
 
 export default function ContactSection() {
   const { toast } = useToast();
-  // Removed isSubmitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ContactFormData>({ 
     resolver: zodResolver(ContactFormSchema), 
@@ -40,16 +39,45 @@ export default function ContactSection() {
     },
   });
 
-  // Reverted onSubmit to client-side only logic
   async function onSubmit(values: ContactFormData) { 
-    console.log("Form submitted:", values); // Original behavior
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for your message. We will get back to you soon.", // Original simple message
-      variant: "default",
-    });
-    form.reset();
-    // Removed setIsSubmitting logic and backend call
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('http://localhost:3001/contactSubmissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Message Sent!",
+          description: "Your message has been submitted locally.",
+          variant: "default",
+        });
+        form.reset();
+      } else {
+        toast({
+          title: "Submission Error",
+          description: `Failed to submit message: ${response.statusText}`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      let errorMessage = "An unknown error occurred during submission.";
+      if (error instanceof Error) {
+        errorMessage = `Network error: ${error.message}. Is json-server running?`;
+      }
+      toast({
+        title: "Submission Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -111,9 +139,22 @@ export default function ContactSection() {
                   </FormItem>
                 )}
               />
-              {/* Reverted button to original state */}
-              <Button type="submit" size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md">
-                Send Message <Send className="ml-2 h-4 w-4" />
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    Send Message <Send className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </form>
           </Form>
