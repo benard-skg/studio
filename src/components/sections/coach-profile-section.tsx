@@ -17,7 +17,7 @@ const coachData = {
     "FIDE Rated Player",
     "Regular contributor to leading chess publications",
   ],
-  imageSrc: "https://i.ibb.co/YOUR_DIRECT_IMAGE_PATH_FOR_COACH.png", // <-- IMPORTANT: Replace this with your actual direct ImgBB URL
+  imageSrc: "https://i.ibb.co/GzyZvGj/20250512-215848.jpg", 
   imageAlt: "Portrait of Coach K.G.",
   imageAiHint: "chess coach portrait"
 };
