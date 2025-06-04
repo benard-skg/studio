@@ -7,14 +7,14 @@ import Link from 'next/link';
 const classesData = [
   {
     name: "Introductory Class (0–1500 Rating)",
-    price: "$99",
+    price: "R999",
     frequency: "/month",
     description: "Introductory Class (0–1500 Rating)",
     features: [
-      "4 one-on-one sessions (1 hour each)",
-      "Personalized opening repertoire basics",
-      "Introduction to key tactical motifs",
-      "Weekly puzzle assignments",
+      "4 one-on-one sessions (2.5 hours each)",
+      "Personalized training plan(openings, endgames, tactics, and psychology)",
+      "Weekly game analysis (online review of your games to correct mistakes)",
+      "curated resources (study guides, puzzle sets, and demo videos).",
     ],
     aiHint: "chess board beginner"
   },
@@ -54,6 +54,9 @@ export default function ClassShowcaseSection() {
                     </li>
                   ))}
                 </ul>
+                <p className="font-body text-sm text-muted-foreground mt-6 text-center italic">
+                  "Learn not just to play—but to dominate."
+                </p>
               </CardContent>
               <CardFooter className="bg-card pt-4">
                 <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md">
