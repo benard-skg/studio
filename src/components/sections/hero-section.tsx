@@ -11,7 +11,7 @@ export default function HeroSection() {
         alt="Abstract chess background"
         layout="fill"
         objectFit="cover"
-        className="opacity-20"
+        className="opacity-30 dark:opacity-20"
         data-ai-hint="chess abstract"
         priority
       />
