@@ -4,8 +4,9 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Menu, Crown } from 'lucide-react';
+import { ThemeToggleButton } from './theme-toggle-button';
 
 const navItems = [
   { href: '/about', label: 'About' },
@@ -39,48 +40,53 @@ export default function Navbar() {
             <span>kgchess</span>
           </Link>
 
-          <nav className="hidden md:flex space-x-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="font-body text-sm font-medium hover:text-accent transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] bg-background p-6">
-                <SheetHeader className="text-left mb-6">
-                  <SheetTitle asChild>
-                    <Link href="/" className="flex items-center space-x-2 text-xl font-headline font-extrabold tracking-tighter leading-tight">
-                      <Crown className="h-6 w-6 text-accent" />
-                      <span>kgchess</span>
-                    </Link>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col space-y-6">
-                  {navItems.map((item) => (
-                    <SheetClose key={item.label} asChild>
-                      <Link
-                        href={item.href}
-                        className="font-body text-lg hover:text-accent transition-colors"
-                      >
-                        {item.label}
+          <div className="flex items-center space-x-2">
+            <nav className="hidden md:flex space-x-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="font-body text-sm font-medium hover:text-accent transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <ThemeToggleButton />
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] bg-background p-6">
+                  <SheetHeader className="text-left mb-6">
+                    <SheetTitle asChild>
+                      <Link href="/" className="flex items-center space-x-2 text-xl font-headline font-extrabold tracking-tighter leading-tight">
+                        <Crown className="h-6 w-6 text-accent" />
+                        <span>kgchess</span>
                       </Link>
-                    </SheetClose>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col space-y-6">
+                    {navItems.map((item) => (
+                      <SheetClose key={item.label} asChild>
+                        <Link
+                          href={item.href}
+                          className="font-body text-lg hover:text-accent transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      </SheetClose>
+                    ))}
+                  </div>
+                  <div className="mt-8 pt-6 border-t border-border">
+                     <ThemeToggleButton />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>
