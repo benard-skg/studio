@@ -19,10 +19,10 @@ const client = createClient({
 });
 
 const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost => {
-  const featuredImage = blogPostEntry.fields.featuredImage as ContentfulAsset | undefined;
+  const featuredImage = blogPostEntry.fields.ImageHeadline as ContentfulAsset | undefined;
   
   return {
-    title: blogPostEntry.fields.title as string,
+    title: blogPostEntry.fields.Heading as string,
     date: blogPostEntry.fields.date ? new Date(blogPostEntry.fields.date as string).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -32,18 +32,18 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost => {
         month: 'long',
         day: 'numeric',
       }),
-    excerpt: blogPostEntry.fields.excerpt as string,
-    slug: blogPostEntry.fields.slug as string,
+    excerpt: (blogPostEntry.fields.excerpt as string) || '', // Fallback to empty string if excerpt field is missing
+    slug: blogPostEntry.fields.slug as string, // Critical field, assumes 'slug' exists in Contentful model
     featuredImage: featuredImage,
-    content: blogPostEntry.fields.content as Document, // Rich text
+    content: blogPostEntry.fields.MainTextContent as Document, // Rich text
   };
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'blogPost', // Make sure this matches your Contentful content type ID for blog posts
-      order: ['-fields.date'], // Order by date, most recent first
+      content_type: 'blogPost1', // Updated Content Type ID
+      order: ['-fields.date', '-sys.createdAt'], // Order by date, then by creation if date is same/missing
     });
     return entries.items.map(parseContentfulBlogPost);
   } catch (error) {
@@ -55,7 +55,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'blogPost',
+      content_type: 'blogPost1', // Updated Content Type ID
       'fields.slug': slug,
       limit: 1,
     });
@@ -72,8 +72,8 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'blogPost',
-      order: ['-fields.date'],
+      content_type: 'blogPost1', // Updated Content Type ID
+      order: ['-fields.date', '-sys.createdAt'], // Order by date, then by creation
       limit: 1,
     });
     if (entries.items.length > 0) {
