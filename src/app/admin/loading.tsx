@@ -13,10 +13,25 @@ export default function AdminLoading() {
           <Skeleton className="h-5 w-2/5 mx-auto" />      {/* Subtitle */}
         </header>
 
-        <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
-          <Skeleton className="h-10 w-10 rounded-full mb-3" /> {/* Icon Placeholder */}
-          <Skeleton className="h-8 w-1/2 mx-auto mb-2" /> {/* Message Title Placeholder */}
-          <Skeleton className="h-5 w-3/4 mx-auto" /> {/* Message Body Placeholder */}
+        <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
+          <div className="p-4 space-y-3"> {/* Simulating table header */}
+            <div className="flex justify-between">
+              <Skeleton className="h-5 w-1/6" />
+              <Skeleton className="h-5 w-1/6" />
+              <Skeleton className="h-5 w-1/6" />
+              <Skeleton className="h-5 w-2/6 hidden md:block" />
+              <Skeleton className="h-5 w-1/12" />
+            </div>
+            {[...Array(3)].map((_, i) => ( // Simulating 3 table rows
+              <div key={i} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
+                <Skeleton className="h-5 w-1/6" />
+                <Skeleton className="h-5 w-1/6" />
+                <Skeleton className="h-5 w-1/6" />
+                <Skeleton className="h-5 w-2/6 hidden md:block" />
+                <Skeleton className="h-8 w-8 rounded-md" /> {/* Action button */}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
       <Footer />
