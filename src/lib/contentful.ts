@@ -18,86 +18,111 @@ const client = createClient({
   accessToken: accessToken,
 });
 
-const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost => {
-  const featuredImage = blogPostEntry.fields.ImageHeadline as ContentfulAsset | undefined;
-  const slugField = blogPostEntry.fields.slug as string | undefined;
+const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => {
+  if (!blogPostEntry || !blogPostEntry.sys || !blogPostEntry.sys.id) {
+    console.warn('Attempted to parse an invalid Contentful entry:', blogPostEntry);
+    return null;
+  }
+
   const entryId = blogPostEntry.sys.id;
+  const title = blogPostEntry.fields.Heading as string;
+  const content = blogPostEntry.fields.MainTextContent as Document;
+
+  if (!title || !content) {
+    console.warn(`Contentful entry ${entryId} is missing 'Heading' or 'MainTextContent'. Skipping.`);
+    return null;
+  }
+
+  const featuredImage = blogPostEntry.fields.ImageHeadline as ContentfulAsset | undefined;
+  
+  let finalSlug: string;
+  const slugIDValue = blogPostEntry.fields.slugID;
+
+  if (typeof slugIDValue === 'number') {
+    finalSlug = String(slugIDValue);
+  } else {
+    // Fallback to sys.id if slugID is not a number or missing
+    finalSlug = entryId;
+  }
   
   return {
-    title: blogPostEntry.fields.Heading as string,
+    title: title,
     date: new Date(blogPostEntry.sys.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       }),
     excerpt: (blogPostEntry.fields.excerpt as string) || '', // Fallback to empty string if excerpt field is missing
-    // Ensure slug is always a string; fallback to system ID if slug field is missing/empty.
-    // This is crucial for key props and for link hrefs.
-    slug: slugField || entryId, 
+    slug: finalSlug, 
     featuredImage: featuredImage,
-    content: blogPostEntry.fields.MainTextContent as Document, // Rich text
+    content: content,
   };
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'blogPost1', // Updated Content Type ID
-      order: ['-sys.createdAt'], // Order by creation date (most recent first)
+      content_type: 'blogPost1',
+      order: ['-sys.createdAt'], 
     });
-    return entries.items.map(parseContentfulBlogPost);
+    return entries.items.map(parseContentfulBlogPost).filter(Boolean) as BlogPost[];
   } catch (error) {
     console.error('Error fetching blog posts from Contentful:', error);
-    return []; // Return empty array on error
+    return []; 
   }
 }
 
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    // Attempt to fetch by slug field first.
-    const entriesByFieldSlug: EntryCollection<any> = await client.getEntries({
-      content_type: 'blogPost1', 
-      'fields.slug': slug,
-      limit: 1,
-    });
+    // Attempt to fetch by slugID field first (expecting slug to be a string representation of an integer)
+    const slugAsNumber = parseInt(slug, 10);
+    if (!isNaN(slugAsNumber)) {
+      const entriesBySlugID: EntryCollection<any> = await client.getEntries({
+        content_type: 'blogPost1',
+        'fields.slugID': slugAsNumber,
+        limit: 1,
+      });
 
-    if (entriesByFieldSlug.items.length > 0) {
-      return parseContentfulBlogPost(entriesByFieldSlug.items[0]);
+      if (entriesBySlugID.items.length > 0) {
+        const parsedPost = parseContentfulBlogPost(entriesBySlugID.items[0]);
+        if (parsedPost) return parsedPost;
+      }
     }
     
-    // Fallback: If no post is found by `fields.slug`, and if the provided slug might be a sys.id,
-    // try fetching directly by entry ID. This makes routes like /blog/entry_id work.
+    // Fallback: If no post is found by `fields.slugID` (or if slug wasn't parsable as a number),
+    // try fetching directly by entry ID (assuming slug might be a sys.id).
     try {
         const entryById = await client.getEntry(slug, { content_type: 'blogPost1'});
         if (entryById) {
-            return parseContentfulBlogPost(entryById);
+            const parsedPost = parseContentfulBlogPost(entryById);
+            if (parsedPost) return parsedPost;
         }
     } catch (idError: any) {
-        // If getEntry also fails (e.g. slug is neither a valid field.slug nor a valid sys.id).
-        // Contentful's client.getEntry throws an error if not found, so we check the error name.
         if (idError && idError.name === 'NotFound') {
-            console.warn(`Blog post with slug or ID '${slug}' not found.`);
+            // This is an expected case if the slug is neither a valid fields.slugID nor a valid sys.id
         } else {
-            console.warn(`Error attempting to fetch blog post by ID '${slug}':`, idError);
+            console.warn(`Error attempting to fetch blog post by sys.id '${slug}':`, idError);
         }
     }
-
+    
+    console.warn(`Blog post with slug or ID '${slug}' not found after checking slugID and sys.id.`);
     return null;
   } catch (error) {
     console.error(`Error fetching blog post with slug ${slug} from Contentful:`, error);
-    return null; // Return null on error
+    return null; 
   }
 }
 
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'blogPost1', // Updated Content Type ID
-      order: ['-sys.createdAt'], // Order by creation date (most recent first)
+      content_type: 'blogPost1', 
+      order: ['-sys.createdAt'],
       limit: 1,
     });
     if (entries.items.length > 0) {
-      return parseContentfulBlogPost(entries.items[0]);
+      const parsedPost = parseContentfulBlogPost(entries.items[0]);
+      return parsedPost; // This can be null if parsing fails
     }
     return null;
   } catch (error) {
@@ -105,4 +130,3 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
     return null;
   }
 }
-
