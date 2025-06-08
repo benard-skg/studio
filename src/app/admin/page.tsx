@@ -14,8 +14,10 @@ import {
   TableCaption,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Square, CheckSquare } from 'lucide-react';
+import { AlertCircle, Square, CheckSquare, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
 
 interface Submission {
   name: string;
@@ -33,73 +35,124 @@ const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
 export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastLoadedTime, setLastLoadedTime] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const fetchSubmissions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
+        method: 'GET',
+        headers: {
+          'X-Master-Key': MASTER_KEY,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("Failed to fetch submissions:", response.status, errorData);
+        throw new Error(`Failed to fetch submissions. Status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      
+      let submissionsArray: Submission[] = [];
+      if (responseData && Array.isArray(responseData.record)) {
+        submissionsArray = responseData.record;
+      } else if (Array.isArray(responseData)) {
+        submissionsArray = responseData;
+      } else {
+        console.warn("Fetched data is not an array or in expected format:", responseData);
+        setError("Data format from bin is unexpected. Expected an array of submissions.");
+        setSubmissions([]);
+        setIsLoading(false);
+        return;
+      }
+      const initializedSubmissions = submissionsArray.map(sub => ({
+        ...sub,
+        seen: sub.seen || false,
+        lastSeen: sub.lastSeen,
+      }));
+      setSubmissions(initializedSubmissions);
+      setLastLoadedTime(format(new Date(), "PPP p"));
+
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : "An unknown error occurred fetching submissions.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSubmissions = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-          method: 'GET',
-          headers: {
-            'X-Master-Key': MASTER_KEY,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.text();
-          console.error("Failed to fetch submissions:", response.status, errorData);
-          throw new Error(`Failed to fetch submissions. Status: ${response.status}`);
-        }
-
-        const responseData = await response.json();
-        
-        let submissionsArray: Submission[] = [];
-        if (responseData && Array.isArray(responseData.record)) {
-          submissionsArray = responseData.record;
-        } else if (Array.isArray(responseData)) {
-          submissionsArray = responseData;
-        } else {
-          console.warn("Fetched data is not an array or in expected format:", responseData);
-          setError("Data format from bin is unexpected. Expected an array of submissions.");
-          setSubmissions([]);
-          setIsLoading(false);
-          return;
-        }
-        // Initialize seen status for each submission
-        const initializedSubmissions = submissionsArray.map(sub => ({
-          ...sub,
-          seen: sub.seen || false, // Default to false if not present
-          lastSeen: sub.lastSeen,
-        }));
-        setSubmissions(initializedSubmissions);
-        setLastLoadedTime(format(new Date(), "PPP p")); // PPP p -> Jan 1st, 2023 at 12:00:00 PM
-
-      } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : "An unknown error occurred fetching submissions.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchSubmissions();
   }, []);
 
-  const handleToggleSeen = (index: number) => {
-    setSubmissions(prevSubmissions => {
-      const newSubmissions = [...prevSubmissions];
-      const submission = newSubmissions[index];
-      submission.seen = !submission.seen;
-      if (submission.seen) {
-        submission.lastSeen = new Date().toISOString();
+  const persistSubmissions = async (updatedSubmissions: Submission[]) => {
+    setIsSaving(true);
+    try {
+      const putResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': MASTER_KEY,
+          'X-Bin-Versioning': 'false', 
+        },
+        body: JSON.stringify(updatedSubmissions),
+      });
+
+      if (putResponse.ok) {
+        toast({
+          title: "Update Successful",
+          description: "Submission status saved to JSONBin.io.",
+        });
+        // Optionally re-fetch or just trust the local state if PUT is source of truth now
+        // For simplicity, we'll trust local state is in sync after successful PUT
+        setSubmissions(updatedSubmissions); // Ensure local state matches persisted state
+        setLastLoadedTime(format(new Date(), "PPP p")); // Update last loaded time as data changed
       } else {
-        submission.lastSeen = undefined; 
+        const errorData = await putResponse.text();
+        console.error("Failed to persist submissions to JSONBin.io:", putResponse.status, errorData);
+        throw new Error(`Failed to save changes: ${putResponse.status}`);
       }
-      return newSubmissions;
+    } catch (error) {
+      console.error("Error persisting submissions:", error);
+      toast({
+        title: "Save Error",
+        description: error instanceof Error ? error.message : "Could not save changes to JSONBin.io. Please try again.",
+        variant: "destructive",
+      });
+      // Optionally, revert local state to before the failed save attempt by re-fetching
+      // fetchSubmissions(); // This would revert optimistic update
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleToggleSeen = async (index: number) => {
+    // Create the new state based on the previous state
+    const newSubmissions = submissions.map((sub, i) => {
+      if (i === index) {
+        const updatedSub = { ...sub };
+        updatedSub.seen = !updatedSub.seen;
+        if (updatedSub.seen) {
+          updatedSub.lastSeen = new Date().toISOString();
+        } else {
+          updatedSub.lastSeen = undefined; 
+        }
+        return updatedSub;
+      }
+      return sub;
     });
+    
+    // Optimistically update UI
+    setSubmissions(newSubmissions);
+    
+    // Then persist this new state
+    await persistSubmissions(newSubmissions);
   };
 
   return (
@@ -111,14 +164,21 @@ export default function AdminPage() {
             Admin - Contact Submissions
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-2">
-            Viewing data directly from JSONBin.io.
+            Viewing and managing data from JSONBin.io.
           </p>
         </header>
+
+        {isSaving && (
+          <div className="fixed top-24 right-6 z-50 bg-primary text-primary-foreground p-3 rounded-md shadow-lg flex items-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <span>Saving changes...</span>
+          </div>
+        )}
 
         {lastLoadedTime && !isLoading && (
           <div className="mb-6 text-center">
             <p className="font-headline font-bold text-xl md:text-2xl text-foreground">
-              Data last loaded: {lastLoadedTime}
+              Data last updated: {lastLoadedTime}
             </p>
           </div>
         )}
@@ -127,7 +187,6 @@ export default function AdminPage() {
             <Skeleton className="h-8 w-1/2 mx-auto" />
           </div>
         )}
-
 
         {isLoading && (
           <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
@@ -166,6 +225,9 @@ export default function AdminPage() {
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Error Fetching Data</p>
             <p className="font-body text-center">{error}</p>
+            <Button onClick={fetchSubmissions} variant="destructive" className="mt-4">
+              Retry Fetch
+            </Button>
           </div>
         )}
 
@@ -198,7 +260,8 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleToggleSeen(index)}
                         aria-label={submission.seen ? "Mark as unseen" : "Mark as seen"}
-                        className="p-1 rounded-md hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="p-1 rounded-md hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isSaving}
                       >
                         {submission.seen ? (
                           <CheckSquare className="h-5 w-5 text-accent" />
