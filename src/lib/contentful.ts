@@ -23,11 +23,8 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost => {
   
   return {
     title: blogPostEntry.fields.Heading as string,
-    date: blogPostEntry.fields.date ? new Date(blogPostEntry.fields.date as string).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }) : new Date(blogPostEntry.sys.createdAt).toLocaleDateString('en-US', { // Fallback to createdAt
+    // Rely solely on sys.createdAt as a dedicated 'date' field is not present in blogPost1
+    date: new Date(blogPostEntry.sys.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -43,7 +40,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: 'blogPost1', // Updated Content Type ID
-      order: ['-fields.date', '-sys.createdAt'], // Order by date, then by creation if date is same/missing
+      order: ['-sys.createdAt'], // Order by creation date (most recent first)
     });
     return entries.items.map(parseContentfulBlogPost);
   } catch (error) {
@@ -73,7 +70,7 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: 'blogPost1', // Updated Content Type ID
-      order: ['-fields.date', '-sys.createdAt'], // Order by date, then by creation
+      order: ['-sys.createdAt'], // Order by creation date (most recent first)
       limit: 1,
     });
     if (entries.items.length > 0) {
