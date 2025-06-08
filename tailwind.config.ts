@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Fira Sans', 'sans-serif'],
-        headline: ['Hack', 'monospace'],
-        code: ['Hack', 'monospace'],
+        body: ['PT Sans', 'sans-serif'],
+        headline: ['Playfair Display', 'serif'],
+        code: ['PT Sans', 'monospace'], // PT Sans can also work for code for consistency
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -113,7 +113,7 @@ export default {
             '--tw-prose-pre-bg': theme('colors.muted.DEFAULT / 0.5'),
             '--tw-prose-th-borders': theme('colors.border / 1'),
             '--tw-prose-td-borders': theme('colors.border / 1'),
-            '--tw-prose-invert-body': theme('colors.foreground / 1'), // Inverted for dark mode
+            '--tw-prose-invert-body': theme('colors.foreground / 1'),
             '--tw-prose-invert-headings': theme('colors.foreground / 1'),
             '--tw-prose-invert-lead': theme('colors.muted.foreground / 1'),
             '--tw-prose-invert-links': theme('colors.accent.DEFAULT / 1'),
@@ -141,7 +141,6 @@ export default {
             h4: {
                 fontFamily: theme('fontFamily.headline'),
             },
-            // Add more prose customization here if needed
           },
         },
       }),

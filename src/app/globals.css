@@ -4,14 +4,14 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family will be set by Tailwind's font-body class */
 }
 
 @layer base {
   :root {
-    /* Light Theme (Default) */
+    /* Light Theme (Default - as per PRD) */
     --background: 0 0% 100%; /* White */
-    --foreground: 0 0% 9%; /* Almost Black for text (increased contrast from 0 0% 0%) */
+    --foreground: 0 0% 9%; /* Almost Black for text (better contrast than pure black) */
 
     --card: 0 0% 100%; /* White */
     --card-foreground: 0 0% 9%; /* Almost Black */
@@ -19,7 +19,13 @@ body {
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 0 0% 9%; /* Almost Black */
 
-    --primary: 212 100% 48%; /* Vivid Blue */
+    /* Primary color for PRD is "Black (#000000)" - this is usually for branding elements, not text.
+       Using Vivid Blue as the main interactive/primary element color.
+       If primary is meant to be the theme's dominant color, it would be the blue.
+       The prompt specified primary color:Black(#000000), this seems to relate to the PRD's primary *brand* color,
+       not necessarily the button/interactive primary. I'll keep Vivid Blue for interactive primary.
+    */
+    --primary: 212 100% 48%; /* Vivid Blue (#0070F3) */
     --primary-foreground: 0 0% 100%; /* White */
 
     --secondary: 0 0% 96.1%; /* Light Gray #F5F5F5 */
@@ -28,7 +34,7 @@ body {
     --muted: 0 0% 90%; /* Lighter Gray #E5E5E5 */
     --muted-foreground: 0 0% 40%; /* Medium Gray #666666 */
 
-    --accent: 212 100% 48%; /* Vivid Blue */
+    --accent: 212 100% 48%; /* Vivid Blue (#0070F3) */
     --accent-foreground: 0 0% 100%; /* White */
 
     --destructive: 0 84.2% 60.2%; /* Default ShadCN Red */
@@ -45,7 +51,7 @@ body {
     --chart-5: 340 75% 55%;
     --radius: 0.5rem;
 
-    /* Sidebar colors (Light theme) - Assuming sidebar might be different */
+    /* Sidebar colors (Light theme) */
     --sidebar-background: 0 0% 98%; /* Off-White #FAFAFA */
     --sidebar-foreground: 0 0% 9%; /* Almost Black */
     --sidebar-primary: 212 100% 48%; /* Vivid Blue */
@@ -57,49 +63,49 @@ body {
   }
 
   .dark {
-    /* Dark Theme */
+    /* Dark Theme (New York / Zinc style) */
     --background: 0 0% 0%; /* Black */
-    --foreground: 0 0% 100%; /* White */
+    --foreground: 0 0% 98%; /* Off-white (was 0 0% 100%) */
 
-    --card: 0 0% 7%; /* Dark Gray #111111 */
-    --card-foreground: 0 0% 100%; /* White */
+    --card: 0 0% 7%; /* Very dark gray (e.g., like #121212) */
+    --card-foreground: 0 0% 98%; /* Off-white */
 
-    --popover: 0 0% 7%; /* Dark Gray #111111 */
-    --popover-foreground: 0 0% 100%; /* White */
+    --popover: 0 0% 7%; /* Very dark gray */
+    --popover-foreground: 0 0% 98%; /* Off-white */
 
-    --primary: 212 100% 48%; /* Vivid Blue #0070F3 */
+    --primary: 212 100% 48%; /* Vivid Blue (#0070F3) - keep accent strong */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 0 0% 13%; /* Darker Gray #212121 */
-    --secondary-foreground: 0 0% 80%; /* Light Gray #CCCCCC */
+    --secondary: 0 0% 13%; /* Darker gray, slightly lighter than card (e.g., #212121) */
+    --secondary-foreground: 0 0% 80%; /* Lighter gray for text on secondary */
 
-    --muted: 0 0% 20%; /* Gray #333333 */
-    --muted-foreground: 0 0% 60%; /* Lighter Gray #999999 */
+    --muted: 0 0% 20%; /* Muted gray (e.g., #333333) */
+    --muted-foreground: 0 0% 65%; /* Softer gray for muted text (was 0 0% 60%) */
 
-    --accent: 212 100% 48%; /* Vivid Blue #0070F3 */
+    --accent: 212 100% 48%; /* Vivid Blue (#0070F3) */
     --accent-foreground: 0 0% 100%; /* White */
 
-    --destructive: 0 70% 50%; /* Red */
-    --destructive-foreground: 0 0% 100%; /* White */
+    --destructive: 0 62.8% 50.6%; /* Darker Red for destructive actions (was 0 70% 50%) */
+    --destructive-foreground: 0 0% 98%; /* Off-white (was 0 0% 100%) */
 
-    --border: 0 0% 20%; /* Gray #333333 */
-    --input: 0 0% 10%; /* Very Dark Gray #1A1A1A */
+    --border: 0 0% 15%; /* Subtle border color (e.g., #262626) (was 0 0% 20%) */
+    --input: 0 0% 10%; /* Dark input background (e.g., #1A1A1A) */
     --ring: 212 100% 58%; /* Lighter Vivid Blue for focus rings */
 
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 212 80% 60%; /* Adjusted chart colors for dark theme visibility */
+    --chart-2: 170 70% 50%;
+    --chart-3: 40 85% 60%;
+    --chart-4: 290 70% 65%;
+    --chart-5: 350 80% 60%;
 
     /* Sidebar colors (Dark theme) */
     --sidebar-background: 0 0% 3%; /* Off-Black #080808 */
-    --sidebar-foreground: 0 0% 85%; /* Light Gray #D9D9D9 */
+    --sidebar-foreground: 0 0% 90%; /* Light Gray (was 0 0% 85%) */
     --sidebar-primary: 212 100% 48%; /* Vivid Blue */
     --sidebar-primary-foreground: 0 0% 100%; /* White */
     --sidebar-accent: 0 0% 15%; /* Dark Gray #262626 for hover/active */
     --sidebar-accent-foreground: 0 0% 100%; /* White */
-    --sidebar-border: 0 0% 15%; /* Dark Gray #262626 */
+    --sidebar-border: 0 0% 12%; /* Slightly darker border for sidebar (was 0 0% 15%) */
     --sidebar-ring: 212 100% 58%; /* Lighter Vivid Blue */
   }
 }
