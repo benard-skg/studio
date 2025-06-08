@@ -56,6 +56,10 @@ export default function AdminPage() {
   const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
+    // Log the keys as seen by the client-side code
+    console.log("AdminPage: NEXT_PUBLIC_JSONBIN_MASTER_KEY:", MASTER_KEY);
+    console.log("AdminPage: NEXT_PUBLIC_JSONBIN_BIN_ID:", BIN_ID);
+
     if (!MASTER_KEY || !BIN_ID) {
       console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your .env.local file.");
       toast({
@@ -70,7 +74,8 @@ export default function AdminPage() {
     } else {
       fetchSubmissions();
     }
-  }, [toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast]); // Removed MASTER_KEY and BIN_ID from deps as they are constants at module level
 
   const fetchSubmissions = async () => {
     if (!isConfigured) return;
