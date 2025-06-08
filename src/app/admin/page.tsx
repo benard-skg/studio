@@ -14,13 +14,16 @@ import {
   TableCaption,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Square, CheckSquare } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface Submission {
   name: string;
   email: string;
   message: string;
-  submittedAt: string; 
+  submittedAt: string;
+  seen?: boolean;
+  lastSeen?: string;
 }
 
 const MASTER_KEY = "$2a$10$7xhu0Fd2a/Cpg75U5hPseOEk1jdgrzJOktPZRjkZZ9k4ps8RBj2/S";
@@ -31,6 +34,7 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastLoadedTime, setLastLoadedTime] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -41,7 +45,6 @@ export default function AdminPage() {
           method: 'GET',
           headers: {
             'X-Master-Key': MASTER_KEY,
-            // 'X-Bin-Meta': 'false', // Add this if you only want the raw data without metadata wrapper
           },
         });
 
@@ -65,7 +68,14 @@ export default function AdminPage() {
           setIsLoading(false);
           return;
         }
-        setSubmissions(submissionsArray);
+        // Initialize seen status for each submission
+        const initializedSubmissions = submissionsArray.map(sub => ({
+          ...sub,
+          seen: sub.seen || false, // Default to false if not present
+          lastSeen: sub.lastSeen,
+        }));
+        setSubmissions(initializedSubmissions);
+        setLastLoadedTime(format(new Date(), "PPP p")); // PPP p -> Jan 1st, 2023 at 12:00:00 PM
 
       } catch (err) {
         console.error(err);
@@ -78,11 +88,25 @@ export default function AdminPage() {
     fetchSubmissions();
   }, []);
 
+  const handleToggleSeen = (index: number) => {
+    setSubmissions(prevSubmissions => {
+      const newSubmissions = [...prevSubmissions];
+      const submission = newSubmissions[index];
+      submission.seen = !submission.seen;
+      if (submission.seen) {
+        submission.lastSeen = new Date().toISOString();
+      } else {
+        submission.lastSeen = undefined; 
+      }
+      return newSubmissions;
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-10 text-center">
+        <header className="mb-6 text-center">
           <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
             Admin - Contact Submissions
           </h1>
@@ -91,23 +115,41 @@ export default function AdminPage() {
           </p>
         </header>
 
+        {lastLoadedTime && !isLoading && (
+          <div className="mb-6 text-center">
+            <p className="font-headline font-bold text-xl md:text-2xl text-foreground">
+              Data last loaded: {lastLoadedTime}
+            </p>
+          </div>
+        )}
+        {isLoading && !lastLoadedTime && (
+           <div className="mb-6 text-center">
+            <Skeleton className="h-8 w-1/2 mx-auto" />
+          </div>
+        )}
+
+
         {isLoading && (
           <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
             <Table>
               <TableCaption className="py-4 font-body text-sm text-muted-foreground bg-card border-t border-border">
-                <Skeleton className="h-4 w-1/3 mx-auto" /> {/* Caption placeholder */}
+                <Skeleton className="h-4 w-1/3 mx-auto" />
               </TableCaption>
               <TableHeader className="bg-card/50">
                 <TableRow>
+                  <TableHead className="font-headline text-card-foreground w-[5%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[20%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[45%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground text-right w-[20%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[30%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground text-right w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[...Array(5)].map((_, index) => (
                   <TableRow key={index} className="border-b border-border last:border-b-0">
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
@@ -141,22 +183,40 @@ export default function AdminPage() {
               </TableCaption>
               <TableHeader className="bg-card/50">
                 <TableRow>
+                  <TableHead className="font-headline text-card-foreground w-[5%] text-center">Seen</TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]">Name</TableHead>
                   <TableHead className="font-headline text-card-foreground w-[20%]">Email</TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[45%]">Message</TableHead>
-                  <TableHead className="font-headline text-card-foreground text-right w-[20%]">Submitted At</TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[30%]">Message</TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[15%]">Last Seen</TableHead>
+                  <TableHead className="font-headline text-card-foreground text-right w-[15%]">Submitted At</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {submissions.map((submission, index) => (
                   <TableRow key={index} className="hover:bg-muted/20 border-b border-border last:border-b-0">
+                    <TableCell className="py-3 px-4 text-center">
+                      <button
+                        onClick={() => handleToggleSeen(index)}
+                        aria-label={submission.seen ? "Mark as unseen" : "Mark as seen"}
+                        className="p-1 rounded-md hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        {submission.seen ? (
+                          <CheckSquare className="h-5 w-5 text-accent" />
+                        ) : (
+                          <Square className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </button>
+                    </TableCell>
                     <TableCell className="font-body font-medium py-3 px-4">{submission.name}</TableCell>
                     <TableCell className="font-body py-3 px-4">{submission.email}</TableCell>
-                    <TableCell className="font-body py-3 px-4 max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl truncate hover:whitespace-normal hover:overflow-visible" title={submission.message}>
+                    <TableCell className="font-body py-3 px-4 max-w-xs md:max-w-sm lg:max-w-md xl:max-w-lg truncate hover:whitespace-normal hover:overflow-visible" title={submission.message}>
                         {submission.message}
                     </TableCell>
+                    <TableCell className="font-body py-3 px-4">
+                      {submission.lastSeen ? format(new Date(submission.lastSeen), 'PP p') : 'N/A'}
+                    </TableCell>
                     <TableCell className="font-body text-right py-3 px-4">
-                      {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'N/A'}
+                      {submission.submittedAt ? format(new Date(submission.submittedAt), 'PP p') : 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))}
