@@ -13,7 +13,8 @@ import {
   TableCell,
   TableCaption,
 } from '@/components/ui/table';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
 
 interface Submission {
   name: string;
@@ -52,9 +53,6 @@ export default function AdminPage() {
 
         const responseData = await response.json();
         
-        // Determine where the array of submissions is located in the response
-        // If contact form PUTs an array, /latest often returns the array directly.
-        // If JSONBin wraps it in a 'record' property (e.g. for older bins or certain operations):
         let submissionsArray: Submission[] = [];
         if (responseData && Array.isArray(responseData.record)) {
           submissionsArray = responseData.record;
@@ -94,13 +92,34 @@ export default function AdminPage() {
         </header>
 
         {isLoading && (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-accent" />
-            <p className="ml-4 font-body text-xl">Loading submissions...</p>
+          <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
+            <Table>
+              <TableCaption className="py-4 font-body text-sm text-muted-foreground bg-card border-t border-border">
+                <Skeleton className="h-4 w-1/3 mx-auto" /> {/* Caption placeholder */}
+              </TableCaption>
+              <TableHeader className="bg-card/50">
+                <TableRow>
+                  <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[20%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[45%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground text-right w-[20%]"><Skeleton className="h-5 w-full" /></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(5)].map((_, index) => (
+                  <TableRow key={index} className="border-b border-border last:border-b-0">
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
 
-        {error && (
+        {error && !isLoading && (
           <div className="flex flex-col items-center justify-center py-10 bg-destructive/10 border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Error Fetching Data</p>
