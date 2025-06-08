@@ -64,7 +64,7 @@ body {
 
   .dark {
     /* Dark Theme (New York / Zinc style) */
-    --background: 0 0% 0%; /* Black */
+    --background: 0 0% 3%; /* Very Dark Gray (Off-Black #080808) */
     --foreground: 0 0% 98%; /* Off-white (was 0 0% 100%) */
 
     --card: 0 0% 7%; /* Very dark gray (e.g., like #121212) */
