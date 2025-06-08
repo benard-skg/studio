@@ -56,6 +56,8 @@ export default function AdminPage() {
   const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
+    // console.log("AdminPage: NEXT_PUBLIC_JSONBIN_ACCESS_KEY:", ACCESS_KEY);
+    // console.log("AdminPage: NEXT_PUBLIC_JSONBIN_BIN_ID:", BIN_ID);
     if (!ACCESS_KEY || !BIN_ID) {
       console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_ACCESS_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
       toast({
@@ -71,12 +73,17 @@ export default function AdminPage() {
       fetchSubmissions();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]); 
+  }, []); 
 
   const fetchSubmissions = async () => {
     if (!isConfigured) return;
     setIsLoading(true);
     setError(null);
+
+    console.log(
+      `fetchSubmissions: Attempting to fetch with Access Key: ${ACCESS_KEY ? ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${BIN_ID}`
+    );
+
     try {
       const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
         method: 'GET',
@@ -133,6 +140,9 @@ export default function AdminPage() {
       return;
     }
     setIsSaving(true);
+    console.log(
+      `persistSubmissions: Attempting to save with Access Key: ${ACCESS_KEY ? ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${BIN_ID}`
+    );
     try {
       const putResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
         method: 'PUT',
