@@ -94,9 +94,61 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      typography: ({ theme }: { theme: (path: string) => string }) => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-body': theme('colors.foreground / 1'),
+            '--tw-prose-headings': theme('colors.foreground / 1'),
+            '--tw-prose-lead': theme('colors.muted.foreground / 1'),
+            '--tw-prose-links': theme('colors.accent.DEFAULT / 1'),
+            '--tw-prose-bold': theme('colors.foreground / 1'),
+            '--tw-prose-counters': theme('colors.muted.foreground / 1'),
+            '--tw-prose-bullets': theme('colors.muted.foreground / 1'),
+            '--tw-prose-hr': theme('colors.border / 1'),
+            '--tw-prose-quotes': theme('colors.foreground / 1'),
+            '--tw-prose-quote-borders': theme('colors.accent.DEFAULT / 1'),
+            '--tw-prose-captions': theme('colors.muted.foreground / 1'),
+            '--tw-prose-code': theme('colors.foreground / 1'),
+            '--tw-prose-pre-code': theme('colors.foreground / 1'),
+            '--tw-prose-pre-bg': theme('colors.muted.DEFAULT / 0.5'),
+            '--tw-prose-th-borders': theme('colors.border / 1'),
+            '--tw-prose-td-borders': theme('colors.border / 1'),
+            '--tw-prose-invert-body': theme('colors.foreground / 1'), // Inverted for dark mode
+            '--tw-prose-invert-headings': theme('colors.foreground / 1'),
+            '--tw-prose-invert-lead': theme('colors.muted.foreground / 1'),
+            '--tw-prose-invert-links': theme('colors.accent.DEFAULT / 1'),
+            '--tw-prose-invert-bold': theme('colors.foreground / 1'),
+            '--tw-prose-invert-counters': theme('colors.muted.foreground / 1'),
+            '--tw-prose-invert-bullets': theme('colors.muted.foreground / 1'),
+            '--tw-prose-invert-hr': theme('colors.border / 1'),
+            '--tw-prose-invert-quotes': theme('colors.foreground / 1'),
+            '--tw-prose-invert-quote-borders': theme('colors.accent.DEFAULT / 1'),
+            '--tw-prose-invert-captions': theme('colors.muted.foreground / 1'),
+            '--tw-prose-invert-code': theme('colors.foreground / 1'),
+            '--tw-prose-invert-pre-code': theme('colors.foreground / 1'),
+            '--tw-prose-invert-pre-bg': theme('colors.muted.DEFAULT / 0.5'),
+            '--tw-prose-invert-th-borders': theme('colors.border / 1'),
+            '--tw-prose-invert-td-borders': theme('colors.border / 1'),
+            h1: {
+                fontFamily: theme('fontFamily.headline'),
+            },
+            h2: {
+                fontFamily: theme('fontFamily.headline'),
+            },
+            h3: {
+                fontFamily: theme('fontFamily.headline'),
+            },
+            h4: {
+                fontFamily: theme('fontFamily.headline'),
+            },
+            // Add more prose customization here if needed
+          },
+        },
+      }),
     },
   },
   plugins: [
     require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
   ],
 } satisfies Config;
