@@ -48,10 +48,14 @@ export default function ContactSection() {
   const NEXT_PUBLIC_JSONBIN_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_BIN_ID;
 
   useEffect(() => {
+    console.log("ContactSection: NEXT_PUBLIC_JSONBIN_ACCESS_KEY:", NEXT_PUBLIC_JSONBIN_ACCESS_KEY ? NEXT_PUBLIC_JSONBIN_ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED');
+    console.log("ContactSection: NEXT_PUBLIC_JSONBIN_BIN_ID:", NEXT_PUBLIC_JSONBIN_BIN_ID || 'UNDEFINED');
     if (!NEXT_PUBLIC_JSONBIN_ACCESS_KEY || NEXT_PUBLIC_JSONBIN_ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || 
         !NEXT_PUBLIC_JSONBIN_BIN_ID || NEXT_PUBLIC_JSONBIN_BIN_ID === 'YOUR_JSONBIN_BIN_ID') {
       setIsConfigured(false);
       console.warn("Contact form: JSONBin.io Access Key or Bin ID is not configured or is using placeholder values.");
+    } else {
+      setIsConfigured(true);
     }
   }, [NEXT_PUBLIC_JSONBIN_ACCESS_KEY, NEXT_PUBLIC_JSONBIN_BIN_ID]);
 
@@ -76,6 +80,7 @@ export default function ContactSection() {
     setIsSubmitting(true);
 
     try {
+      console.log(`ContactSection onSubmit: Attempting to fetch with Access Key: ${NEXT_PUBLIC_JSONBIN_ACCESS_KEY ? NEXT_PUBLIC_JSONBIN_ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${NEXT_PUBLIC_JSONBIN_BIN_ID || 'UNDEFINED'}`);
       // 1. Fetch current submissions
       const getResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}/latest`, {
         method: 'GET',
@@ -87,11 +92,8 @@ export default function ContactSection() {
       let submissions: Submission[] = [];
       if (getResponse.ok) {
         const data = await getResponse.json();
-        // Ensure data.record is an array, default to empty array if not or if it's just an empty object
         submissions = Array.isArray(data.record) ? data.record : (typeof data.record === 'object' && Object.keys(data.record).length === 0 ? [] : []);
       } else if (getResponse.status === 404) {
-        // Bin might be empty or not exist yet (though it should exist if ID is correct)
-        // We can proceed with an empty submissions array
         console.warn("JSONBin: Bin not found or empty, will create/overwrite with new data.");
       } else {
         const errorText = await getResponse.text();
@@ -107,12 +109,13 @@ export default function ContactSection() {
       const updatedSubmissions = [...submissions, newSubmission];
 
       // 3. Persist updated submissions
+      console.log(`ContactSection onSubmit: Attempting to PUT with Access Key: ${NEXT_PUBLIC_JSONBIN_ACCESS_KEY ? NEXT_PUBLIC_JSONBIN_ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${NEXT_PUBLIC_JSONBIN_BIN_ID || 'UNDEFINED'}`);
       const putResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
-          'X-Bin-Versioning': 'false', // Disable versioning to overwrite, or set to true if you want versions
+          'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedSubmissions),
       });
@@ -171,7 +174,7 @@ export default function ContactSection() {
           <div className="max-w-2xl mx-auto my-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center">
             <AlertCircle className="h-5 w-5 mr-3" />
             <p className="font-body text-sm">
-              The contact form submission is currently not configured. Please contact the administrator.
+              The contact form submission is currently not configured. Please contact the administrator or ensure API keys are set in .env.local and the server is restarted.
             </p>
           </div>
         )}
