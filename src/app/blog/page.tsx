@@ -10,8 +10,8 @@ import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog - kgchess',
-  description: 'Read the latest articles, news, and insights from kgchess.',
+  title: 'Blog - LCA',
+  description: 'Read the latest articles, news, and insights from LCA.',
 };
 
 // Revalidate this page every hour

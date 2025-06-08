@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: 'kgchess - Elevate Your Game',
+  title: 'LCA - Elevate Your Game',
   description: 'Professional chess coaching to help you master strategy and achieve your chess goals.',
 };
 

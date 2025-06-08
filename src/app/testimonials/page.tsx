@@ -5,8 +5,8 @@ import TestimonialsSection from '@/components/sections/testimonials-section';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Student Testimonials - kgchess',
-  description: 'Read what students are saying about their experience and improvement with kgchess coaching.',
+  title: 'Student Testimonials - LCA',
+  description: 'Read what students are saying about their experience and improvement with LCA coaching.',
 };
 
 export default function TestimonialsPage() {

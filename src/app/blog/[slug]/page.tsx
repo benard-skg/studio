@@ -30,7 +30,7 @@ export async function generateMetadata(
 
   if (!post) {
     return {
-      title: 'Post Not Found - kgchess Blog',
+      title: 'Post Not Found - LCA Blog',
       description: 'The blog post you are looking for could not be found.',
     };
   }
@@ -38,7 +38,7 @@ export async function generateMetadata(
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: `${post.title} - kgchess Blog`,
+    title: `${post.title} - LCA Blog`,
     description: post.excerpt,
     openGraph: {
       title: post.title,

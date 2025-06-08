@@ -13,7 +13,7 @@ export default function Footer() {
     <footer className="py-8 bg-secondary text-secondary-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p className="font-body text-sm">
-          &copy; {currentYear} kgchess. All rights reserved.
+          &copy; {currentYear} LCA. All rights reserved.
         </p>
       </div>
     </footer>

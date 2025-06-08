@@ -5,8 +5,8 @@ import CoachProfileSection from '@/components/sections/coach-profile-section';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About Coach K.G. - kgchess',
-  description: 'Learn more about Certified Chess Coach & Strategist K.G. and their approach to chess coaching.',
+  title: 'About Our Coaches - LCA',
+  description: 'Learn more about the Certified Chess Coaches & Strategists at LCA and their approach to chess coaching.',
 };
 
 export default function AboutPage() {

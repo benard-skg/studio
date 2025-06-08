@@ -41,7 +41,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center space-x-2 text-2xl font-headline font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
             <Crown className="h-7 w-7 text-accent" />
-            <span>kgchess</span>
+            <span>LCA</span>
           </Link>
 
           <div className="flex items-center space-x-2">
@@ -69,7 +69,7 @@ export default function Navbar() {
                     <SheetTitle asChild>
                        <Link href="/" className="flex items-center space-x-2 text-xl font-headline font-extrabold tracking-tighter leading-tight">
                         <Crown className="h-6 w-6 text-accent" />
-                        <span>kgchess</span>
+                        <span>LCA</span>
                       </Link>
                     </SheetTitle>
                   </SheetHeader>

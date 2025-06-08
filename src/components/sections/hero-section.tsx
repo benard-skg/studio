@@ -21,7 +21,7 @@ export default function HeroSection() {
           Master Your Chess Game
         </h1>
         <p className="font-body text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-          Unlock your potential with personalized chess coaching from kgchess. Strategy, tactics, and mindset – all tailored to your success.
+          Unlock your potential with personalized chess coaching from LCA. Strategy, tactics, and mindset – all tailored to your success.
         </p>
         <div className="flex flex-col space-y-4 max-w-xs mx-auto sm:max-w-sm">
           <Button asChild size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">

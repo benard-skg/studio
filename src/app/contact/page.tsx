@@ -7,8 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Contact Us - kgchess',
-  description: 'Get in touch with kgchess for coaching, inquiries, or to book a class.',
+  title: 'Contact Us - LCA',
+  description: 'Get in touch with LCA for coaching, inquiries, or to book a class.',
 };
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -17,8 +17,9 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const whatsappNumber = "+27834544863";
-const cellNumber = "+27834544862";
+const whatsappNumberPrimary = "+27834544862"; // Updated WhatsApp number
+const cellNumberPrimary = "+27834544862";
+const cellNumberCoaches = "+27728281063";
 const emailAddress = "bensekgwari@gmail.com";
 
 export default function ContactPage() {
@@ -38,13 +39,13 @@ export default function ContactPage() {
           <div className="mb-8">
             <h2 className="font-headline text-2xl font-bold mb-3 text-accent">Chat on WhatsApp</h2>
             <a
-              href={`https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=Hi%20kgchess,%20I'd%20like%20to%20inquire%20about...`}
+              href={`https://wa.me/${whatsappNumberPrimary.replace(/\D/g, '')}?text=Hi%20LCA,%20I'd%20like%20to%20inquire%20about...`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
             >
               <WhatsAppIcon className="h-6 w-6 mr-2" />
-              Message Coach K.G.
+              Message Our Coaches
             </a>
           </div>
 
@@ -53,14 +54,20 @@ export default function ContactPage() {
           <div className="mb-8 space-y-4">
             <h2 className="font-headline text-2xl font-bold mb-3 text-accent">Direct Contact</h2>
             <div className="flex flex-col sm:flex-row sm:justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6">
-              <a href={`tel:${cellNumber}`} className="font-body text-lg hover:text-accent transition-colors flex items-center">
+              <a href={`tel:${cellNumberPrimary}`} className="font-body text-lg hover:text-accent transition-colors flex items-center">
                 <Phone className="h-5 w-5 mr-2 text-muted-foreground" />
-                Cell: {cellNumber}
+                Primary Line: {cellNumberPrimary}
               </a>
-              <a href={`mailto:${emailAddress}`} className="font-body text-lg hover:text-accent transition-colors flex items-center">
-                <Mail className="h-5 w-5 mr-2 text-muted-foreground" />
-                Email: {emailAddress}
+              <a href={`tel:${cellNumberCoaches}`} className="font-body text-lg hover:text-accent transition-colors flex items-center">
+                <Phone className="h-5 w-5 mr-2 text-muted-foreground" />
+                Instructors: {cellNumberCoaches}
               </a>
+            </div>
+             <div className="mt-4">
+                <a href={`mailto:${emailAddress}`} className="font-body text-lg hover:text-accent transition-colors flex items-center justify-center">
+                    <Mail className="h-5 w-5 mr-2 text-muted-foreground" />
+                    Email: {emailAddress}
+                </a>
             </div>
           </div>
 
@@ -72,7 +79,7 @@ export default function ContactPage() {
               Or join us for a class on Tuesdays, Wednesdays, and Thursdays between 14:00 and 17:30.
             </p>
             <p className="font-body text-lg mt-2">
-              Contact Coach K.G. <Link href={`tel:${cellNumber}`} className="text-accent hover:underline">{'\u{1F446}\u{1F3FF}'}</Link> to arrange.
+              Contact the Coaches <Link href={`tel:${cellNumberPrimary}`} className="text-accent hover:underline">{'\u{1F446}\u{1F3FF}'}</Link> to arrange.
             </p>
           </div>
 

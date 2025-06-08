@@ -5,8 +5,8 @@ import ClassShowcaseSection from '@/components/sections/class-showcase-section';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Coaching Classes - kgchess',
-  description: 'Explore the chess coaching classes offered by kgchess, tailored for different skill levels.',
+  title: 'Coaching Classes - LCA',
+  description: 'Explore the chess coaching classes offered by LCA, tailored for different skill levels.',
 };
 
 export default function ClassesPage() {
