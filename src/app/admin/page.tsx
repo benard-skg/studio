@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface Submission {
-  id: string; // Assuming submissions might have unique IDs from JSONBin or generate one
+  id: string; 
   name: string;
   email: string;
   message: string;
@@ -40,8 +40,8 @@ interface Submission {
   lastSeen?: string;
 }
 
-const MASTER_KEY = "$2a$10$7xhu0Fd2a/Cpg75U5hPseOEk1jdgrzJOktPZRjkZZ9k4ps8RBj2/S";
-const BIN_ID = "68407aa98561e97a501fa67b";
+const MASTER_KEY = process.env.NEXT_PUBLIC_JSONBIN_MASTER_KEY;
+const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_BIN_ID;
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
 
 export default function AdminPage() {
@@ -53,18 +53,34 @@ export default function AdminPage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { toast } = useToast();
   const [deleteCandidateIndex, setDeleteCandidateIndex] = useState<number | null>(null);
+  const [isConfigured, setIsConfigured] = useState(true);
 
-  // Helper to generate a simple unique ID for submissions if they don't have one
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  useEffect(() => {
+    if (!MASTER_KEY || !BIN_ID) {
+      console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your .env.local file.");
+      toast({
+        title: "Configuration Error",
+        description: "Admin features for submissions are disabled. API keys for JSONBin.io are missing.",
+        variant: "destructive",
+        duration: Infinity,
+      });
+      setIsConfigured(false);
+      setIsLoading(false);
+      setError("Application is not configured to fetch submissions.");
+    } else {
+      fetchSubmissions();
+    }
+  }, [toast]);
 
   const fetchSubmissions = async () => {
+    if (!isConfigured) return;
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
         method: 'GET',
         headers: {
-          'X-Master-Key': MASTER_KEY,
+          'X-Master-Key': MASTER_KEY!,
         },
       });
 
@@ -76,7 +92,7 @@ export default function AdminPage() {
 
       const responseData = await response.json();
       
-      let submissionsArray: Omit<Submission, 'id'>[] = []; // Expect array of submissions without id initially
+      let submissionsArray: Omit<Submission, 'id'>[] = []; 
       if (responseData && Array.isArray(responseData.record)) {
         submissionsArray = responseData.record;
       } else if (Array.isArray(responseData)) {
@@ -90,7 +106,7 @@ export default function AdminPage() {
       }
       const initializedSubmissions = submissionsArray.map((sub, index) => ({
         ...sub,
-        id: (sub as Submission).id || `${new Date(sub.submittedAt).getTime()}-${index}`, // Ensure an ID
+        id: (sub as Submission).id || `${new Date(sub.submittedAt).getTime()}-${index}`, 
         seen: sub.seen || false,
         lastSeen: sub.lastSeen,
       }));
@@ -106,18 +122,22 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
-
   const persistSubmissions = async (updatedSubmissions: Submission[]) => {
+    if (!isConfigured) {
+       toast({
+        title: "Configuration Error",
+        description: "Cannot save changes. API keys for JSONBin.io are missing.",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsSaving(true);
     try {
       const putResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Master-Key': MASTER_KEY,
+          'X-Master-Key': MASTER_KEY!,
           'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedSubmissions),
@@ -181,7 +201,7 @@ export default function AdminPage() {
     const newSubmissions = submissions.filter((_, i) => i !== deleteCandidateIndex);
     setSubmissions(newSubmissions);
     setHasUnsavedChanges(true);
-    setDeleteCandidateIndex(null); // Close dialog
+    setDeleteCandidateIndex(null); 
     toast({
       title: "Submission Marked for Deletion",
       description: "Click 'Save Changes' to permanently delete.",
@@ -209,20 +229,20 @@ export default function AdminPage() {
           </div>
         )}
 
-        {lastUpdatedTime && !isLoading && (
+        {lastUpdatedTime && !isLoading && isConfigured && (
           <div className="mb-6 text-center">
             <p className="font-headline font-bold text-xl md:text-2xl text-foreground">
               Data last updated: {lastUpdatedTime}
             </p>
           </div>
         )}
-        {isLoading && !lastUpdatedTime && (
+        {isLoading && !lastUpdatedTime && isConfigured && (
            <div className="mb-6 text-center">
             <Skeleton className="h-8 w-1/2 mx-auto" />
           </div>
         )}
 
-        {isLoading && (
+        {isLoading && isConfigured && (
           <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
             <Table>
               <TableCaption className="py-4 font-body text-sm text-muted-foreground bg-card border-t border-border">
@@ -235,8 +255,8 @@ export default function AdminPage() {
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[25%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[10%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground text-right w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground text-center w-[10%]"><Skeleton className="h-5 w-full" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -256,24 +276,26 @@ export default function AdminPage() {
           </div>
         )}
 
-        {error && !isLoading && (
+        {error && (
           <div className="flex flex-col items-center justify-center py-10 bg-destructive/10 border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
-            <p className="font-headline text-2xl mb-2">Error Fetching Data</p>
+            <p className="font-headline text-2xl mb-2">Error Accessing Data</p>
             <p className="font-body text-center">{error}</p>
-            <Button onClick={fetchSubmissions} variant="destructive" className="mt-4">
-              Retry Fetch
-            </Button>
+            {isConfigured && (
+              <Button onClick={fetchSubmissions} variant="destructive" className="mt-4">
+                Retry Fetch
+              </Button>
+            )}
           </div>
         )}
 
-        {!isLoading && !error && submissions.length === 0 && (
+        {!isLoading && !error && submissions.length === 0 && isConfigured && (
           <div className="text-center py-12">
             <p className="font-body text-xl text-muted-foreground">No submissions found.</p>
           </div>
         )}
 
-        {!isLoading && !error && submissions.length > 0 && (
+        {!isLoading && !error && submissions.length > 0 && isConfigured && (
           <>
             <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
               <Table>
