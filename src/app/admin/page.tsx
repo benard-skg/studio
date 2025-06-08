@@ -14,12 +14,24 @@ import {
   TableCaption,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Square, CheckSquare, Loader2, Save } from 'lucide-react';
+import { AlertCircle, Square, CheckSquare, Loader2, Save, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Submission {
+  id: string; // Assuming submissions might have unique IDs from JSONBin or generate one
   name: string;
   email: string;
   message: string;
@@ -40,6 +52,10 @@ export default function AdminPage() {
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { toast } = useToast();
+  const [deleteCandidateIndex, setDeleteCandidateIndex] = useState<number | null>(null);
+
+  // Helper to generate a simple unique ID for submissions if they don't have one
+  const generateId = () => Math.random().toString(36).substr(2, 9);
 
   const fetchSubmissions = async () => {
     setIsLoading(true);
@@ -60,7 +76,7 @@ export default function AdminPage() {
 
       const responseData = await response.json();
       
-      let submissionsArray: Submission[] = [];
+      let submissionsArray: Omit<Submission, 'id'>[] = []; // Expect array of submissions without id initially
       if (responseData && Array.isArray(responseData.record)) {
         submissionsArray = responseData.record;
       } else if (Array.isArray(responseData)) {
@@ -72,14 +88,15 @@ export default function AdminPage() {
         setIsLoading(false);
         return;
       }
-      const initializedSubmissions = submissionsArray.map(sub => ({
+      const initializedSubmissions = submissionsArray.map((sub, index) => ({
         ...sub,
+        id: (sub as Submission).id || `${new Date(sub.submittedAt).getTime()}-${index}`, // Ensure an ID
         seen: sub.seen || false,
         lastSeen: sub.lastSeen,
       }));
       setSubmissions(initializedSubmissions);
       setLastUpdatedTime(format(new Date(), "PPP p"));
-      setHasUnsavedChanges(false); // Reset unsaved changes flag after fetching
+      setHasUnsavedChanges(false); 
 
     } catch (err) {
       console.error(err);
@@ -111,9 +128,9 @@ export default function AdminPage() {
           title: "Changes Saved",
           description: "Submission statuses saved successfully to JSONBin.io.",
         });
-        setSubmissions(updatedSubmissions); // Ensure local state matches persisted state
+        setSubmissions(updatedSubmissions); 
         setLastUpdatedTime(format(new Date(), "PPP p")); 
-        setHasUnsavedChanges(false); // Reset unsaved changes flag after successful save
+        setHasUnsavedChanges(false); 
       } else {
         const errorData = await putResponse.text();
         console.error("Failed to persist submissions to JSONBin.io:", putResponse.status, errorData);
@@ -126,14 +143,12 @@ export default function AdminPage() {
         description: error instanceof Error ? error.message : "Could not save changes to JSONBin.io. Please try again.",
         variant: "destructive",
       });
-      // Optionally, indicate that saving failed but keep local changes for user to retry
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleToggleSeen = (index: number) => {
-    // Create the new state based on the previous state
     const newSubmissions = submissions.map((sub, i) => {
       if (i === index) {
         const updatedSub = { ...sub };
@@ -148,7 +163,6 @@ export default function AdminPage() {
       return sub;
     });
     
-    // Optimistically update UI and mark that there are unsaved changes
     setSubmissions(newSubmissions);
     setHasUnsavedChanges(true);
   };
@@ -156,6 +170,24 @@ export default function AdminPage() {
   const handleSaveChanges = async () => {
     await persistSubmissions(submissions);
   };
+
+  const handleInitiateDelete = (index: number) => {
+    setDeleteCandidateIndex(index);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteCandidateIndex === null) return;
+
+    const newSubmissions = submissions.filter((_, i) => i !== deleteCandidateIndex);
+    setSubmissions(newSubmissions);
+    setHasUnsavedChanges(true);
+    setDeleteCandidateIndex(null); // Close dialog
+    toast({
+      title: "Submission Marked for Deletion",
+      description: "Click 'Save Changes' to permanently delete.",
+    });
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -200,15 +232,17 @@ export default function AdminPage() {
                 <TableRow>
                   <TableHead className="font-headline text-card-foreground w-[5%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[20%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[30%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                  <TableHead className="font-headline text-card-foreground text-right w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[25%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[10%]"><Skeleton className="h-5 w-full" /></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[...Array(5)].map((_, index) => (
                   <TableRow key={index} className="border-b border-border last:border-b-0">
+                    <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                     <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
@@ -250,24 +284,25 @@ export default function AdminPage() {
                   <TableRow>
                     <TableHead className="font-headline text-card-foreground w-[5%] text-center">Seen</TableHead>
                     <TableHead className="font-headline text-card-foreground w-[15%]">Name</TableHead>
-                    <TableHead className="font-headline text-card-foreground w-[20%]">Email</TableHead>
-                    <TableHead className="font-headline text-card-foreground w-[30%]">Message</TableHead>
+                    <TableHead className="font-headline text-card-foreground w-[15%]">Email</TableHead>
+                    <TableHead className="font-headline text-card-foreground w-[25%]">Message</TableHead>
                     <TableHead className="font-headline text-card-foreground w-[15%]">Last Seen</TableHead>
                     <TableHead className="font-headline text-card-foreground text-right w-[15%]">Submitted At</TableHead>
+                    <TableHead className="font-headline text-card-foreground text-center w-[10%]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {submissions.map((submission, index) => (
-                    <TableRow key={index} className="hover:bg-muted/20 border-b border-border last:border-b-0">
+                    <TableRow key={submission.id} className="hover:bg-muted/20 border-b border-border last:border-b-0">
                       <TableCell className="py-3 px-4 text-center">
                         <button
                           onClick={() => handleToggleSeen(index)}
                           aria-label={submission.seen ? "Mark as unseen" : "Mark as seen"}
                           className="p-1 rounded-md hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isSaving} // Disable toggle while saving
+                          disabled={isSaving}
                         >
                           {submission.seen ? (
-                            <CheckSquare className="h-5 w-5 text-accent" />
+                            <CheckSquare className="h-5 w-5 text-green-600 dark:text-green-500" />
                           ) : (
                             <Square className="h-5 w-5 text-muted-foreground" />
                           )}
@@ -283,6 +318,18 @@ export default function AdminPage() {
                       </TableCell>
                       <TableCell className="font-body text-right py-3 px-4">
                         {submission.submittedAt ? format(new Date(submission.submittedAt), 'PP p') : 'N/A'}
+                      </TableCell>
+                      <TableCell className="py-3 px-4 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleInitiateDelete(index)}
+                          disabled={isSaving}
+                          aria-label="Delete submission"
+                          className="text-destructive hover:text-destructive/80"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -311,10 +358,32 @@ export default function AdminPage() {
             </div>
           </>
         )}
+
+        {deleteCandidateIndex !== null && (
+          <AlertDialog open={deleteCandidateIndex !== null} onOpenChange={(open) => !open && setDeleteCandidateIndex(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will mark the submission for deletion. The deletion will be permanent once you click 'Save Changes'.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDeleteCandidateIndex(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleConfirmDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
       </main>
       <Footer />
     </div>
   );
 }
-
     

@@ -35,15 +35,17 @@ export default function AdminLoading() {
               <TableRow>
                 <TableHead className="font-headline text-card-foreground w-[5%]"><Skeleton className="h-5 w-full" /></TableHead>
                 <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground w-[20%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground w-[30%]"><Skeleton className="h-5 w-full" /></TableHead>
+                <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                <TableHead className="font-headline text-card-foreground w-[25%]"><Skeleton className="h-5 w-full" /></TableHead>
                 <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
                 <TableHead className="font-headline text-card-foreground text-right w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
+                <TableHead className="font-headline text-card-foreground text-center w-[10%]"><Skeleton className="h-5 w-full" /></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {[...Array(5)].map((_, index) => (
                 <TableRow key={index} className="border-b border-border last:border-b-0">
+                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                   <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                   <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
                   <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
