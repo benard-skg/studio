@@ -72,7 +72,7 @@ export default function ContactPage() {
               Or join us for a class on Tuesdays, Wednesdays, and Thursdays between 14:00 and 17:30.
             </p>
             <p className="font-body text-lg mt-2">
-              Contact Coach K.G. <Link href={`tel:${cellNumber}`} className="text-accent hover:underline">🤙</Link> to arrange.
+              Contact Coach K.G. <Link href={`tel:${cellNumber}`} className="text-accent hover:underline">{'\u{1F446}\u{1F3FF}'}</Link> to arrange.
             </p>
           </div>
 
@@ -82,5 +82,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    
