@@ -1,0 +1,87 @@
+
+import { createClient, type EntryCollection, type Entry } from 'contentful';
+import type { BlogPost, ContentfulAsset } from './types';
+import type { Document } from '@contentful/rich-text-types';
+
+// Ensure you have these in your .env.local file
+const spaceId = process.env.CONTENTFUL_SPACE_ID;
+const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN;
+
+if (!spaceId || !accessToken) {
+  throw new Error(
+    'Contentful Space ID or Access Token is not defined in .env.local'
+  );
+}
+
+const client = createClient({
+  space: spaceId,
+  accessToken: accessToken,
+});
+
+const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost => {
+  const featuredImage = blogPostEntry.fields.featuredImage as ContentfulAsset | undefined;
+  
+  return {
+    title: blogPostEntry.fields.title as string,
+    date: blogPostEntry.fields.date ? new Date(blogPostEntry.fields.date as string).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }) : new Date(blogPostEntry.sys.createdAt).toLocaleDateString('en-US', { // Fallback to createdAt
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+    excerpt: blogPostEntry.fields.excerpt as string,
+    slug: blogPostEntry.fields.slug as string,
+    featuredImage: featuredImage,
+    content: blogPostEntry.fields.content as Document, // Rich text
+  };
+};
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const entries: EntryCollection<any> = await client.getEntries({
+      content_type: 'blogPost', // Make sure this matches your Contentful content type ID for blog posts
+      order: ['-fields.date'], // Order by date, most recent first
+    });
+    return entries.items.map(parseContentfulBlogPost);
+  } catch (error) {
+    console.error('Error fetching blog posts from Contentful:', error);
+    return []; // Return empty array on error
+  }
+}
+
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  try {
+    const entries: EntryCollection<any> = await client.getEntries({
+      content_type: 'blogPost',
+      'fields.slug': slug,
+      limit: 1,
+    });
+    if (entries.items.length > 0) {
+      return parseContentfulBlogPost(entries.items[0]);
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching blog post with slug ${slug} from Contentful:`, error);
+    return null; // Return null on error
+  }
+}
+
+export async function getLatestBlogPost(): Promise<BlogPost | null> {
+  try {
+    const entries: EntryCollection<any> = await client.getEntries({
+      content_type: 'blogPost',
+      order: ['-fields.date'],
+      limit: 1,
+    });
+    if (entries.items.length > 0) {
+      return parseContentfulBlogPost(entries.items[0]);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching latest blog post from Contentful:', error);
+    return null;
+  }
+}

@@ -3,17 +3,23 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { blogPosts, type BlogPost } from '@/lib/blog-data';
+import { getLatestBlogPost, getBlogPosts } from '@/lib/contentful'; // Updated to get latest post
+import type { BlogPost } from '@/lib/types';
 import { Newspaper } from 'lucide-react';
 
-export default function BlogSection() {
-  // Display only the most recent blog post. Assuming posts are ordered oldest to newest.
-  const latestPost = blogPosts.length > 0 ? blogPosts[blogPosts.length - 1] : null;
-  const postsToDisplay = latestPost ? [latestPost] : [];
+// Revalidate this component's data periodically (e.g., every hour)
+export const revalidate = 3600;
 
-  if (postsToDisplay.length === 0) {
+export default async function BlogSection() {
+  const latestPost: BlogPost | null = await getLatestBlogPost();
+  // Fetch all posts to determine if "View All Posts" button should be shown
+  const allPosts: BlogPost[] = await getBlogPosts(); 
+
+  if (!latestPost) {
     return null; // Don't render the section if there are no posts
   }
+
+  const postsToDisplay = [latestPost]; // We only want to display the latest one here
 
   return (
     <section id="blog" className="py-16 md:py-24 bg-secondary">
@@ -30,19 +36,20 @@ export default function BlogSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
           {postsToDisplay.map((post) => (
-            <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 max-w-lg mx-auto"> {/* Centering for single card */}
-              <Link href={`/blog/${post.slug}`} className="block">
-                <div className="aspect-[16/9] relative w-full">
-                  <Image
-                    src={post.imageSrc}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    data-ai-hint={post.imageAiHint}
-                  />
-                </div>
-              </Link>
+            <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 max-w-lg mx-auto">
+              {post.featuredImage && (
+                <Link href={`/blog/${post.slug}`} className="block">
+                  <div className="aspect-[16/9] relative w-full">
+                    <Image
+                      src={`https:${post.featuredImage.fields.file.url}`}
+                      alt={post.featuredImage.fields.title || post.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                </Link>
+              )}
               <CardHeader>
                 <Link href={`/blog/${post.slug}`}>
                   <CardTitle className="font-headline text-xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
@@ -64,7 +71,7 @@ export default function BlogSection() {
             </Card>
           ))}
         </div>
-        {blogPosts.length > 1 && ( // Show button if there's more than one post in total
+        {allPosts.length > 1 && ( // Show button if there's more than one post in total
            <div className="text-center mt-12">
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
               <Link href="/blog">View All Posts</Link>

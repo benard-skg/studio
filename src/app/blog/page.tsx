@@ -5,7 +5,8 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { blogPosts, type BlogPost } from '@/lib/blog-data';
+import { getBlogPosts } from '@/lib/contentful';
+import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,7 +14,12 @@ export const metadata: Metadata = {
   description: 'Read the latest articles, news, and insights from kgchess.',
 };
 
-export default function BlogIndexPage() {
+// Revalidate this page every hour
+export const revalidate = 3600; 
+
+export default async function BlogIndexPage() {
+  const blogPosts: BlogPost[] = await getBlogPosts();
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
@@ -35,18 +41,19 @@ export default function BlogIndexPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
             {blogPosts.map((post) => (
               <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden">
-                <Link href={`/blog/${post.slug}`} className="block">
-                  <div className="aspect-[16/9] relative w-full">
-                    <Image
-                      src={post.imageSrc}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      data-ai-hint={post.imageAiHint}
-                    />
-                  </div>
-                </Link>
+                {post.featuredImage && (
+                  <Link href={`/blog/${post.slug}`} className="block">
+                    <div className="aspect-[16/9] relative w-full">
+                      <Image
+                        src={`https:${post.featuredImage.fields.file.url}`}
+                        alt={post.featuredImage.fields.title || post.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                  </Link>
+                )}
                 <CardHeader>
                   <Link href={`/blog/${post.slug}`}>
                     <CardTitle className="font-headline text-xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
