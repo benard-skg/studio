@@ -14,7 +14,7 @@ import {
   TableCaption,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Square, CheckSquare, Loader2 } from 'lucide-react';
+import { AlertCircle, Square, CheckSquare, Loader2, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,8 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastLoadedTime, setLastLoadedTime] = useState<string | null>(null);
+  const [lastUpdatedTime, setLastUpdatedTime] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { toast } = useToast();
 
   const fetchSubmissions = async () => {
@@ -77,7 +78,8 @@ export default function AdminPage() {
         lastSeen: sub.lastSeen,
       }));
       setSubmissions(initializedSubmissions);
-      setLastLoadedTime(format(new Date(), "PPP p"));
+      setLastUpdatedTime(format(new Date(), "PPP p"));
+      setHasUnsavedChanges(false); // Reset unsaved changes flag after fetching
 
     } catch (err) {
       console.error(err);
@@ -106,13 +108,12 @@ export default function AdminPage() {
 
       if (putResponse.ok) {
         toast({
-          title: "Update Successful",
-          description: "Submission status saved to JSONBin.io.",
+          title: "Changes Saved",
+          description: "Submission statuses saved successfully to JSONBin.io.",
         });
-        // Optionally re-fetch or just trust the local state if PUT is source of truth now
-        // For simplicity, we'll trust local state is in sync after successful PUT
         setSubmissions(updatedSubmissions); // Ensure local state matches persisted state
-        setLastLoadedTime(format(new Date(), "PPP p")); // Update last loaded time as data changed
+        setLastUpdatedTime(format(new Date(), "PPP p")); 
+        setHasUnsavedChanges(false); // Reset unsaved changes flag after successful save
       } else {
         const errorData = await putResponse.text();
         console.error("Failed to persist submissions to JSONBin.io:", putResponse.status, errorData);
@@ -125,14 +126,13 @@ export default function AdminPage() {
         description: error instanceof Error ? error.message : "Could not save changes to JSONBin.io. Please try again.",
         variant: "destructive",
       });
-      // Optionally, revert local state to before the failed save attempt by re-fetching
-      // fetchSubmissions(); // This would revert optimistic update
+      // Optionally, indicate that saving failed but keep local changes for user to retry
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleToggleSeen = async (index: number) => {
+  const handleToggleSeen = (index: number) => {
     // Create the new state based on the previous state
     const newSubmissions = submissions.map((sub, i) => {
       if (i === index) {
@@ -148,11 +148,13 @@ export default function AdminPage() {
       return sub;
     });
     
-    // Optimistically update UI
+    // Optimistically update UI and mark that there are unsaved changes
     setSubmissions(newSubmissions);
-    
-    // Then persist this new state
-    await persistSubmissions(newSubmissions);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSaveChanges = async () => {
+    await persistSubmissions(submissions);
   };
 
   return (
@@ -175,14 +177,14 @@ export default function AdminPage() {
           </div>
         )}
 
-        {lastLoadedTime && !isLoading && (
+        {lastUpdatedTime && !isLoading && (
           <div className="mb-6 text-center">
             <p className="font-headline font-bold text-xl md:text-2xl text-foreground">
-              Data last updated: {lastLoadedTime}
+              Data last updated: {lastUpdatedTime}
             </p>
           </div>
         )}
-        {isLoading && !lastLoadedTime && (
+        {isLoading && !lastUpdatedTime && (
            <div className="mb-6 text-center">
             <Skeleton className="h-8 w-1/2 mx-auto" />
           </div>
@@ -238,57 +240,81 @@ export default function AdminPage() {
         )}
 
         {!isLoading && !error && submissions.length > 0 && (
-          <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
-            <Table>
-              <TableCaption className="py-4 font-body text-sm text-muted-foreground bg-card border-t border-border">
-                A list of contact form submissions ({submissions.length} entries).
-              </TableCaption>
-              <TableHeader className="bg-card/50">
-                <TableRow>
-                  <TableHead className="font-headline text-card-foreground w-[5%] text-center">Seen</TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[15%]">Name</TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[20%]">Email</TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[30%]">Message</TableHead>
-                  <TableHead className="font-headline text-card-foreground w-[15%]">Last Seen</TableHead>
-                  <TableHead className="font-headline text-card-foreground text-right w-[15%]">Submitted At</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {submissions.map((submission, index) => (
-                  <TableRow key={index} className="hover:bg-muted/20 border-b border-border last:border-b-0">
-                    <TableCell className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => handleToggleSeen(index)}
-                        aria-label={submission.seen ? "Mark as unseen" : "Mark as seen"}
-                        className="p-1 rounded-md hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={isSaving}
-                      >
-                        {submission.seen ? (
-                          <CheckSquare className="h-5 w-5 text-accent" />
-                        ) : (
-                          <Square className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </button>
-                    </TableCell>
-                    <TableCell className="font-body font-medium py-3 px-4">{submission.name}</TableCell>
-                    <TableCell className="font-body py-3 px-4">{submission.email}</TableCell>
-                    <TableCell className="font-body py-3 px-4 max-w-xs md:max-w-sm lg:max-w-md xl:max-w-lg truncate hover:whitespace-normal hover:overflow-visible" title={submission.message}>
-                        {submission.message}
-                    </TableCell>
-                    <TableCell className="font-body py-3 px-4">
-                      {submission.lastSeen ? format(new Date(submission.lastSeen), 'PP p') : 'N/A'}
-                    </TableCell>
-                    <TableCell className="font-body text-right py-3 px-4">
-                      {submission.submittedAt ? format(new Date(submission.submittedAt), 'PP p') : 'N/A'}
-                    </TableCell>
+          <>
+            <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
+              <Table>
+                <TableCaption className="py-4 font-body text-sm text-muted-foreground bg-card border-t border-border">
+                  A list of contact form submissions ({submissions.length} entries).
+                </TableCaption>
+                <TableHeader className="bg-card/50">
+                  <TableRow>
+                    <TableHead className="font-headline text-card-foreground w-[5%] text-center">Seen</TableHead>
+                    <TableHead className="font-headline text-card-foreground w-[15%]">Name</TableHead>
+                    <TableHead className="font-headline text-card-foreground w-[20%]">Email</TableHead>
+                    <TableHead className="font-headline text-card-foreground w-[30%]">Message</TableHead>
+                    <TableHead className="font-headline text-card-foreground w-[15%]">Last Seen</TableHead>
+                    <TableHead className="font-headline text-card-foreground text-right w-[15%]">Submitted At</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {submissions.map((submission, index) => (
+                    <TableRow key={index} className="hover:bg-muted/20 border-b border-border last:border-b-0">
+                      <TableCell className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => handleToggleSeen(index)}
+                          aria-label={submission.seen ? "Mark as unseen" : "Mark as seen"}
+                          className="p-1 rounded-md hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isSaving} // Disable toggle while saving
+                        >
+                          {submission.seen ? (
+                            <CheckSquare className="h-5 w-5 text-accent" />
+                          ) : (
+                            <Square className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </button>
+                      </TableCell>
+                      <TableCell className="font-body font-medium py-3 px-4">{submission.name}</TableCell>
+                      <TableCell className="font-body py-3 px-4">{submission.email}</TableCell>
+                      <TableCell className="font-body py-3 px-4 max-w-xs md:max-w-sm lg:max-w-md xl:max-w-lg truncate hover:whitespace-normal hover:overflow-visible" title={submission.message}>
+                          {submission.message}
+                      </TableCell>
+                      <TableCell className="font-body py-3 px-4">
+                        {submission.lastSeen ? format(new Date(submission.lastSeen), 'PP p') : 'N/A'}
+                      </TableCell>
+                      <TableCell className="font-body text-right py-3 px-4">
+                        {submission.submittedAt ? format(new Date(submission.submittedAt), 'PP p') : 'N/A'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-8 text-center">
+              <Button
+                onClick={handleSaveChanges}
+                disabled={isSaving || !hasUnsavedChanges}
+                size="lg"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
         )}
       </main>
       <Footer />
     </div>
   );
 }
+
+    
