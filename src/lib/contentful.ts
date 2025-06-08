@@ -31,8 +31,9 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
   const title = blogPostEntry.fields.Heading as string;
   const content = blogPostEntry.fields.MainTextContent as Document;
 
-  if (!title || !content) {
-    console.warn(`[Contentful] parseContentfulBlogPost: Entry ${entryId} is missing 'Heading' or 'MainTextContent'. Skipping. Title found: ${!!title}, Content found: ${!!content}`);
+  // More detailed check for missing essential fields
+  if (!blogPostEntry.fields.Heading || !blogPostEntry.fields.MainTextContent) {
+    console.warn(`[Contentful] parseContentfulBlogPost: Entry ${entryId} is missing required fields. 'Heading' field present: ${!!blogPostEntry.fields.Heading} (type: ${typeof blogPostEntry.fields.Heading}). 'MainTextContent' field present: ${!!blogPostEntry.fields.MainTextContent} (type: ${typeof blogPostEntry.fields.MainTextContent}). Skipping.`);
     return null;
   }
 
@@ -52,7 +53,7 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
   }
   
   const parsedPost: BlogPost = {
-    title: title,
+    title: title, // This assignment is safe if the check above passes
     date: new Date(blogPostEntry.sys.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -61,7 +62,7 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
     excerpt: (blogPostEntry.fields.excerpt as string) || '', // Fallback to empty string if excerpt field is missing
     slug: finalSlug, 
     featuredImage: featuredImage,
-    content: content,
+    content: content, // This assignment is safe if the check above passes
   };
   console.log(`[Contentful] parseContentfulBlogPost: Successfully parsed entry ID ${entryId}. Title: "${parsedPost.title}", Slug: "${parsedPost.slug}"`);
   return parsedPost;
