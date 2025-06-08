@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-// Revalidate this page every hour
-export const revalidate = 3600; 
+// Revalidate this page every 10 seconds
+export const revalidate = 10; 
 
 interface BlogPostPageProps {
   params: {
