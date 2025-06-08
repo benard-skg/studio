@@ -9,11 +9,12 @@ export default function HeroSection() {
       <Image
         src="https://i.ibb.co/qY9FppW0/Stock-Cake-Digital-Queen-Rising-1749057820.jpg"
         alt="Abstract chess background"
-        layout="fill"
-        objectFit="cover"
+        fill
+        style={{ objectFit: 'cover' }}
         className="opacity-30 dark:opacity-20"
         data-ai-hint="chess abstract"
         priority
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw" // Example sizes, adjust as needed
       />
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight mb-6">

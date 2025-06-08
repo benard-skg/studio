@@ -27,15 +27,16 @@ export default function CoachProfileSection() {
 
         <Card className="overflow-hidden shadow-xl">
           <div className="md:flex">
-            <div className="md:w-1/3">
+            <div className="md:w-1/3 relative h-64 md:h-auto"> {/* Added relative and min-height for parent of fill image */}
               <Image
                 src={coachData.imageSrc}
                 alt={coachData.imageAlt}
-                width={400}
-                height={400}
-                className="object-cover w-full h-full"
+                fill
+                style={{ objectFit: 'cover' }}
+                className="w-full h-full" // ClassName object-cover might be redundant with style but harmless
                 data-ai-hint={coachData.imageAiHint}
                 priority // Ensure coach image loads quickly
+                sizes="(max-width: 768px) 100vw, 33vw" // Example sizes, adjust as needed
               />
             </div>
             <div className="md:w-2/3">
