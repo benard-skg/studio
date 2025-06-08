@@ -45,7 +45,7 @@ export default function ContactSection() {
 
   useEffect(() => {
     if (!NEXT_PUBLIC_JSONBIN_MASTER_KEY || !NEXT_PUBLIC_JSONBIN_BIN_ID) {
-      console.error("JSONBin API keys are not configured for the contact form. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your .env.local file.");
+      console.error("JSONBin API keys are not configured for the contact form. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
       toast({
         title: "Configuration Error",
         description: "Contact form submissions are currently disabled due to missing configuration.",

@@ -56,12 +56,8 @@ export default function AdminPage() {
   const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
-    // Log the keys as seen by the client-side code
-    console.log("AdminPage: NEXT_PUBLIC_JSONBIN_MASTER_KEY:", MASTER_KEY);
-    console.log("AdminPage: NEXT_PUBLIC_JSONBIN_BIN_ID:", BIN_ID);
-
     if (!MASTER_KEY || !BIN_ID) {
-      console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your .env.local file.");
+      console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
       toast({
         title: "Configuration Error",
         description: "Admin features for submissions are disabled. API keys for JSONBin.io are missing.",
@@ -75,7 +71,7 @@ export default function AdminPage() {
       fetchSubmissions();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]); // Removed MASTER_KEY and BIN_ID from deps as they are constants at module level
+  }, [toast]); 
 
   const fetchSubmissions = async () => {
     if (!isConfigured) return;
@@ -112,8 +108,8 @@ export default function AdminPage() {
       const initializedSubmissions = submissionsArray.map((sub, index) => ({
         ...sub,
         id: (sub as Submission).id || `${new Date(sub.submittedAt).getTime()}-${index}`, 
-        seen: sub.seen || false,
-        lastSeen: sub.lastSeen,
+        seen: (sub as Submission).seen || false,
+        lastSeen: (sub as Submission).lastSeen,
       }));
       setSubmissions(initializedSubmissions);
       setLastUpdatedTime(format(new Date(), "PPP p"));
@@ -255,7 +251,7 @@ export default function AdminPage() {
               </TableCaption>
               <TableHeader className="bg-card/50">
                 <TableRow>
-                  <TableHead className="font-headline text-card-foreground w-[5%]"><Skeleton className="h-5 w-full" /></TableHead>
+                  <TableHead className="font-headline text-card-foreground w-[5%] text-center"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
                   <TableHead className="font-headline text-card-foreground w-[25%]"><Skeleton className="h-5 w-full" /></TableHead>
