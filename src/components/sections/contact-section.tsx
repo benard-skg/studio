@@ -32,7 +32,7 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const NEXT_PUBLIC_JSONBIN_MASTER_KEY = process.env.NEXT_PUBLIC_JSONBIN_MASTER_KEY;
+const NEXT_PUBLIC_JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 const NEXT_PUBLIC_JSONBIN_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_BIN_ID;
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
 
@@ -44,11 +44,11 @@ export default function ContactSection() {
   const whatsappNumber = "+27834544862"; 
 
   useEffect(() => {
-    if (!NEXT_PUBLIC_JSONBIN_MASTER_KEY || !NEXT_PUBLIC_JSONBIN_BIN_ID) {
-      console.error("JSONBin API keys are not configured for the contact form. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
+    if (!NEXT_PUBLIC_JSONBIN_ACCESS_KEY || !NEXT_PUBLIC_JSONBIN_BIN_ID) {
+      console.error("JSONBin API keys are not configured for the contact form. Please set NEXT_PUBLIC_JSONBIN_ACCESS_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
       toast({
         title: "Configuration Error",
-        description: "Contact form submissions are currently disabled due to missing configuration.",
+        description: "Contact form submissions are currently disabled due to missing configuration (Access Key or Bin ID).",
         variant: "destructive",
         duration: Infinity, 
       });
@@ -81,7 +81,7 @@ export default function ContactSection() {
       const getResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}/latest`, {
         method: 'GET',
         headers: {
-          'X-Master-Key': NEXT_PUBLIC_JSONBIN_MASTER_KEY!,
+          'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
         },
       });
 
@@ -111,7 +111,7 @@ export default function ContactSection() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Master-Key': NEXT_PUBLIC_JSONBIN_MASTER_KEY!,
+          'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
           'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedSubmissions),

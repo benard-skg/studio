@@ -40,7 +40,7 @@ interface Submission {
   lastSeen?: string;
 }
 
-const MASTER_KEY = process.env.NEXT_PUBLIC_JSONBIN_MASTER_KEY;
+const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_BIN_ID;
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
 
@@ -56,17 +56,17 @@ export default function AdminPage() {
   const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
-    if (!MASTER_KEY || !BIN_ID) {
-      console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_MASTER_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
+    if (!ACCESS_KEY || !BIN_ID) {
+      console.error("JSONBin API keys are not configured. Please set NEXT_PUBLIC_JSONBIN_ACCESS_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
       toast({
         title: "Configuration Error",
-        description: "Admin features for submissions are disabled. API keys for JSONBin.io are missing.",
+        description: "Admin features for submissions are disabled. API keys for JSONBin.io are missing (Access Key or Bin ID).",
         variant: "destructive",
         duration: Infinity,
       });
       setIsConfigured(false);
       setIsLoading(false);
-      setError("Application is not configured to fetch submissions.");
+      setError("Application is not configured to fetch submissions. Missing Access Key or Bin ID.");
     } else {
       fetchSubmissions();
     }
@@ -81,7 +81,7 @@ export default function AdminPage() {
       const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
         method: 'GET',
         headers: {
-          'X-Master-Key': MASTER_KEY!,
+          'X-Access-Key': ACCESS_KEY!,
         },
       });
 
@@ -127,7 +127,7 @@ export default function AdminPage() {
     if (!isConfigured) {
        toast({
         title: "Configuration Error",
-        description: "Cannot save changes. API keys for JSONBin.io are missing.",
+        description: "Cannot save changes. API keys for JSONBin.io are missing (Access Key or Bin ID).",
         variant: "destructive",
       });
       return;
@@ -138,7 +138,7 @@ export default function AdminPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Master-Key': MASTER_KEY!,
+          'X-Access-Key': ACCESS_KEY!,
           'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedSubmissions),
