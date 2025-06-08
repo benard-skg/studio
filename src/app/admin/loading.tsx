@@ -2,15 +2,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableCaption,
-} from '@/components/ui/table';
 
 export default function AdminLoading() {
   return (
@@ -22,40 +13,10 @@ export default function AdminLoading() {
           <Skeleton className="h-5 w-2/5 mx-auto" />      {/* Subtitle */}
         </header>
 
-        <div className="mb-6 text-center">
-           <Skeleton className="h-8 w-1/2 mx-auto" /> {/* Last Loaded Timestamp Placeholder */}
-        </div>
-
-        <div className="shadow-xl rounded-lg overflow-hidden border border-border bg-card">
-          <Table>
-            <TableCaption className="py-4 font-body text-sm text-muted-foreground bg-card border-t border-border">
-              <Skeleton className="h-4 w-1/3 mx-auto" /> {/* Caption */}
-            </TableCaption>
-            <TableHeader className="bg-card/50">
-              <TableRow>
-                <TableHead className="font-headline text-card-foreground w-[5%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground w-[25%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground text-right w-[15%]"><Skeleton className="h-5 w-full" /></TableHead>
-                <TableHead className="font-headline text-card-foreground text-center w-[10%]"><Skeleton className="h-5 w-full" /></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, index) => (
-                <TableRow key={index} className="border-b border-border last:border-b-0">
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                  <TableCell className="py-3 px-4"><Skeleton className="h-5 w-full" /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
+          <Skeleton className="h-10 w-10 rounded-full mb-3" /> {/* Icon Placeholder */}
+          <Skeleton className="h-8 w-1/2 mx-auto mb-2" /> {/* Message Title Placeholder */}
+          <Skeleton className="h-5 w-3/4 mx-auto" /> {/* Message Body Placeholder */}
         </div>
       </main>
       <Footer />

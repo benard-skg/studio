@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Send, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const ContactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -32,29 +32,10 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const NEXT_PUBLIC_JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-const NEXT_PUBLIC_JSONBIN_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_BIN_ID;
-const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-
 export default function ContactSection() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(true);
-
   const whatsappNumber = "+27834544862"; 
-
-  useEffect(() => {
-    if (!NEXT_PUBLIC_JSONBIN_ACCESS_KEY || !NEXT_PUBLIC_JSONBIN_BIN_ID) {
-      console.error("JSONBin API keys are not configured for the contact form. Please set NEXT_PUBLIC_JSONBIN_ACCESS_KEY and NEXT_PUBLIC_JSONBIN_BIN_ID in your environment.");
-      toast({
-        title: "Configuration Error",
-        description: "Contact form submissions are currently disabled due to missing configuration (Access Key or Bin ID).",
-        variant: "destructive",
-        duration: Infinity, 
-      });
-      setIsConfigured(false);
-    }
-  }, [toast]);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(ContactFormSchema),
@@ -66,87 +47,18 @@ export default function ContactSection() {
   });
 
   async function onSubmit(values: ContactFormData) {
-    if (!isConfigured) {
-      toast({
-        title: "Submission Failed",
-        description: "The contact form is not properly configured. Please contact support.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
+    console.log("Form submitted (locally):", values);
 
-    try {
-      const getResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}/latest`, {
-        method: 'GET',
-        headers: {
-          'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
-        },
-      });
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      let submissions: ContactFormData[] = [];
-      if (getResponse.ok) {
-        const data = await getResponse.json();
-        if (data && data.record && Array.isArray(data.record)) {
-          submissions = data.record;
-        } else if (Array.isArray(data)) { 
-          submissions = data;
-        }
-      } else if (getResponse.status === 404) {
-        console.log("Bin is new or empty. Initializing with new submission.");
-      } else {
-        const errorData = await getResponse.text();
-        console.error("Failed to fetch existing submissions:", getResponse.status, errorData);
-        throw new Error(`Failed to fetch existing submissions: ${getResponse.status}`);
-      }
-
-      const newSubmission = {
-        ...values,
-        submittedAt: new Date().toISOString(), 
-      };
-      const updatedSubmissions = [...submissions, newSubmission as any];
-
-      const putResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
-          'X-Bin-Versioning': 'false', 
-        },
-        body: JSON.stringify(updatedSubmissions),
-      });
-
-      if (putResponse.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "Your message has been successfully submitted.",
-        });
-        form.reset();
-      } else {
-        const errorData = await putResponse.text();
-        console.error("Failed to submit message to JSONBin.io:", putResponse.status, errorData);
-        throw new Error(`Failed to submit message: ${putResponse.status}`);
-      }
-
-    } catch (error) {
-      console.error("Error submitting to JSONBin.io:", error);
-      let errorMessage = "There was an error submitting your message. Please try again.";
-      if (error instanceof Error && error.message.includes("Failed to fetch") ) {
-        errorMessage = "Could not retrieve existing messages. Please check bin configuration or network."
-      } else if (error instanceof Error && error.message.includes("Failed to submit") ) {
-        errorMessage = "Could not save your message. Please try again."
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      toast({
-        title: "Submission Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    toast({
+      title: "Message Received (Simulation)",
+      description: "Your message has been logged locally. Backend submission is currently not configured.",
+    });
+    form.reset();
+    setIsSubmitting(false);
   }
 
   return (
@@ -186,7 +98,7 @@ export default function ContactSection() {
                   <FormItem>
                     <FormLabel className="font-body">Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} className="font-body" disabled={!isConfigured || isSubmitting} />
+                      <Input placeholder="Your Name" {...field} className="font-body" disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -199,7 +111,7 @@ export default function ContactSection() {
                   <FormItem>
                     <FormLabel className="font-body">Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} className="font-body" disabled={!isConfigured || isSubmitting} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} className="font-body" disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -216,7 +128,7 @@ export default function ContactSection() {
                         placeholder="Your questions or booking inquiry..."
                         className="resize-none font-body min-h-[120px]"
                         {...field}
-                        disabled={!isConfigured || isSubmitting}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -227,7 +139,7 @@ export default function ContactSection() {
                 type="submit"
                 size="lg"
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
-                disabled={!isConfigured || isSubmitting}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
@@ -247,4 +159,3 @@ export default function ContactSection() {
     </section>
   );
 }
-    
