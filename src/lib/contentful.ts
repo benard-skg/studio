@@ -69,15 +69,15 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
-    console.log(`[Contentful] getBlogPosts: Fetching entries with content_type 'Blog Post'. Space ID: ${spaceId ? spaceId.substring(0,5) + '...' : 'UNDEFINED'}, Access Token: ${accessToken ? accessToken.substring(0,5) + '...' : 'UNDEFINED'}`);
+    console.log(`[Contentful] getBlogPosts: Fetching entries with content_type 'blogPost1'. Space ID: ${spaceId ? spaceId.substring(0,5) + '...' : 'UNDEFINED'}, Access Token: ${accessToken ? accessToken.substring(0,5) + '...' : 'UNDEFINED'}`);
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'Blog Post', // Updated content type
+      content_type: 'blogPost1', 
       order: ['-sys.createdAt'], 
     });
     console.log(`[Contentful] getBlogPosts: Received ${entries.items.length} raw items from Contentful.`);
 
     if (entries.items.length === 0) {
-      console.log('[Contentful] getBlogPosts: No items received. Potential issues: incorrect Space ID/Access Token, wrong Content Type ID ("Blog Post"), posts not published, or network issue.');
+      console.log('[Contentful] getBlogPosts: No items received. Potential issues: incorrect Space ID/Access Token, wrong Content Type ID ("blogPost1"), posts not published, or network issue.');
       return [];
     }
 
@@ -101,11 +101,11 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    console.log(`[Contentful] getBlogPost: Fetching entry for slug: '${slug}' with content_type 'Blog Post'`);
+    console.log(`[Contentful] getBlogPost: Fetching entry for slug: '${slug}' with content_type 'blogPost1'`);
     
     // Try fetching by `fields.slugID` (which can be string or number)
     const entriesBySlugID: EntryCollection<any> = await client.getEntries({
-      content_type: 'Blog Post', // Updated content type
+      content_type: 'blogPost1', 
       'fields.slugID': slug,
       limit: 1,
     });
@@ -121,8 +121,8 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
     // Fallback: If no post is found by `fields.slugID`,
     // try fetching directly by entry ID (assuming slug might be a sys.id).
     try {
-        console.log(`[Contentful] getBlogPost: Attempting to fetch by sys.id: '${slug}' with content_type 'Blog Post'`);
-        const entryById = await client.getEntry(slug, { content_type: 'Blog Post' }); // Updated content type
+        console.log(`[Contentful] getBlogPost: Attempting to fetch by sys.id: '${slug}' with content_type 'blogPost1'`);
+        const entryById = await client.getEntry(slug, { content_type: 'blogPost1' }); 
         if (entryById) {
             console.log(`[Contentful] getBlogPost: Found item by sys.id '${slug}'.`);
             const parsedPost = parseContentfulBlogPost(entryById);
@@ -146,9 +146,9 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
   try {
-    console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with content_type 'Blog Post'.`);
+    console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with content_type 'blogPost1'.`);
     const entries: EntryCollection<any> = await client.getEntries({
-      content_type: 'Blog Post',  // Updated content type
+      content_type: 'blogPost1',  
       order: ['-sys.createdAt'],
       limit: 1,
     });
