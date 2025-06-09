@@ -17,12 +17,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'images.ctfassets.net', // Added for Contentful images
-        port: '',
-        pathname: '/**',
-      },
+      // { // Removed for Contentful images
+      //   protocol: 'https',
+      //   hostname: 'images.ctfassets.net', 
+      //   port: '',
+      //   pathname: '/**',
+      // },
       {
         protocol: 'https',
         hostname: 'i.ibb.co', // Added for ImgBB direct image links

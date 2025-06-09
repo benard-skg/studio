@@ -11,7 +11,7 @@ import { ThemeToggleButton } from './theme-toggle-button';
 const navItems = [
   { href: '/about', label: 'About' },
   { href: '/classes', label: 'Classes' },
-  { href: '/blog', label: 'Blog' },
+  // { href: '/blog', label: 'Blog' }, // Removed
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -31,7 +31,7 @@ export default function Navbar() {
   if (!isMounted) {
     // Return a placeholder or null to prevent flash of unstyled content or layout shift
     // For a fixed navbar, a simple null might be best, or a skeleton if it's complex.
-    // Given its simplicity here, null is fine.
+    // Given its simplicity here, null is fine. 
     return null; 
   }
 

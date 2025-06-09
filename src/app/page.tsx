@@ -3,7 +3,7 @@ import Navbar from '@/components/layout/navbar';
 import HeroSection from '@/components/sections/hero-section';
 import CoachProfileSection from '@/components/sections/coach-profile-section';
 import ClassShowcaseSection from '@/components/sections/class-showcase-section';
-import BlogSection from '@/components/sections/blog-section';
+// import BlogSection from '@/components/sections/blog-section'; // Removed
 // import ContactSection from '@/components/sections/contact-section'; // Removed
 import Footer from '@/components/layout/footer';
 
@@ -15,7 +15,7 @@ export default function Home() {
         <HeroSection />
         <CoachProfileSection />
         <ClassShowcaseSection />
-        <BlogSection />
+        {/* <BlogSection /> */} {/* Removed */}
         {/* <ContactSection /> */} {/* Removed */}
         {/* You can add a placeholder or new content here if desired */}
       </main>
