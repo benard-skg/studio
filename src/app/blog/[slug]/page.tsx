@@ -1,3 +1,4 @@
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
@@ -11,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-// Revalidate this page (e.g., every 60 seconds)
-export const revalidate = 60; 
+// Revalidate this page (e.g., every 10 seconds)
+export const revalidate = 10; 
 
 interface BlogPostPageProps {
   params: {
@@ -34,9 +35,12 @@ export async function generateMetadata(
   }
 
   const previousImages = (await parent).openGraph?.images || [];
-  const openGraphImages = post.featuredImage?.fields?.file?.url
-    ? [`https:${post.featuredImage.fields.file.url}`, ...previousImages]
-    : previousImages;
+  
+  let openGraphImages = previousImages;
+  if (post.featuredImage?.fields?.file?.url) {
+    openGraphImages = [`https:${post.featuredImage.fields.file.url}`, ...previousImages];
+  }
+
 
   return {
     title: `${post.title} - LCA Blog`,
@@ -46,7 +50,7 @@ export async function generateMetadata(
       description: post.excerpt || 'Read this article from LCA.',
       images: openGraphImages,
       type: 'article',
-      publishedTime: new Date(post.date).toISOString(), // Assuming post.date is a valid date string
+      publishedTime: new Date(post.date).toISOString(),
     },
   };
 }
@@ -63,19 +67,12 @@ const richTextOptions = {
     [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
       const asset = node.data?.target as any;
       if (asset && asset.fields?.file?.url && asset.fields.file.contentType.startsWith('image/')) {
-        return (
-          <div className="relative my-6 aspect-video w-full overflow-hidden rounded-lg shadow-lg">
-            <Image
-              src={`https:${asset.fields.file.url}`}
-              alt={asset.fields.title || 'Embedded blog image'}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 60vw"
-            />
-          </div>
-        );
+        const imageUrl = `https:${asset.fields.file.url}`;
+        const altText = asset.fields.description || asset.fields.title || 'Embedded blog image';
+        // Using basic styles for responsiveness. More complex styling can be added via classes if needed.
+        return `<div style="margin: 1.5rem 0; text-align: center;"><img src="${imageUrl}" alt="${altText}" loading="lazy" style="max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" /></div>`;
       }
-      return null;
+      return ''; // Return empty string if asset is not a displayable image
     },
     [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${children}</p>`,
     [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${children}</h2>`,
