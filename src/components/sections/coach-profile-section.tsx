@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Coach {
   name: string;
@@ -120,9 +121,17 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <UserCircle2 className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
-            Meet Our Coaches
-          </h2>
+          {displayMode === 'all' ? (
+            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+              Meet Our Coaches
+            </h2>
+          ) : (
+            <Link href="/coaches" className="inline-block">
+              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors duration-300">
+                Meet Our Coaches
+              </h2>
+            </Link>
+          )}
           <p className="font-body text-lg text-muted-foreground mt-2">
             Certified Chess Coaches & Strategists
           </p>
@@ -140,7 +149,7 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
                     style={{ objectFit: 'cover' }}
                     className="w-full h-full"
                     data-ai-hint={coach.imageAiHint}
-                    priority={index === 0 && displayMode === "all"} // Prioritize first image if showing all or if it's the only one
+                    priority={index === 0 && displayMode === "all"} 
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>

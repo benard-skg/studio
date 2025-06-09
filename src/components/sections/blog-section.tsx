@@ -26,9 +26,11 @@ export default async function BlogSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Newspaper className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
-            Latest From The Blog
-          </h2>
+          <Link href="/blog" className="inline-block">
+            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors duration-300">
+              Latest From The Blog
+            </h2>
+          </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Our most recent insight, news, or update.
           </p>

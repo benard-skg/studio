@@ -26,9 +26,11 @@ export default function ClassShowcaseSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
-            Coaching Classes
-          </h2>
+          <Link href="/classes" className="inline-block">
+            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors duration-300">
+              Coaching Classes
+            </h2>
+          </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Choose the plan that best suits your chess journey.
           </p>
