@@ -37,7 +37,7 @@ export default async function BlogSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
           {postsToDisplay.map((post) => (
             <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 max-w-lg mx-auto">
-              {post.featuredImage && (
+              {post.featuredImage && post.featuredImage.fields.file.url && (
                 <Link href={`/blog/${post.slug}`} className="block">
                   <div className="aspect-[16/9] relative w-full">
                     <Image
@@ -58,16 +58,12 @@ export default async function BlogSection() {
                 </Link>
                 <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
               </CardHeader>
-              <CardContent className="flex-grow">
+              <CardContent className="flex-grow pb-4"> {/* Adjusted padding */}
                 <p className="font-body text-sm text-muted-foreground line-clamp-3">
                   {post.excerpt}
                 </p>
               </CardContent>
-              <CardFooter>
-                <Button asChild variant="link" className="p-0 h-auto font-body text-sm text-accent hover:text-accent/80">
-                  <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
-                </Button>
-              </CardFooter>
+              {/* CardFooter with "Read More" button removed */}
             </Card>
           ))}
         </div>

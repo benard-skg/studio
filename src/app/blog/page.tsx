@@ -1,9 +1,10 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// import { Button } from '@/components/ui/button'; // Button no longer needed for "Read More"
 import { getBlogPosts } from '@/lib/contentful';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
@@ -62,17 +63,13 @@ export default async function BlogIndexPage() {
                   <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
                 </CardHeader>
                 {post.excerpt && (
-                   <CardContent className="flex-grow">
+                   <CardContent className="flex-grow pb-4"> {/* Adjusted padding if CardFooter is removed */}
                     <p className="font-body text-sm text-muted-foreground line-clamp-3">
                       {post.excerpt}
                     </p>
                   </CardContent>
                 )}
-                <CardFooter>
-                  <Button asChild variant="link" className="p-0 h-auto font-body text-sm text-accent hover:text-accent/80">
-                    <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>
-                  </Button>
-                </CardFooter>
+                {/* CardFooter with "Read More" button removed */}
               </Card>
             ))}
           </div>

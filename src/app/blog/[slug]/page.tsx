@@ -8,9 +8,9 @@ import type { BlogPost } from '@/lib/types';
 import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
 import { BLOCKS } from '@contentful/rich-text-types';
 import type { Metadata, ResolvingMetadata } from 'next';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+// import { Button } from '@/components/ui/button'; // Button no longer needed
+// import Link from 'next/link'; // Link no longer needed for back button
+// import { ArrowLeft } from 'lucide-react'; // ArrowLeft no longer needed
 
 // Revalidate this page (e.g., every 10 seconds)
 export const revalidate = 10; 
@@ -108,14 +108,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <Navbar />
       <main className="flex-grow pt-28 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-          <div className="mb-8">
+          {/* "Back to Articles" button removed */}
+          {/* <div className="mb-8">
             <Button asChild variant="outline" size="sm">
               <Link href="/blog">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Articles
               </Link>
             </Button>
-          </div>
+          </div> */}
 
           <article className="prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl mx-auto">
             <header className="mb-8">
