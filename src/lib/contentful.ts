@@ -42,7 +42,6 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 
   for (const fieldDef of requiredFieldsDefinition) {
     const fieldName = fieldDef.name;
-    // For "Featured Image", access it with the space
     const fieldValue = fieldDef.isFeaturedImage ? blogPostEntry.fields['Featured Image'] : blogPostEntry.fields[fieldName];
 
     if (!fieldValue) {
@@ -54,7 +53,6 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 
     if (fieldDef.type === 'asset') {
       console.log(`[Contentful] parseContentfulBlogPost: Entry ID ${entryId}, Asset Field '${fieldName}', Value received by parser:`, JSON.stringify(fieldValue, null, 2));
-      // Check if it's a resolved asset (has fields.file.url)
       if (!fieldValue.sys || !fieldValue.fields || !fieldValue.fields.file || !fieldValue.fields.file.url) {
         console.warn(
           `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldName}', but it does not appear to be a valid *resolved* Contentful asset with 'fields.file.url'. Skipping entry.`
@@ -106,6 +104,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       order: ['-sys.createdAt'],
+      include: 2, // Explicitly include linked assets
     });
 
     console.log(`[Contentful] getBlogPosts: Received ${entries.items.length} raw items from Contentful.`);
@@ -135,6 +134,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       'fields.Slug': slug,
       limit: 1,
+      include: 2, // Explicitly include linked assets
     });
 
     console.log(`[Contentful] getBlogPostBySlug: Received ${entries.items.length} raw items for slug '${slug}'.`);
@@ -164,6 +164,7 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       select: ['fields.Slug'],
+      // No 'include' needed here as we only need the slug
     });
     const slugs = entries.items
       .map(item => item.fields.Slug as string)
@@ -177,7 +178,6 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
   }
 }
 
-// Re-added getLatestBlogPost if needed for other sections, currently not used by blog index or slug page
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
   console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
@@ -185,6 +185,7 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       order: ['-sys.createdAt'],
       limit: 1,
+      include: 2, // Explicitly include linked assets
     });
 
     if (entries.items.length > 0) {
