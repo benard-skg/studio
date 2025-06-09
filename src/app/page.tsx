@@ -13,7 +13,7 @@ export default function Home() {
       <Navbar />
       <main className="flex-grow pt-20"> {/* Add pt-20 to account for fixed navbar height */}
         <HeroSection />
-        <CoachProfileSection />
+        <CoachProfileSection displayMode="singleRandom" />
         <ClassShowcaseSection />
         {/* <BlogSection /> */} {/* Removed */}
         {/* <ContactSection /> */} {/* Removed */}

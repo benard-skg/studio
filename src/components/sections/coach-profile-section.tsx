@@ -1,9 +1,23 @@
 
+"use client";
+
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-const coachesData = [
+interface Coach {
+  name: string;
+  title: string;
+  imageSrc: string;
+  imageAlt: string;
+  imageAiHint: string;
+  chessSaId?: string;
+  fideId?: string;
+  profileInfo: string;
+}
+
+const allCoachesData: Coach[] = [
   {
     name: "Mahomole S.K",
     title: "Certified Chess Coach & Strategist",
@@ -29,21 +43,21 @@ const coachesData = [
   {
     name: "Mahomole T.R",
     title: "Certified Chess Coach & Strategist",
-    imageSrc: "https://placehold.co/600x400.png",
+    imageSrc: "https://i.ibb.co/fJBTzr1/IMG-20250119-WA0000-41538-e1738142791424-780x470.jpg",
     imageAlt: "Portrait of Coach Mahomole T.R.",
-    imageAiHint: "chess instructor profile",
+    imageAiHint: "chess coach profile",
     chessSaId: "189019610",
     fideId: "14303884",
-    profileInfo: `Lorem ipsum dolor sit amet, <strong>consectetur adipiscing elit</strong>. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    profileInfo: `With a strong background in competitive chess and a focus on youth development, I specialize in building foundational skills and tactical awareness. My approach includes:
     <ul class="list-disc list-inside space-y-1 pl-4">
       <li>
         <strong>Passionate about developing young talent</strong> and fostering a love for the game.
       </li>
       <li>
-        Specializes in <strong>opening theory and tactical sharpness</strong>.
+        Specializes in <strong>opening theory and tactical sharpness</strong> tailored for improving players.
       </li>
       <li>
-        Believes in a <strong>personalized approach to coaching</strong>, adapting to each student's unique learning style.
+        Believes in a <strong>personalized approach to coaching</strong>, adapting to each student's unique learning style and goals.
       </li>
     </ul>
     My goal is to empower students with the skills and confidence to <em>excel in chess and beyond</em>.`
@@ -51,28 +65,56 @@ const coachesData = [
   {
     name: "Mahomole M.J",
     title: "Certified Chess Coach & Strategist",
-    imageSrc: "https://placehold.co/600x400.png",
+    imageSrc: "https://i.ibb.co/RTDZx7fc/Screenshot-20250609-224422-You-Tube.jpg",
     imageAlt: "Portrait of Coach Mahomole M.J.",
-    imageAiHint: "chess teacher face",
+    imageAiHint: "chess instructor photo",
     chessSaId: "162019603",
     fideId: "14303876",
-    profileInfo: `Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. <strong>Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante</strong>. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
+    profileInfo: `Experienced in higher-level strategy and tournament play, I focus on refining students' games for competitive success. Key areas of my coaching are:
     <ul class="list-disc list-inside space-y-1 pl-4">
       <li>
-        Focuses on <strong>endgame mastery and strategic planning</strong>.
+        Focuses on <strong>endgame mastery and strategic planning</strong> for complex positions.
       </li>
       <li>
-        Extensive experience in <strong>tournament play and preparation</strong>.
+        Extensive experience in <strong>tournament play and preparation techniques</strong>.
       </li>
       <li>
-        Emphasizes the <strong>psychological aspects of competitive chess</strong>.
+        Emphasizes the <strong>psychological aspects of competitive chess</strong>, including resilience and focus.
       </li>
     </ul>
     Dedicated to helping students achieve their full potential by <em>building a strong foundation and a winning mindset</em>.`
   },
 ];
 
-export default function CoachProfileSection() {
+interface CoachProfileSectionProps {
+  displayMode?: "all" | "singleRandom";
+}
+
+export default function CoachProfileSection({ displayMode = "all" }: CoachProfileSectionProps) {
+  const [coachesToDisplay, setCoachesToDisplay] = useState<Coach[]>(
+    displayMode === "all" ? allCoachesData : [] // Start empty if random to avoid SSR mismatch
+  );
+
+  useEffect(() => {
+    if (displayMode === "singleRandom") {
+      if (allCoachesData.length > 0) {
+        const randomIndex = Math.floor(Math.random() * allCoachesData.length);
+        setCoachesToDisplay([allCoachesData[randomIndex]]);
+      } else {
+        setCoachesToDisplay([]);
+      }
+    } else {
+      setCoachesToDisplay(allCoachesData);
+    }
+  }, [displayMode]);
+
+  if (coachesToDisplay.length === 0 && displayMode === "singleRandom") {
+    // Optional: Render a skeleton or null while waiting for client-side random selection
+    // For now, it will just not render anything until the client-side effect runs.
+    // This could also be a place for a specific loading skeleton for a single coach card.
+    return null; 
+  }
+  
   return (
     <section id="profile" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,8 +129,8 @@ export default function CoachProfileSection() {
         </div>
 
         <div className="space-y-12">
-          {coachesData.map((coach, index) => (
-            <Card key={index} className="overflow-hidden shadow-xl">
+          {coachesToDisplay.map((coach, index) => (
+            <Card key={coach.name} className="overflow-hidden shadow-xl">
               <div className="md:flex">
                 <div className="md:w-1/3 relative h-64 md:h-auto">
                   <Image
@@ -98,7 +140,7 @@ export default function CoachProfileSection() {
                     style={{ objectFit: 'cover' }}
                     className="w-full h-full"
                     data-ai-hint={coach.imageAiHint}
-                    priority={index === 0} // Prioritize the first coach's image
+                    priority={index === 0 && displayMode === "all"} // Prioritize first image if showing all or if it's the only one
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>
