@@ -6,16 +6,14 @@ import type { Document } from '@contentful/rich-text-types';
 // --- Configuration (Embedded as requested) ---
 const CONTENTFUL_SPACE_ID = 'htjrh4mjuk93';
 const CONTENTFUL_ACCESS_TOKEN = 'OOGdUgBWVYfhwdmQDxQoJHR6OkdAbZ8BwOJKjUDWPAk';
-const CONTENTFUL_CONTENT_TYPE_ID = 'blog'; // Updated from "Blog"
+const CONTENTFUL_CONTENT_TYPE_ID = 'blog'; // User confirmed this ID
 // --- End Configuration ---
 
 if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
   console.error(
     '[Contentful] CRITICAL ERROR: Contentful Space ID or Access Token is not defined.'
   );
-  throw new Error(
-    'Contentful Space ID or Access Token is not defined.'
-  );
+  // In a real app, you might throw an error or handle this more gracefully
 }
 
 const client = createClient({
@@ -33,19 +31,37 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
   }
 
   const entryId = blogPostEntry.sys.id;
+  console.log(`[Contentful] parseContentfulBlogPost: Processing entry ID ${entryId}. Raw fields:`, JSON.stringify(blogPostEntry.fields, null, 2));
 
-  const requiredFields: Record<string, string> = {
-    Title: 'title',
-    Slug: 'slug',
-    Thumbnail: 'thumbnail',
-    'Featured Image': 'featuredImage', // Note the space in the Contentful field name
-    Text: 'content',
-  };
 
-  for (const fieldName of Object.keys(requiredFields)) {
-    if (!blogPostEntry.fields[fieldName]) {
+  const requiredFieldsDefinition: { name: string; type: 'string' | 'asset' | 'richtext' }[] = [
+    { name: 'Title', type: 'string' },
+    { name: 'Slug', type: 'string' },
+    { name: 'Thumbnail', type: 'asset' },
+    { name: 'Featured Image', type: 'asset' }, // Note the space
+    { name: 'Text', type: 'richtext' },
+  ];
+
+  for (const fieldDef of requiredFieldsDefinition) {
+    const fieldName = fieldDef.name;
+    const fieldValue = blogPostEntry.fields[fieldName];
+    if (!fieldValue) {
       console.warn(
-        `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} is missing required field '${fieldName}'. Skipping.`
+        `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} is MISSING required field '${fieldName}'. Skipping entry.`
+      );
+      return null;
+    }
+    // Basic type check for assets - more robust checks could be added
+    if (fieldDef.type === 'asset' && (!fieldValue.sys || !fieldValue.fields || !fieldValue.fields.file)) {
+      console.warn(
+        `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldName}', but it does not appear to be a valid Contentful asset (missing sys, fields, or fields.file). Skipping entry. Value:`, fieldValue
+      );
+      return null;
+    }
+    // Basic type check for rich text - more robust checks could be added
+    if (fieldDef.type === 'richtext' && (!fieldValue.nodeType || fieldValue.nodeType !== 'document' || !fieldValue.content)) {
+        console.warn(
+        `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldName}', but it does not appear to be a valid Contentful rich text document. Skipping entry. Value:`, fieldValue
       );
       return null;
     }
@@ -53,9 +69,10 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
   
   // Simple excerpt generation from the start of the rich text content (first paragraph)
   let excerpt = '';
-  if (blogPostEntry.fields.Text && blogPostEntry.fields.Text.content) {
-    const firstParagraphNode = blogPostEntry.fields.Text.content.find(
-      (node: any) => node.nodeType === 'paragraph' && node.content && node.content.length > 0 && node.content[0].nodeType === 'text'
+  const richTextContent = blogPostEntry.fields.Text as Document | undefined;
+  if (richTextContent && richTextContent.content) {
+    const firstParagraphNode = richTextContent.content.find(
+      (node: any) => node.nodeType === 'paragraph' && node.content && node.content.length > 0 && node.content[0].nodeType === 'text' && node.content[0].value
     );
     if (firstParagraphNode && firstParagraphNode.content[0].value) {
       excerpt = firstParagraphNode.content[0].value.substring(0, 150) + '...';
@@ -77,12 +94,13 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
     content: blogPostEntry.fields.Text as Document,
     excerpt: excerpt,
   };
+  console.log(`[Contentful] parseContentfulBlogPost: Successfully parsed entry ID ${entryId}.`);
   return parsedPost;
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
+  console.log(`[Contentful] getBlogPosts: Fetching entries with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
-    console.log(`[Contentful] getBlogPosts: Fetching entries with Content Type ID: ${CONTENTFUL_CONTENT_TYPE_ID}`);
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       order: ['-sys.createdAt'],
@@ -90,11 +108,15 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
     console.log(`[Contentful] getBlogPosts: Received ${entries.items.length} raw items from Contentful.`);
 
+    if (entries.items.length === 0) {
+        console.warn(`[Contentful] getBlogPosts: No items returned from Contentful for content_type '${CONTENTFUL_CONTENT_TYPE_ID}'. Ensure posts are published and the Content Type ID is correct.`);
+    }
+
     const parsedPosts = entries.items
       .map(parseContentfulBlogPost)
-      .filter(Boolean) as BlogPost[];
+      .filter(Boolean) as BlogPost[]; // Filter out nulls from failed parses
     
-    console.log(`[Contentful] getBlogPosts: Successfully parsed ${parsedPosts.length} blog posts.`);
+    console.log(`[Contentful] getBlogPosts: Successfully parsed ${parsedPosts.length} blog posts out of ${entries.items.length} raw items.`);
     return parsedPosts;
   } catch (error) {
     console.error(
@@ -105,8 +127,8 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  console.log(`[Contentful] getBlogPostBySlug: Fetching entry with slug '${slug}' and Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
-    console.log(`[Contentful] getBlogPostBySlug: Fetching entry with slug '${slug}' and Content Type ID: ${CONTENTFUL_CONTENT_TYPE_ID}`);
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       'fields.Slug': slug,
@@ -120,7 +142,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
       if (parsedPost) {
          console.log(`[Contentful] getBlogPostBySlug: Successfully parsed post ID ${parsedPost.id} for slug '${slug}'.`);
       } else {
-         console.log(`[Contentful] getBlogPostBySlug: Failed to parse post for slug '${slug}'.`);
+         console.warn(`[Contentful] getBlogPostBySlug: Failed to parse post for slug '${slug}'. Check raw fields and required field names.`);
       }
       return parsedPost;
     }
@@ -135,15 +157,15 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 }
 
 export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
+  console.log(`[Contentful] getAllBlogPostSlugs: Fetching slugs with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
-    console.log(`[Contentful] getAllBlogPostSlugs: Fetching slugs with Content Type ID: ${CONTENTFUL_CONTENT_TYPE_ID}`);
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       select: ['fields.Slug'], // Only fetch the slug field
     });
     const slugs = entries.items
       .map(item => item.fields.Slug as string)
-      .filter(Boolean)
+      .filter(Boolean) // Ensure slug exists
       .map(slug => ({ slug }));
     console.log(`[Contentful] getAllBlogPostSlugs: Found ${slugs.length} slugs.`);
     return slugs;
@@ -153,10 +175,10 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
   }
 }
 
-// New function to get the latest blog post
+// New function to get the latest blog post - used in BlogSection (if you re-add it)
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
+  console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
-    console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with Content Type ID: ${CONTENTFUL_CONTENT_TYPE_ID}`);
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       order: ['-sys.createdAt'],
@@ -168,7 +190,7 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
       if (parsedPost) {
         console.log(`[Contentful] getLatestBlogPost: Successfully parsed latest post ID ${parsedPost.id}.`);
       } else {
-        console.log(`[Contentful] getLatestBlogPost: Failed to parse latest post.`);
+        console.warn(`[Contentful] getLatestBlogPost: Failed to parse latest post.`);
       }
       return parsedPost;
     }
