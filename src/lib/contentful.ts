@@ -20,6 +20,15 @@ const client = createClient({
   accessToken: CONTENTFUL_ACCESS_TOKEN,
 });
 
+// Define the expected Field IDs from Contentful
+const EXPECTED_FIELD_IDS = {
+  title: 'title',
+  slug: 'slug',
+  thumbnail: 'thumbnail',
+  featuredImage: 'featuredImage', // Assuming camelCase ID for "Featured Image"
+  text: 'text',
+};
+
 const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => {
   if (!blogPostEntry || !blogPostEntry.sys || !blogPostEntry.sys.id) {
     console.warn(
@@ -30,39 +39,39 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
   }
 
   const entryId = blogPostEntry.sys.id;
-  console.log(`[Contentful] parseContentfulBlogPost: Processing entry ID ${entryId}. Raw fields (summary): Title: ${blogPostEntry.fields.Title}, Slug: ${blogPostEntry.fields.Slug}`);
+  console.log(`[Contentful] parseContentfulBlogPost: Processing entry ID ${entryId}. Raw fields (summary): Title: ${blogPostEntry.fields[EXPECTED_FIELD_IDS.title]}, Slug: ${blogPostEntry.fields[EXPECTED_FIELD_IDS.slug]}`);
 
-  const requiredFieldsDefinition: { name: string; type: 'string' | 'asset' | 'richtext'; isFeaturedImage?: boolean }[] = [
-    { name: 'Title', type: 'string' },
-    { name: 'Slug', type: 'string' },
-    { name: 'Thumbnail', type: 'asset' },
-    { name: 'Featured Image', type: 'asset', isFeaturedImage: true },
-    { name: 'Text', type: 'richtext' },
+  // Check for presence of all expected fields using their IDs
+  const requiredFieldChecks = [
+    { id: EXPECTED_FIELD_IDS.title, type: 'string', nameForLog: 'Title' },
+    { id: EXPECTED_FIELD_IDS.slug, type: 'string', nameForLog: 'Slug' },
+    { id: EXPECTED_FIELD_IDS.thumbnail, type: 'asset', nameForLog: 'Thumbnail' },
+    { id: EXPECTED_FIELD_IDS.featuredImage, type: 'asset', nameForLog: 'Featured Image' },
+    { id: EXPECTED_FIELD_IDS.text, type: 'richtext', nameForLog: 'Text' },
   ];
 
-  for (const fieldDef of requiredFieldsDefinition) {
-    const fieldName = fieldDef.name;
-    const fieldValue = fieldDef.isFeaturedImage ? blogPostEntry.fields['Featured Image'] : blogPostEntry.fields[fieldName];
+  for (const fieldCheck of requiredFieldChecks) {
+    const fieldValue = blogPostEntry.fields[fieldCheck.id];
 
     if (!fieldValue) {
       console.warn(
-        `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} is MISSING required field '${fieldName}'. Skipping entry.`
+        `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} is MISSING required field '${fieldCheck.nameForLog}' (expected ID: '${fieldCheck.id}'). Skipping entry.`
       );
       return null;
     }
 
-    if (fieldDef.type === 'asset') {
-      console.log(`[Contentful] parseContentfulBlogPost: Entry ID ${entryId}, Asset Field '${fieldName}', Value received by parser:`, JSON.stringify(fieldValue, null, 2));
+    if (fieldCheck.type === 'asset') {
+      console.log(`[Contentful] parseContentfulBlogPost: Entry ID ${entryId}, Asset Field '${fieldCheck.nameForLog}' (ID: '${fieldCheck.id}'), Value received by parser:`, JSON.stringify(fieldValue, null, 2));
       if (!fieldValue.sys || !fieldValue.fields || !fieldValue.fields.file || !fieldValue.fields.file.url) {
         console.warn(
-          `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldName}', but it does not appear to be a valid *resolved* Contentful asset with 'fields.file.url'. Skipping entry.`
+          `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldCheck.nameForLog}' (ID: '${fieldCheck.id}'), but it does not appear to be a valid *resolved* Contentful asset with 'fields.file.url'. Skipping entry.`
         );
         return null;
       }
-    } else if (fieldDef.type === 'richtext') {
+    } else if (fieldCheck.type === 'richtext') {
       if (!fieldValue.nodeType || fieldValue.nodeType !== 'document' || !fieldValue.content) {
         console.warn(
-          `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldName}', but it does not appear to be a valid Contentful rich text document. Value:`, JSON.stringify(fieldValue, null, 2), `Skipping entry.`
+          `[Contentful] parseContentfulBlogPost: Entry ID ${entryId} has field '${fieldCheck.nameForLog}' (ID: '${fieldCheck.id}'), but it does not appear to be a valid Contentful rich text document. Value:`, JSON.stringify(fieldValue, null, 2), `Skipping entry.`
         );
         return null;
       }
@@ -70,7 +79,7 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
   }
   
   let excerpt = '';
-  const richTextContent = blogPostEntry.fields.Text as Document | undefined;
+  const richTextContent = blogPostEntry.fields[EXPECTED_FIELD_IDS.text] as Document | undefined;
   if (richTextContent && richTextContent.content) {
     const firstParagraphNode = richTextContent.content.find(
       (node: any) => node.nodeType === 'paragraph' && node.content && node.content.length > 0 && node.content[0].nodeType === 'text' && node.content[0].value
@@ -82,16 +91,16 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 
   const parsedPost: BlogPost = {
     id: entryId,
-    title: blogPostEntry.fields.Title as string,
-    slug: blogPostEntry.fields.Slug as string,
+    title: blogPostEntry.fields[EXPECTED_FIELD_IDS.title] as string,
+    slug: blogPostEntry.fields[EXPECTED_FIELD_IDS.slug] as string,
     date: new Date(blogPostEntry.sys.createdAt).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     }),
-    thumbnail: blogPostEntry.fields.Thumbnail as ContentfulAsset,
-    featuredImage: blogPostEntry.fields['Featured Image'] as ContentfulAsset,
-    content: blogPostEntry.fields.Text as Document,
+    thumbnail: blogPostEntry.fields[EXPECTED_FIELD_IDS.thumbnail] as ContentfulAsset,
+    featuredImage: blogPostEntry.fields[EXPECTED_FIELD_IDS.featuredImage] as ContentfulAsset,
+    content: blogPostEntry.fields[EXPECTED_FIELD_IDS.text] as Document,
     excerpt: excerpt,
   };
   console.log(`[Contentful] parseContentfulBlogPost: Successfully parsed entry ID ${entryId}.`);
@@ -104,7 +113,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       order: ['-sys.createdAt'],
-      include: 2, // Explicitly include linked assets
+      include: 2, // Ensure linked assets are resolved
     });
 
     console.log(`[Contentful] getBlogPosts: Received ${entries.items.length} raw items from Contentful.`);
@@ -132,9 +141,9 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   try {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
-      'fields.Slug': slug,
+      [`fields.${EXPECTED_FIELD_IDS.slug}`]: slug, // Use the defined slug field ID
       limit: 1,
-      include: 2, // Explicitly include linked assets
+      include: 2, // Ensure linked assets are resolved
     });
 
     console.log(`[Contentful] getBlogPostBySlug: Received ${entries.items.length} raw items for slug '${slug}'.`);
@@ -163,16 +172,17 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
   try {
     const entries: EntryCollection<any> = await client.getEntries({
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
-      select: ['fields.Slug'],
-      // No 'include' needed here as we only need the slug
+      select: [`fields.${EXPECTED_FIELD_IDS.slug}`], // Select using the defined slug field ID
+      include: 0, // No need to include linked assets for slugs
     });
     const slugs = entries.items
-      .map(item => item.fields.Slug as string)
+      .map(item => item.fields[EXPECTED_FIELD_IDS.slug] as string)
       .filter(Boolean)
       .map(slug => ({ slug }));
     console.log(`[Contentful] getAllBlogPostSlugs: Found ${slugs.length} slugs.`);
     return slugs;
-  } catch (error) {
+  } catch (error)
+{
     console.error('[Contentful] getAllBlogPostSlugs: Error fetching slugs:', error);
     return [];
   }
@@ -185,7 +195,7 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
       content_type: CONTENTFUL_CONTENT_TYPE_ID,
       order: ['-sys.createdAt'],
       limit: 1,
-      include: 2, // Explicitly include linked assets
+      include: 2, // Ensure linked assets are resolved
     });
 
     if (entries.items.length > 0) {
@@ -204,3 +214,5 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
     return null;
   }
 }
+
+    
