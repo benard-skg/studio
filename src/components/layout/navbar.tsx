@@ -11,7 +11,7 @@ import { ThemeToggleButton } from './theme-toggle-button';
 const navItems = [
   { href: '/about', label: 'About' },
   { href: '/classes', label: 'Classes' },
-  // { href: '/blog', label: 'Blog' }, // Removed
+  { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -29,9 +29,6 @@ export default function Navbar() {
   }, []);
 
   if (!isMounted) {
-    // Return a placeholder or null to prevent flash of unstyled content or layout shift
-    // For a fixed navbar, a simple null might be best, or a skeleton if it's complex.
-    // Given its simplicity here, null is fine. 
     return null; 
   }
 
@@ -86,9 +83,6 @@ export default function Navbar() {
                     ))}
                   </div>
                   <div className="mt-8 pt-6 border-t border-border">
-                     {/* Theme toggle already here from a previous step, ensure it's styled if needed */}
-                     {/* For consistency, if ThemeToggleButton isn't already in the sheet's main body for mobile,
-                         it can be placed here. Assuming it's intelligently placed for mobile already. */}
                   </div>
                 </SheetContent>
               </Sheet>

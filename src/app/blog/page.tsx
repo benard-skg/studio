@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
@@ -10,12 +9,12 @@ import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Blog - LCA',
-  description: 'Read the latest articles, news, and insights from LCA.',
+  title: 'Articles - LCA',
+  description: 'Read the latest articles, strategy tips, and insights from the LCA team.',
 };
 
-// Revalidate this page every 10 seconds
-export const revalidate = 10; 
+// Revalidate this page (e.g., every 60 seconds)
+export const revalidate = 60; 
 
 export default async function BlogIndexPage() {
   const blogPosts: BlogPost[] = await getBlogPosts();
@@ -26,27 +25,27 @@ export default async function BlogIndexPage() {
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-12 text-center">
           <h1 className="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter leading-tight">
-            Our Blog
+            Articles from LCA Team
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-            Stay updated with the latest articles, news, and insights from the world of chess and our coaching experiences.
+            Stay updated with our latest chess strategies, game analyses, and coaching insights.
           </p>
         </header>
 
         {blogPosts.length === 0 ? (
-          <p className="text-center font-body text-muted-foreground text-xl">
-            No blog posts yet. Check back soon!
+          <p className="text-center font-body text-muted-foreground text-xl py-10">
+            No articles published yet. Check back soon!
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
             {blogPosts.map((post) => (
-              <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden">
-                {post.featuredImage && (
+              <Card key={post.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border">
+                {post.thumbnail && post.thumbnail.fields.file.url && (
                   <Link href={`/blog/${post.slug}`} className="block">
                     <div className="aspect-[16/9] relative w-full">
                       <Image
-                        src={`https:${post.featuredImage.fields.file.url}`}
-                        alt={post.featuredImage.fields.title || post.title}
+                        src={`https:${post.thumbnail.fields.file.url}`}
+                        alt={post.thumbnail.fields.description || post.title}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -62,11 +61,13 @@ export default async function BlogIndexPage() {
                   </Link>
                   <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="font-body text-sm text-muted-foreground line-clamp-4">
-                    {post.excerpt}
-                  </p>
-                </CardContent>
+                {post.excerpt && (
+                   <CardContent className="flex-grow">
+                    <p className="font-body text-sm text-muted-foreground line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                  </CardContent>
+                )}
                 <CardFooter>
                   <Button asChild variant="link" className="p-0 h-auto font-body text-sm text-accent hover:text-accent/80">
                     <Link href={`/blog/${post.slug}`}>Read More &rarr;</Link>

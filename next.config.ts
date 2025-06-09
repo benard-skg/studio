@@ -17,15 +17,15 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // { // Removed for Contentful images
-      //   protocol: 'https',
-      //   hostname: 'images.ctfassets.net', 
-      //   port: '',
-      //   pathname: '/**',
-      // },
       {
         protocol: 'https',
-        hostname: 'i.ibb.co', // Added for ImgBB direct image links
+        hostname: 'images.ctfassets.net', 
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
         port: '',
         pathname: '/**',
       },
@@ -33,14 +33,12 @@ const nextConfig: NextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Exclude 'async_hooks' from client-side bundles
-      // using resolve.fallback
       if (!config.resolve) {
         config.resolve = {};
       }
       config.resolve.fallback = {
-        ...(config.resolve.fallback || {}), // Spread existing fallbacks if any
-        'async_hooks': false, // Tells webpack to treat 'async_hooks' as an empty module on the client
+        ...(config.resolve.fallback || {}), 
+        'async_hooks': false, 
       };
     }
     return config;
