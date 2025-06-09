@@ -62,6 +62,7 @@ export async function generateStaticParams() {
   }));
 }
 
+// Simplified richTextOptions for debugging
 const richTextOptions = {
   renderNode: {
     [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
@@ -69,17 +70,18 @@ const richTextOptions = {
       if (asset && asset.fields?.file?.url && asset.fields.file.contentType.startsWith('image/')) {
         const imageUrl = `https:${asset.fields.file.url}`;
         const altText = asset.fields.description || asset.fields.title || 'Embedded blog image';
-        // Using basic styles for responsiveness. More complex styling can be added via classes if needed.
+        // Ensure this returns an HTML string
         return `<div style="margin: 1.5rem 0; text-align: center;"><img src="${imageUrl}" alt="${altText}" loading="lazy" style="max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" /></div>`;
       }
-      return ''; // Return empty string if asset is not a displayable image
+      return ''; 
     },
-    [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${children}</p>`,
-    [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${children}</h2>`,
-    [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${children}</h3>`,
-    [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${children}</ul>`,
-    [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${children}</ol>`,
-    [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${children}</blockquote>`,
+    // Temporarily remove other custom renderers to isolate the issue
+    // [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${children}</p>`,
+    // [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${children}</h2>`,
+    // [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${children}</h3>`,
+    // [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${children}</ul>`,
+    // [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${children}</ol>`,
+    // [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${children}</blockquote>`,
   },
 };
 
@@ -90,7 +92,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const htmlContent = post.content ? documentToHtmlString(post.content, richTextOptions) : '';
+  // Ensure post.content is defined and is a Document object before passing
+  const htmlContent = post && post.content && typeof post.content === 'object' && post.content.nodeType === 'document'
+    ? documentToHtmlString(post.content, richTextOptions) 
+    : '';
+
+  // For debugging on the server side (if you could see logs)
+  // console.log("Type of post.content:", typeof post?.content);
+  // console.log("Is post.content a Document:", post?.content?.nodeType === 'document');
+  // console.log("Generated htmlContent (first 100 chars):", typeof htmlContent, htmlContent.substring(0, 100));
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -129,7 +140,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             )}
             
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            {/* Ensure htmlContent is a string before rendering */}
+            {typeof htmlContent === 'string' ? (
+              <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            ) : (
+              <p>Error: Content could not be rendered.</p> 
+            )}
           </article>
         </div>
       </main>
