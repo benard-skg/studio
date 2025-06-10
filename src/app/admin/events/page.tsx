@@ -43,16 +43,51 @@ import type { EventType } from '@/lib/types';
 import { slugify } from '@/lib/utils';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
 const ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
 const BIN_ID = "6847dd9e8a456b7966aba67c";
 
+// Define an inline skeleton component for the loading state within the page
+const PageContentSkeleton = () => (
+  <>
+    <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
+      <Skeleton className="h-10 w-2/5 sm:w-1/3 mb-4 sm:mb-0" /> {/* Title: Manage Events */}
+      <Skeleton className="h-10 w-48 rounded-md" /> {/* Add New Event Button */}
+    </header>
+    <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
+      <div className="p-4 sm:p-6">
+        <div className="hidden sm:flex justify-between items-center pb-3 border-b border-border mb-3">
+          <Skeleton className="h-5 w-1/6" /> <Skeleton className="h-5 w-1/6" /> <Skeleton className="h-5 w-2/6" /> <Skeleton className="h-5 w-1/6" /> <Skeleton className="h-5 w-1/12" />
+        </div>
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-border last:border-b-0">
+            <div className="w-full sm:w-1/6 mb-2 sm:mb-0"><Skeleton className="h-4 w-3/4 sm:w-full" /></div>
+            <div className="w-full sm:w-1/6 mb-2 sm:mb-0"><Skeleton className="h-4 w-1/2 sm:w-full" /></div>
+            <div className="w-full sm:w-2/6 mb-2 sm:mb-0"><Skeleton className="h-4 w-full" /></div>
+            <div className="w-full sm:w-1/6 mb-2 sm:mb-0"><Skeleton className="h-4 w-2/3 sm:w-full hidden md:block" /></div>
+            <div className="flex space-x-1 w-full sm:w-auto justify-end sm:justify-start">
+              <Skeleton className="h-8 w-8 rounded-md" /> <Skeleton className="h-8 w-8 rounded-md" /> <Skeleton className="h-8 w-8 rounded-md" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="mt-8 flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
+        <Skeleton className="h-10 w-10 rounded-full mb-3" />
+        <Skeleton className="h-6 w-1/3 mb-2" />
+        <Skeleton className="h-4 w-1/2" />
+    </div>
+  </>
+);
+
+
 export default function AdminEventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isConfigured, setIsConfigured] = useState(true); // Assume configured with hardcoded keys
+  const [isConfigured, setIsConfigured] = useState(true);
 
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -76,16 +111,14 @@ export default function AdminEventsPage() {
   });
 
   const fetchEvents = useCallback(async () => {
-    // No need to check for ACCESS_KEY or BIN_ID as they are hardcoded
-    // but keep the structure for potential future re-enablement of env vars
     if (!ACCESS_KEY || !BIN_ID) {
       setError("JSONBin.io Access Key or Events Bin ID is not configured (hardcoded).");
-      setIsConfigured(false); // This state might not be strictly necessary with hardcoding
+      setIsConfigured(false);
       setIsLoading(false);
       return;
     }
     setIsConfigured(true);
-    setIsLoading(true);
+    setIsLoading(true); // Set loading true at the start of fetch
     setError(null);
 
     try {
@@ -109,7 +142,7 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []); // Empty dependency array as ACCESS_KEY and BIN_ID are constants now
+  }, []);
 
   useEffect(() => {
     fetchEvents();
@@ -124,11 +157,11 @@ export default function AdminEventsPage() {
   };
 
   const handleSelectChange = (value: string) => {
-    setFormValues(prev => ({ ...prev, type: value }));
+    setFormValues(prev => ({ ...prev, type: value as EventType['type'] }));
   };
   
   const openAddDialog = () => {
-    setEventToEdit(null); // Clear any previous edit state
+    setEventToEdit(null);
     setFormValues({
       title: '', date: '', startTime: '', endTime: '', type: 'class', description: '', detailsPageSlug: ''
     });
@@ -168,7 +201,7 @@ export default function AdminEventsPage() {
       date: formValues.date!,
       startTime: formValues.startTime!,
       endTime: formValues.endTime || undefined,
-      type: formValues.type!,
+      type: formValues.type! as EventType['type'],
       description: formValues.description || undefined,
       detailsPageSlug: formValues.detailsPageSlug!,
     };
@@ -182,8 +215,9 @@ export default function AdminEventsPage() {
         const data = await currentEventsResponse.json();
         currentEventsList = (Array.isArray(data.record) ? data.record : [])
           .filter((event: any) => event && event.id && event.title && event.date);
-      } else if (currentEventsResponse.status !== 404) {
-        throw new Error('Failed to fetch current events before saving.');
+      } else if (currentEventsResponse.status !== 404) { // Allow 404 for empty bin
+        const errorText = await currentEventsResponse.text();
+        throw new Error(`Failed to fetch current events before saving. Status: ${currentEventsResponse.status}. Response: ${errorText}`);
       }
       
       let updatedEventsList: EventType[];
@@ -231,7 +265,7 @@ export default function AdminEventsPage() {
         const data = await currentEventsResponse.json();
         currentEventsList = (Array.isArray(data.record) ? data.record : [])
          .filter((event: any) => event && event.id && event.title && event.date);
-      } else {
+      } else if (currentEventsResponse.status !== 404) {
         throw new Error('Failed to fetch current events before deleting.');
       }
 
@@ -269,9 +303,7 @@ export default function AdminEventsPage() {
     }
   };
 
-  // Configuration error for hardcoded keys isn't relevant in the same way,
-  // but we keep the structure for if user wants to re-enable env vars.
-  if (!isConfigured && (!ACCESS_KEY || !BIN_ID) ) { // Only show if hardcoded values were somehow missing/empty
+  if (!isConfigured && (!ACCESS_KEY || !BIN_ID) ) {
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -294,78 +326,91 @@ export default function AdminEventsPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
-          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
-            Manage Events
-          </h1>
-          <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <CalendarPlus className="mr-2 h-5 w-5" /> Add New Event
-          </Button>
-        </header>
+        {isLoading && events.length === 0 ? ( // Show skeleton only on initial load when events are empty
+          <PageContentSkeleton />
+        ) : !isLoading && error ? (
+          <>
+            <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
+              <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
+                Manage Events
+              </h1>
+               <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <CalendarPlus className="mr-2 h-5 w-5" /> Add New Event
+              </Button>
+            </header>
+            <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
+              <AlertCircle className="h-10 w-10 mb-3" />
+              <p className="font-headline text-2xl mb-2">Error Loading Events</p>
+              <p className="font-body text-center">{error}</p>
+              <Button onClick={fetchEvents} className="mt-4">Try Again</Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
+              <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
+                Manage Events
+              </h1>
+              <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <CalendarPlus className="mr-2 h-5 w-5" /> Add New Event
+              </Button>
+            </header>
 
-        {isLoading && !events.length && (
-          <div className="flex justify-center items-center py-10">
-            <Loader2 className="h-10 w-10 animate-spin text-accent" />
-            <p className="ml-3 font-body">Loading events...</p>
-          </div>
-        )}
+            {!isLoading && !error && events.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
+                <CalendarPlus className="h-10 w-10 mb-3 text-muted-foreground" />
+                <p className="font-headline text-2xl mb-2">No Events Found</p>
+                <p className="font-body text-center text-muted-foreground">
+                  Click "Add New Event" to create your first calendar event.
+                </p>
+              </div>
+            )}
 
-        {!isLoading && error && (
-          <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
-            <AlertCircle className="h-10 w-10 mb-3" />
-            <p className="font-headline text-2xl mb-2">Error Loading Events</p>
-            <p className="font-body text-center">{error}</p>
-            <Button onClick={fetchEvents} className="mt-4">Try Again</Button>
-          </div>
-        )}
-
-        {!isLoading && !error && events.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
-            <CalendarPlus className="h-10 w-10 mb-3 text-muted-foreground" />
-            <p className="font-headline text-2xl mb-2">No Events Found</p>
-            <p className="font-body text-center text-muted-foreground">
-              Click "Add New Event" to create your first calendar event.
-            </p>
-          </div>
-        )}
-
-        {!isLoading && !error && events.length > 0 && (
-          <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-headline">Date</TableHead>
-                  <TableHead className="font-headline">Time</TableHead>
-                  <TableHead className="font-headline">Title</TableHead>
-                  <TableHead className="font-headline hidden md:table-cell">Type</TableHead>
-                  <TableHead className="font-headline text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-body text-sm">
-                      {formatDateForDisplay(event.date)}
-                    </TableCell>
-                    <TableCell className="font-body text-sm">{event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}</TableCell>
-                    <TableCell className="font-body font-medium">{event.title}</TableCell>
-                    <TableCell className="font-body hidden md:table-cell capitalize">{event.type}</TableCell>
-                    <TableCell className="text-right space-x-1">
-                       <Button variant="ghost" size="icon" onClick={() => { setCurrentEvent(event); setIsViewDialogOpen(true); }}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(event)}>
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setEventToDelete(event); setIsDeleteDialogOpen(true); }}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+            {events.length > 0 && (
+              <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-headline">Date</TableHead>
+                      <TableHead className="font-headline">Time</TableHead>
+                      <TableHead className="font-headline">Title</TableHead>
+                      <TableHead className="font-headline hidden md:table-cell">Type</TableHead>
+                      <TableHead className="font-headline text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {events.map((event) => (
+                      <TableRow key={event.id}>
+                        <TableCell className="font-body text-sm">
+                          {formatDateForDisplay(event.date)}
+                        </TableCell>
+                        <TableCell className="font-body text-sm">{event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}</TableCell>
+                        <TableCell className="font-body font-medium">{event.title}</TableCell>
+                        <TableCell className="font-body hidden md:table-cell capitalize">{event.type}</TableCell>
+                        <TableCell className="text-right space-x-1">
+                          <Button variant="ghost" size="icon" onClick={() => { setCurrentEvent(event); setIsViewDialogOpen(true); }}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(event)}>
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setEventToDelete(event); setIsDeleteDialogOpen(true); }}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+             {isLoading && events.length > 0 && ( // Show a smaller loader if loading more events but some are already displayed
+                <div className="flex justify-center items-center py-6">
+                    <Loader2 className="h-6 w-6 animate-spin text-accent" />
+                    <p className="ml-2 font-body text-sm">Updating events...</p>
+                </div>
+            )}
+          </>
         )}
       </main>
       <Footer />
@@ -423,8 +468,8 @@ export default function AdminEventsPage() {
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="button" onClick={handleSaveEvent} disabled={isLoading} className="bg-accent hover:bg-accent/90">
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            <Button type="button" onClick={handleSaveEvent} disabled={isLoading && !events.length} className="bg-accent hover:bg-accent/90">
+              {isLoading  && !events.length ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {eventToEdit ? 'Save Changes' : 'Create Event'}
             </Button>
           </DialogFooter>
@@ -478,9 +523,9 @@ export default function AdminEventsPage() {
               <AlertDialogAction
                 onClick={handleDeleteEvent}
                 className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                disabled={isLoading}
+                disabled={isLoading && !events.length}
               >
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isLoading  && !events.length ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Delete Event
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -490,3 +535,5 @@ export default function AdminEventsPage() {
     </div>
   );
 }
+
+    

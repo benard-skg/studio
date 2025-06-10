@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar as CalendarIconLucide, ChevronLeft, ChevronRight, Info, Tag as TagIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { Button, buttonVariants } from '@/components/ui/button'; // Added buttonVariants import
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { EventType } from '@/lib/types';
@@ -53,11 +53,11 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   };
   
   const changeMonth = (newMonth: Date) => {
-    setAnimatedMonth(newMonth); // Trigger animation
+    setAnimatedMonth(newMonth); 
     setTimeout(() => {
       setCurrentDisplayMonth(startOfMonth(newMonth));
-      setAnimatedMonth(null); // Reset animation state
-    }, 200); // Duration of animation
+      setAnimatedMonth(null); 
+    }, 200); 
   };
 
   const goToPreviousMonth = () => {
@@ -87,7 +87,7 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
               <div className="h-6 w-32 bg-muted rounded-md"></div>
               <div className="h-8 w-8 bg-muted rounded-md"></div>
             </div>
-            <div className="h-64 bg-muted rounded-md"></div> {/* Calendar placeholder */}
+            <div className="h-64 bg-muted rounded-md"></div>
           </div>
         </div>
       </section>
@@ -151,7 +151,6 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
                 day_outside: "text-muted-foreground/50 opacity-70",
                 day_disabled: "text-muted-foreground/30 opacity-50 cursor-not-allowed",
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                ... (dayHasEvent && { day_event: "font-bold relative" }),
               }}
               modifiers={{
                 eventDay: dayHasEvent,
@@ -216,3 +215,5 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
     </section>
   );
 }
+
+    
