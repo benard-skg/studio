@@ -28,12 +28,11 @@ interface LichessGameData {
   speed?: string;
   perf?: string;
   status?: string;
-  fen?: string; // Expected FEN for the current position
-  players?: { // Make players optional as it might not always be present initially
+  fen?: string; 
+  players?: { 
     white: LichessPlayer;
     black: LichessPlayer;
   };
-  // Other fields like 'pgn', 'moves' might be present if pgnInJson=true
 }
 
 export default function ChessTVSection() {
@@ -44,7 +43,7 @@ export default function ChessTVSection() {
   const [lichessUsername, setLichessUsername] = useState<string | null>(null);
   const [gameDetails, setGameDetails] = useState<Partial<LichessGameData> | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [gameFoundInStream, setGameFoundInStream] = useState(false);
+  const [gameFoundInStream, setGameFoundInStream] = useState(false); // True if a valid FEN has been parsed
   const [lastRawStreamObject, setLastRawStreamObject] = useState<string | null>(null);
 
   const boardContainerRef = useRef<HTMLDivElement>(null);
@@ -101,7 +100,7 @@ export default function ChessTVSection() {
     const { signal } = streamControllerRef.current;
 
     setStatusMessage(`Attempting to connect to Lichess for ${lichessUsername}...`);
-    setPosition(DEFAULT_FEN); // Reset to default before new stream
+    setPosition(DEFAULT_FEN); 
     setGameDetails(null);
     setError(null);
     setGameFoundInStream(false);
@@ -110,7 +109,6 @@ export default function ChessTVSection() {
 
     const fetchStream = async () => {
       try {
-        // Explicitly request application/x-ndjson
         const apiUrl = `https://lichess.org/api/games/user/${lichessUsername}?ongoing=true&pgnInJson=true&tags=true&moves=true`;
         const response = await fetch(apiUrl, { 
           signal,
@@ -148,7 +146,7 @@ export default function ChessTVSection() {
           const { done, value } = await reader.read();
           if (done) {
             if (!gameFoundInStream) {
-              setStatusMessage(`Stream ended. No live games identified for ${lichessUsername}. May be PGN only.`);
+              setStatusMessage(`Stream ended. No live game FEN identified for ${lichessUsername}.`);
             } else {
               setStatusMessage(`Stream ended for ${lichessUsername}.`);
             }
@@ -166,8 +164,17 @@ export default function ChessTVSection() {
               gameData = JSON.parse(line) as Partial<LichessGameData>;
               setLastRawStreamObject(JSON.stringify(gameData, null, 2)); 
 
-              if (gameData && typeof gameData.fen === 'string' && gameData.id && gameData.players) {
+              let fenFoundThisUpdate = false;
+              if (gameData && typeof gameData.fen === 'string') {
                 setPosition(gameData.fen);
+                if (!gameFoundInStream) { // Only set this once when the first FEN comes
+                    setGameFoundInStream(true);
+                }
+                fenFoundThisUpdate = true;
+                setError(null); // Clear previous errors if we get a FEN
+              }
+
+              if (gameData && gameData.players) {
                 setGameDetails({
                   id: gameData.id,
                   players: gameData.players,
@@ -175,23 +182,19 @@ export default function ChessTVSection() {
                   speed: gameData.speed,
                   perf: gameData.perf,
                 });
-                setError(null);
-                if (!gameFoundInStream) {
-                  setStatusMessage(`Live game found for ${lichessUsername}!`);
-                  setGameFoundInStream(true);
-                }
-              } else if (gameData && gameData.id) {
-                if (!gameFoundInStream) setStatusMessage(`Received game update (ID: ${gameData.id}), parsing details...`);
-              } else if (gameData) {
-                // Received some JSON, but not the expected structure
-                 if (!gameFoundInStream) setStatusMessage(`Received partial JSON data. Looking for FEN/Player info.`);
+              }
+              
+              if (fenFoundThisUpdate) {
+                setStatusMessage(`Live game board updated for ${lichessUsername}.`);
+              } else if (gameData && gameData.id && !gameFoundInStream) {
+                setStatusMessage(`Received game data (ID: ${gameData.id}). Looking for FEN...`);
               }
 
+
             } catch (e: any) {
-              // If JSON.parse fails, it's likely PGN or other non-JSON text
               setLastRawStreamObject(`Error parsing line as JSON: ${e.message}\nRaw Line: ${line}`);
               if (!gameFoundInStream) {
-                setStatusMessage(`Receiving non-JSON data (likely PGN). Waiting for structured game info...`);
+                setStatusMessage(`Receiving non-JSON data. Waiting for structured game info...`);
               }
             }
           }
@@ -215,7 +218,7 @@ export default function ChessTVSection() {
         streamControllerRef.current.abort();
       }
     };
-  }, [isMounted, lichessUsername, boardWidth]); // Rerun if username or boardWidth changes
+  }, [isMounted, lichessUsername, boardWidth]);
 
 
   if (!isMounted || boardWidth === 0) {
@@ -233,7 +236,7 @@ export default function ChessTVSection() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-2 sm:p-3 bg-card">
-              <div ref={boardContainerRef} className="w-full max-w-[520px] mx-auto my-2" style={{ minHeight: '300px' }}>
+              <div ref={boardContainerRef} className="w-full max-w-[520px] mx-auto my-2" style={{ minHeight: '280px' }}>
                  <Skeleton className="aspect-square w-full h-auto min-h-[280px]" />
               </div>
             </CardContent>
@@ -245,6 +248,7 @@ export default function ChessTVSection() {
   
   const whitePlayerName = gameDetails?.players?.white?.user?.name || 'White';
   const blackPlayerName = gameDetails?.players?.black?.user?.name || 'Black';
+  const gameIsActive = !!(gameDetails && gameDetails.players && gameFoundInStream);
 
   return (
     <section id="chesstv" className="py-12 md:py-16 bg-secondary">
@@ -255,18 +259,18 @@ export default function ChessTVSection() {
               <Tv className="h-7 w-7 text-accent mr-2" />
               <CardTitle className="font-headline text-2xl text-center">ChessTV</CardTitle>
             </div>
-             {gameDetails && gameDetails.players && gameFoundInStream ? (
+             {gameIsActive ? (
               <div className="font-body text-xs text-center text-muted-foreground space-y-0.5">
                 <p>
                   <User className="inline h-3 w-3 mr-1" /> W: <strong>{whitePlayerName}</strong> 
-                  {gameDetails.players?.white?.rating && ` (${gameDetails.players.white.rating})`}
+                  {gameDetails?.players?.white?.rating && ` (${gameDetails.players.white.rating})`}
                 </p>
                 <p>
                   <User className="inline h-3 w-3 mr-1" /> B: <strong>{blackPlayerName}</strong> 
-                  {gameDetails.players?.black?.rating && ` (${gameDetails.players.black.rating})`}
+                  {gameDetails?.players?.black?.rating && ` (${gameDetails.players.black.rating})`}
                 </p>
                 <p className="text-xs capitalize pt-1">
-                  {gameDetails.speed} {gameDetails.perf} - Status: {gameDetails.status}
+                  {gameDetails?.speed} {gameDetails?.perf} - Status: {gameDetails?.status}
                 </p>
               </div>
             ) : (
@@ -307,7 +311,9 @@ export default function ChessTVSection() {
                 <p>{error}</p>
               </div>
             )}
-            {(!gameFoundInStream && !error && statusMessage && !(gameDetails && gameDetails.players)) && (
+            
+            {/* Show detailed status at bottom only if game isn't fully active OR if there's an error */}
+            {(!gameIsActive && !error && statusMessage) && (
                  <p className="font-body text-xs text-center text-muted-foreground mt-2 px-2">{statusMessage}</p>
              )}
 
