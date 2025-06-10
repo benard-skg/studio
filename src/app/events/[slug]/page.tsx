@@ -13,12 +13,6 @@ interface EventPageProps {
   };
 }
 
-// SECURITY WARNING: The access key is hardcoded below for prototype demonstration ONLY.
-// In a real application, this key MUST be stored in environment variables (e.g., .env.local)
-// and accessed via process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY.
-const JSONBIN_EVENTS_BIN_ID = '6847dd9e8a456b7966aba67c';
-const JSONBIN_ACCESS_KEY = '$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy'; // <-- CORRECTED KEY
-
 const isValidEvent = (event: any): event is EventType => {
   return event &&
     typeof event.id === 'string' && event.id.trim() !== '' &&
@@ -30,21 +24,31 @@ const isValidEvent = (event: any): event is EventType => {
 };
 
 async function fetchAllValidEvents(): Promise<EventType[]> {
-  console.log(`[EventUtils] Fetching all events from Bin ID: ${JSONBIN_EVENTS_BIN_ID} using Access Key (first 5 chars): ${JSONBIN_ACCESS_KEY.substring(0,5)}...`);
+  const binId = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
+  const accessKey = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+
+  if (!binId || !accessKey) {
+    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured in environment variables.");
+    return [];
+  }
+  
+  console.log(`[EventUtils] Fetching all events from Bin ID: ${binId} using Access Key (first 5 chars): ${accessKey.substring(0,5)}...`);
   try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_EVENTS_BIN_ID}/latest`, {
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
       method: 'GET',
-      headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
-      next: { revalidate: 600 } // Revalidate more frequently for event data
+      headers: { 'X-Access-Key': accessKey },
+      next: { revalidate: 60 } // Revalidate frequently for event data
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (prefix): ${JSONBIN_ACCESS_KEY.substring(0,5)}..., Response: ${errorText}`);
+      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (prefix): ${accessKey.substring(0,5)}..., Response: ${errorText}`);
       return [];
     }
     const data = await response.json();
     const rawEvents = Array.isArray(data.record) ? data.record : [];
-    const validEvents = rawEvents.filter(isValidEvent);
+    const validEvents = rawEvents.filter(isValidEvent)
+      .sort((a: EventType, b: EventType) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.startTime.localeCompare(b.startTime));
+
      if (rawEvents.length > 0 && validEvents.length !== rawEvents.length) {
       console.warn(`[EventUtils] Filtered out ${rawEvents.length - validEvents.length} malformed event entries during full fetch.`);
     }
@@ -58,7 +62,7 @@ async function fetchAllValidEvents(): Promise<EventType[]> {
 
 async function getEventBySlug(slug: string): Promise<EventType | null> {
   console.log(`[EventSlugPage] getEventBySlug: Processing slug '${slug}'`);
-  const events = await fetchAllValidEvents(); // Uses the new function
+  const events = await fetchAllValidEvents(); 
   const event = events.find(e => e.detailsPageSlug === slug);
   if (event) {
     console.log(`[EventSlugPage] Found event for slug '${slug}': ${event.title}`);
@@ -95,7 +99,7 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-  const events = await fetchAllValidEvents(); // Uses the new function
+  const events = await fetchAllValidEvents(); 
   console.log(`[EventSlugPage] generateStaticParams: Found ${events.length} valid events for static generation.`);
   return events.map((event) => ({
     slug: event.detailsPageSlug,
