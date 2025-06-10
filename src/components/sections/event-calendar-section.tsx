@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar as CalendarIconLucide, ChevronLeft, ChevronRight, Info, Tag as TagIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button'; // Added buttonVariants import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { EventType } from '@/lib/types';
@@ -128,14 +128,14 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
               selected={selectedDate}
               onSelect={(day) => day && handleDayClick(day)}
               month={currentDisplayMonth}
-              onMonthChange={setCurrentDisplayMonth} // direct update for react-day-picker's own nav
+              onMonthChange={setCurrentDisplayMonth} 
               showOutsideDays={true}
               className="p-0 w-full"
               classNames={{
                 months: "p-0",
                 month: "space-y-3 p-0",
-                caption: "hidden", // We use CardHeader for caption
-                nav: "hidden", // We use custom buttons in CardHeader
+                caption: "hidden", 
+                nav: "hidden", 
                 table: "w-full border-collapse",
                 head_row: "flex justify-around mb-1",
                 head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
@@ -157,7 +157,7 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
                 eventDay: dayHasEvent,
               }}
               modifiersClassNames={{
-                eventDay: 'event-day-modifier', // Used in globals.css for the dot
+                eventDay: 'event-day-modifier', 
               }}
               disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) && !isSameDay(date, new Date())}
             />
@@ -169,12 +169,12 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
             <h3 className="font-headline text-2xl mb-4 text-center">
               Events on {format(selectedDate, 'MMMM dd, yyyy')}
             </h3>
-            <ScrollArea className="h-auto max-h-[300px] rounded-md border border-border shadow-sm">
+            <ScrollArea className="h-auto max-h-[300px] rounded-md border border-border shadow-sm bg-card">
               <div className="space-y-3 p-4">
                 {eventsForSelectedDate.map(event => (
                   <Card 
                     key={event.id} 
-                    className="shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-card hover:bg-accent/5"
+                    className="shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5"
                     onClick={() => router.push(`/events/${event.detailsPageSlug}`)}
                   >
                     <CardContent className="p-4">
@@ -216,4 +216,3 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
     </section>
   );
 }
-
