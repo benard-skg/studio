@@ -2,25 +2,46 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { ChessBoard } from 'kokopu-react';
+import { Chessboard } from 'react-chessboard'; // Import from react-chessboard
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tv } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import ChessTVSectionLoader from './chess-tv-section-loader';
 
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export default function ChessTVSection() {
   const [isMounted, setIsMounted] = useState(false);
-  const [currentFen, setCurrentFen] = useState(DEFAULT_FEN);
+  const [position, setPosition] = useState(DEFAULT_FEN); // react-chessboard uses 'position' for FEN
+  const [isLoading, setIsLoading] = useState(true);
+  const [boardKey, setBoardKey] = useState(0); // Key to force re-render if needed
 
   useEffect(() => {
     setIsMounted(true);
-    // You can uncomment the timeout below to test if the board updates with a new FEN after 5 seconds
-    // setTimeout(() => {
-    //   console.log("[ChessTV] Simulating FEN update for testing");
-    //   setCurrentFen("rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 2 2"); // Example: After 1. Nf3 Nf6
-    // }, 5000);
+    // Simulate loading finish and ensure client-side context for board width
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setBoardKey(prev => prev + 1); // Force re-render after mount for width calculation
+    }, 100); // Short delay to ensure DOM is ready
+    return () => clearTimeout(timer);
   }, []);
+
+  // Calculate board width dynamically after mount
+  const getBoardWidth = () => {
+    if (typeof window !== 'undefined') {
+      // Attempt to find the container and use its width, or fallback
+      const container = document.getElementById('chess-tv-board-container');
+      if (container) {
+        return Math.min(520, container.offsetWidth * 0.95); // Use 95% of container width
+      }
+      return Math.min(520, window.innerWidth * 0.8); // Fallback to viewport width
+    }
+    return 320; // Default for SSR or if window is not available
+  };
+  
+  if (!isMounted || isLoading) { // Show loader if not mounted or still loading
+    return <ChessTVSectionLoader />;
+  }
 
   return (
     <section id="chesstv" className="py-12 md:py-16 bg-secondary">
@@ -28,28 +49,36 @@ export default function ChessTVSection() {
         <Card className="max-w-md mx-auto shadow-xl border-border overflow-hidden">
           <CardHeader className="bg-card p-4 border-b border-border">
             <div className="flex items-center justify-center mb-2">
-                <Tv className="h-7 w-7 text-accent mr-2" />
-                <CardTitle className="font-headline text-2xl text-center">ChessTV</CardTitle>
+              <Tv className="h-7 w-7 text-accent mr-2" />
+              <CardTitle className="font-headline text-2xl text-center">ChessTV</CardTitle>
             </div>
             <CardDescription className="font-body text-sm text-center text-muted-foreground">
-              {isMounted ? "Displaying Board" : "Loading ChessTV..."}
+              Live Chess Board
             </CardDescription>
           </CardHeader>
           <CardContent className="p-2 sm:p-3 bg-card">
             <div 
-              className="aspect-square w-full max-w-[400px] sm:max-w-[480px] md:max-w-[520px] mx-auto my-2 rounded-md overflow-hidden shadow-inner border border-border/50"
-              style={{ minHeight: '300px' }} // Explicit min-height
+              id="chess-tv-board-container" // Add an ID for width calculation
+              className="aspect-square w-full max-w-[520px] mx-auto my-2 rounded-md overflow-hidden"
+              style={{ minHeight: '320px' }} 
             >
-              {isMounted && currentFen ? (
-                <ChessBoard fen={currentFen} />
+              {isMounted && !isLoading ? ( // Ensure mounted and not loading before rendering Chessboard
+                <Chessboard 
+                  key={boardKey} // Use key to help with re-renders if width changes
+                  id="ChessTVBoard" 
+                  position={position} 
+                  boardWidth={getBoardWidth()}
+                  arePiecesDraggable={false} 
+                  animationDuration={200}
+                />
               ) : (
+                // This Skeleton should ideally not be shown if !isMounted || isLoading condition above handles it.
+                // But as a fallback for the brief moment:
                 <Skeleton className="aspect-square w-full h-full" /> 
               )}
             </div>
             <div className="font-body text-sm mt-3 px-1 text-center text-muted-foreground">
-              {isMounted && currentFen && <p>Board should be visible above with FEN: {currentFen}</p>}
-              {!isMounted && <p>Initializing board...</p>}
-              {isMounted && !currentFen && <p>Error: FEN is not available to render board.</p>}
+              <p>Displaying standard board position.</p>
             </div>
           </CardContent>
         </Card>
