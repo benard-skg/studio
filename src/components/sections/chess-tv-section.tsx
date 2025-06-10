@@ -37,11 +37,11 @@ interface LichessGameData {
     white: LichessPlayer;
     black: LichessPlayer;
   };
-  initialFen?: string;
-  fen?: string;
+  initialFen?: string; // For Chess960 or custom starting positions
+  fen?: string; // Current FEN, if provided by the stream
   winner?: string;
-  moves?: string;
-  pgn?: string;
+  moves?: string; // PGN moves string
+  pgn?: string; // Full PGN if pgnInJson=true
   clock?: { initial: number; increment: number; totalTime: number };
 }
 
@@ -64,7 +64,7 @@ export default function ChessTVSection() {
   const [gameFoundInStream, setGameFoundInStream] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRawStreamObject, setLastRawStreamObject] = useState<string | null>("Log box initialized.");
-  const [focusedGameId, setFocusedGameId] = useState<string | null>(null); // New state for focused game
+  const [focusedGameId, setFocusedGameId] = useState<string | null>(null);
 
   const boardContainerRef = useRef<HTMLDivElement>(null);
   const streamControllerRef = useRef<AbortController | null>(null);
@@ -111,7 +111,7 @@ export default function ChessTVSection() {
       setGameDetails({});
       setGameFoundInStream(false);
       setError(null);
-      setFocusedGameId(null); // Reset focused game ID
+      setFocusedGameId(null);
       if (streamControllerRef.current) {
         streamControllerRef.current.abort();
       }
@@ -125,24 +125,23 @@ export default function ChessTVSection() {
     const { signal } = streamControllerRef.current;
 
     setStatusMessage(`Attempting to connect to Lichess for ${lichessUsername}...`);
-    setGameFoundInStream(false);
+    setGameFoundInStream(false); // Reset this for new stream/username
     setError(null);
-    setGameDetails({});
-    setFocusedGameId(null); // Reset focused game ID for a new stream session or username change
-    // Do not reset position to DEFAULT_FEN here, let it persist if a game was previously focused.
-    // If no FEN is found for the new focused game, it will naturally be set to DEFAULT_FEN or initialFen later.
+    setGameDetails({}); // Clear old details
+    setFocusedGameId(null); // Clear focused game ID for new stream
+    // Do not reset position immediately, let the stream dictate it or default if no FEN found for the new focused game
 
     setLastRawStreamObject(prev => `Stream effect: Initializing fetch for ${lichessUsername}. focusedGameId reset.\n---\n${prev?.substring(0,500)}`);
 
     const fetchStream = async () => {
       let localGameFoundInStreamFlag = false;
-      let currentFocusedGameId: string | null = null; // Local var to manage focus within this fetchStream instance
+      let currentFocusedGameId: string | null = null;
 
       setLastRawStreamObject(prev => `fetchStream started for ${lichessUsername}.\n---\n${prev?.substring(0,500)}`);
       try {
         const apiUrl = `https://lichess.org/api/games/user/${lichessUsername}?ongoing=true&pgnInJson=true&tags=true&moves=true`;
         setLastRawStreamObject(prev => `Fetching URL: ${apiUrl}\n---\n${prev?.substring(0,500)}`);
-
+        
         const response = await fetch(apiUrl, {
           signal,
           headers: { 'Accept': 'application/x-ndjson' }
@@ -151,9 +150,9 @@ export default function ChessTVSection() {
 
         if (!response.ok) {
           let errorMsg = `Lichess API error: ${response.statusText} (Status: ${response.status})`;
-          if (response.status === 404) errorMsg = `User "${lichessUsername}" not found or no ongoing games. Check username.`;
+          if (response.status === 404) errorMsg = `User "${lichessUsername}" not found on Lichess. Check username.`;
           setStatusMessage(errorMsg); setError(errorMsg);
-          setPosition(DEFAULT_FEN);
+          setPosition(DEFAULT_FEN); // Reset to default on error
           return;
         }
         if (!response.body) {
@@ -161,8 +160,8 @@ export default function ChessTVSection() {
           setPosition(DEFAULT_FEN);
           return;
         }
-
-        setStatusMessage(`Connected to Lichess for ${lichessUsername}. Waiting for first data chunk...`);
+        
+        setStatusMessage(`Connected to Lichess for ${lichessUsername}. Waiting for game data...`);
         setLastRawStreamObject(prev => `Connected. Reader created. Waiting for stream data...\n---\n${prev?.substring(0,500)}`);
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -177,14 +176,14 @@ export default function ChessTVSection() {
 
           if (done) {
             const finalStatus = localGameFoundInStreamFlag
-                ? `Lichess stream ended for ${lichessUsername}. Last focused game (ID: ${currentFocusedGameId || 'N/A'}) details shown.`
-                : `Stream ended. No specific game data focused for ${lichessUsername} in this session. Board shows default position.`;
+              ? `Lichess stream ended for ${lichessUsername}. Last focused game (ID: ${currentFocusedGameId || 'N/A'}) details shown.`
+              : `Stream ended. No specific game data focused for ${lichessUsername} in this session. Board shows default position.`;
             setStatusMessage(finalStatus);
-            if (!localGameFoundInStreamFlag) setPosition(DEFAULT_FEN);
+            if (!localGameFoundInStreamFlag) setPosition(DEFAULT_FEN); // If no game was EVER focused and had FEN, reset board
             setLastRawStreamObject(prev => `Stream ended (done=true). localGameFoundInStreamFlag: ${localGameFoundInStreamFlag}, focusedGameId in stream: ${currentFocusedGameId}\n---\n${prev?.substring(0,500)}`);
             break;
           }
-
+          
           buffer += rawChunk;
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
@@ -198,7 +197,7 @@ export default function ChessTVSection() {
               setLastRawStreamObject(loggableGameData.substring(0, 1000) + (loggableGameData.length > 1000 ? "\n...(truncated)" : ""));
 
               if (gameData && gameData.id) {
-                if (!currentFocusedGameId) {
+                if (!currentFocusedGameId) { // Latch onto the first game ID
                   currentFocusedGameId = gameData.id;
                   setFocusedGameId(gameData.id); // Set React state for global component use
                   setLastRawStreamObject(prev => `Focusing on game ID: ${gameData?.id}\n---\n${prev?.substring(0,500)}`);
@@ -206,10 +205,10 @@ export default function ChessTVSection() {
                   setLastRawStreamObject(prev => `Skipping game ${gameData?.id} (focused on ${currentFocusedGameId})\n---\n${prev?.substring(0,500)}`);
                   continue; // Skip if not the focused game
                 }
-                
-                // Process only if it's the focused game (or the first game to become focused)
-                localGameFoundInStreamFlag = true;
-                setGameFoundInStream(true);
+
+                // Process only if it's the focused game
+                localGameFoundInStreamFlag = true; // Mark that we processed a valid game object from the stream
+                setGameFoundInStream(true); // Update React state
 
                 let fenToSet: string | undefined = undefined;
                 if (typeof gameData.fen === 'string' && gameData.fen.trim() !== '') {
@@ -220,12 +219,17 @@ export default function ChessTVSection() {
 
                 if (fenToSet) {
                   setPosition(fenToSet);
-                  setError(null);
+                  setError(null); // Clear previous errors if we get a valid FEN
                 } else {
-                  // If no FEN in this update for the focused game, keep current board or set to default if it was never set
-                   if (position === DEFAULT_FEN) setPosition(DEFAULT_FEN);
+                  // If no FEN in this update for the focused game, but it's the first update for this focused game
+                  // and the board is still default, keep it default or set to initial if available.
+                  // If a previous FEN was set for this focused game, keep it.
+                  if (position === DEFAULT_FEN && gameData.id === currentFocusedGameId) {
+                     setPosition(DEFAULT_FEN); // Keep default if no FEN found for this new focused game
+                  }
                 }
-
+                
+                // Update gameDetails if player info is present
                 if (gameData.players?.white?.user && gameData.players?.black?.user) {
                   const newGameDetails = {
                     id: gameData.id,
@@ -239,17 +243,21 @@ export default function ChessTVSection() {
                   setGameDetails(newGameDetails);
                   setStatusMessage(`Displaying details for focused game ${gameData.id}. Board: ${fenToSet ? 'Updated' : 'No FEN in this update'}.`);
                 } else {
-                   setStatusMessage(`Game update for focused game ${gameData.id}. Board: ${fenToSet ? 'Updated' : 'No FEN in this update'}. Player details incomplete.`);
+                   // Game ID present, but player details might be incomplete in this specific chunk
+                   // We can still update some details or just status if available
+                  setGameDetails(prevDetails => ({ ...prevDetails, id: gameData.id, status: gameData.status, winner: gameData.winner }));
+                  setStatusMessage(`Game update for focused game ${gameData.id}. Board: ${fenToSet ? 'Updated' : 'No FEN in this update'}. Player details might be partial.`);
                 }
-              } else if (!localGameFoundInStreamFlag) {
-                setStatusMessage(`Received stream data. No recognized game ID yet to focus on. Board shows default position.`);
+
+              } else if (!localGameFoundInStreamFlag && !currentFocusedGameId) { // No game ID found yet in stream to focus on
+                setStatusMessage(`Received stream data. Waiting for first game ID to focus on... Board shows default position.`);
                 setPosition(DEFAULT_FEN);
               }
 
             } catch (e: any) {
               const errorLinePreview = line.substring(0, 200) + (line.length > 200 ? '...' : '');
               setLastRawStreamObject(prev => `Error parsing line: ${e.message}\nRaw Line: ${errorLinePreview}\n---\n${prev?.substring(0,500)}`);
-              if (!localGameFoundInStreamFlag) {
+              if (!localGameFoundInStreamFlag && !currentFocusedGameId) {
                 setStatusMessage(`Stream data parse error. Waiting for valid game info... Board shows default position.`);
                 setPosition(DEFAULT_FEN);
               }
@@ -263,11 +271,12 @@ export default function ChessTVSection() {
         } else {
           setStatusMessage(`Error fetching Lichess stream: ${err.message}`);
           setError(`Stream error: ${err.message}`);
+          // Don't reset to default if a game was already found and displayed
           if (!localGameFoundInStreamFlag) setPosition(DEFAULT_FEN);
         }
       }
     };
-
+    
     fetchStream();
 
     return () => {
@@ -282,7 +291,7 @@ export default function ChessTVSection() {
   const whitePlayerName = gameDetails?.players?.white?.user?.name || 'White';
   const blackPlayerName = gameDetails?.players?.black?.user?.name || 'Black';
   
-  const displayGameId = focusedGameId || gameDetails?.id;
+  const displayGameId = focusedGameId || gameDetails?.id; // Prefer focusedGameId for consistency
   const gameInfoAvailable = gameFoundInStream && displayGameId && gameDetails?.players?.white?.user && gameDetails?.players?.black?.user;
 
   let headerStatusMessage = statusMessage;
@@ -294,6 +303,8 @@ export default function ChessTVSection() {
     }
   } else if (lichessUsername && !gameFoundInStream && !error && statusMessage.startsWith("Attempting")) {
      headerStatusMessage = `Connected. Waiting for game data for ${lichessUsername}...`;
+  } else if (lichessUsername && !gameFoundInStream && !error && statusMessage.startsWith("Connected")) {
+     headerStatusMessage = `Stream connected. Waiting for first game ID to focus on for ${lichessUsername}...`;
   } else if (!lichessUsername) {
     headerStatusMessage = "No Lichess username. Set in Admin > Settings.";
   }
@@ -342,7 +353,7 @@ export default function ChessTVSection() {
               {isMounted && boardWidth > 0 ? (
                 <Chessboard
                   id="LichessTVBoard"
-                  key={focusedGameId || lichessUsername || 'lichess-tv-board-static'}
+                  key="lichess-tv-static-key" // Static key to prevent remounts
                   position={position}
                   boardWidth={boardWidth}
                   arePiecesDraggable={false}
@@ -356,6 +367,13 @@ export default function ChessTVSection() {
                 <Skeleton className="aspect-square w-full h-auto min-h-[280px]" />
               )}
             </div>
+            
+            {gameInfoAvailable && position === DEFAULT_FEN && (
+              <div className="mt-2 p-2 bg-muted/70 border border-dashed border-border rounded-md text-xs text-muted-foreground text-center flex items-center justify-center">
+                <Info className="h-3.5 w-3.5 mr-1.5 shrink-0" />
+                Board shows default position. Live FEN not in this stream for game details above.
+              </div>
+            )}
 
             {error && (
               <div className="mt-3 p-3 bg-destructive/10 border border-destructive text-destructive text-xs rounded-md flex items-center justify-center">
@@ -391,3 +409,4 @@ export default function ChessTVSection() {
   );
 }
 
+    
