@@ -13,6 +13,9 @@ interface EventPageProps {
   };
 }
 
+const BIN_ID = "6847dd9e8a456b7966aba67c";
+const ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+
 const isValidEvent = (event: any): event is EventType => {
   return event &&
     typeof event.id === 'string' && event.id.trim() !== '' &&
@@ -24,24 +27,21 @@ const isValidEvent = (event: any): event is EventType => {
 };
 
 async function fetchAllValidEvents(): Promise<EventType[]> {
-  const binId = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
-  const accessKey = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-
-  if (!binId || !accessKey) {
-    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured in environment variables.");
+  if (!BIN_ID || !ACCESS_KEY) {
+    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured (hardcoded).");
     return [];
   }
   
-  console.log(`[EventUtils] Fetching all events from Bin ID: ${binId} using Access Key (first 5 chars): ${accessKey.substring(0,5)}...`);
+  console.log(`[EventUtils] Fetching all events from Bin ID: ${BIN_ID} using Access Key (hardcoded).`);
   try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
       method: 'GET',
-      headers: { 'X-Access-Key': accessKey },
+      headers: { 'X-Access-Key': ACCESS_KEY },
       next: { revalidate: 60 } // Revalidate frequently for event data
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (prefix): ${accessKey.substring(0,5)}..., Response: ${errorText}`);
+      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (hardcoded), Response: ${errorText}`);
       return [];
     }
     const data = await response.json();

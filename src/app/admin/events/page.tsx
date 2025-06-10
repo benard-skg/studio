@@ -45,12 +45,14 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
+const ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+const BIN_ID = "6847dd9e8a456b7966aba67c";
 
 export default function AdminEventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isConfigured, setIsConfigured] = useState(true);
+  const [isConfigured, setIsConfigured] = useState(true); // Assume configured with hardcoded keys
 
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -63,9 +65,6 @@ export default function AdminEventsPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-  const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
-
   const [formValues, setFormValues] = useState<Partial<EventType>>({
     title: '',
     date: '',
@@ -77,9 +76,11 @@ export default function AdminEventsPage() {
   });
 
   const fetchEvents = useCallback(async () => {
+    // No need to check for ACCESS_KEY or BIN_ID as they are hardcoded
+    // but keep the structure for potential future re-enablement of env vars
     if (!ACCESS_KEY || !BIN_ID) {
-      setError("JSONBin.io Access Key or Events Bin ID is not configured in .env.local.");
-      setIsConfigured(false);
+      setError("JSONBin.io Access Key or Events Bin ID is not configured (hardcoded).");
+      setIsConfigured(false); // This state might not be strictly necessary with hardcoding
       setIsLoading(false);
       return;
     }
@@ -108,7 +109,7 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [ACCESS_KEY, BIN_ID]);
+  }, []); // Empty dependency array as ACCESS_KEY and BIN_ID are constants now
 
   useEffect(() => {
     fetchEvents();
@@ -139,7 +140,7 @@ export default function AdminEventsPage() {
     setFormValues({
       id: event.id,
       title: event.title,
-      date: event.date, // Assuming date is already in YYYY-MM-DD
+      date: event.date, 
       startTime: event.startTime,
       endTime: event.endTime || '',
       type: event.type,
@@ -186,9 +187,9 @@ export default function AdminEventsPage() {
       }
       
       let updatedEventsList: EventType[];
-      if (eventToEdit) { // Editing existing event
+      if (eventToEdit) { 
         updatedEventsList = currentEventsList.map(ev => ev.id === newEventData.id ? newEventData : ev);
-      } else { // Adding new event
+      } else { 
         updatedEventsList = [...currentEventsList, newEventData];
       }
       
@@ -209,7 +210,7 @@ export default function AdminEventsPage() {
       toast({ title: eventToEdit ? "Event Updated!" : "Event Added!", description: `Event "${newEventData.title}" has been saved.` });
       setIsAddEditDialogOpen(false);
       setEventToEdit(null);
-      fetchEvents(); // Refresh list
+      fetchEvents(); 
     } catch (e: any) {
       setError(e.message || "An error occurred while saving the event.");
       toast({ variant: "destructive", title: "Save Error", description: e.message });
@@ -268,8 +269,9 @@ export default function AdminEventsPage() {
     }
   };
 
-
-  if (!isConfigured) {
+  // Configuration error for hardcoded keys isn't relevant in the same way,
+  // but we keep the structure for if user wants to re-enable env vars.
+  if (!isConfigured && (!ACCESS_KEY || !BIN_ID) ) { // Only show if hardcoded values were somehow missing/empty
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -280,7 +282,7 @@ export default function AdminEventsPage() {
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Configuration Error</p>
-            <p className="font-body text-center">{error}</p>
+            <p className="font-body text-center">{error || "JSONBin.io keys are missing (hardcoded check)."}</p>
           </div>
         </main>
         <Footer />
@@ -488,5 +490,3 @@ export default function AdminEventsPage() {
     </div>
   );
 }
-
-    
