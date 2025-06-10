@@ -168,13 +168,15 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
             <h3 className="font-headline text-2xl mb-4 text-center">
               Events on {format(selectedDate, 'MMMM dd, yyyy')}
             </h3>
-            <ScrollArea className="h-auto max-h-[300px] rounded-md border border-border shadow-sm bg-card">
+            <ScrollArea className="h-[300px] rounded-md border border-border shadow-sm bg-card">
               <div className="space-y-3 p-4">
                 {eventsForSelectedDate.map(event => (
                   <Card 
                     key={event.id} 
                     className="shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5"
                     onClick={() => router.push(`/events/${event.detailsPageSlug}`)}
+                    tabIndex={0} // Make card focusable for keyboard navigation
+                    onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/events/${event.detailsPageSlug}`); }}
                   >
                     <CardContent className="p-4">
                       <h4 className="font-headline text-lg text-accent mb-1">{event.title}</h4>
@@ -215,5 +217,3 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
     </section>
   );
 }
-
-    
