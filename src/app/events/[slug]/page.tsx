@@ -19,52 +19,53 @@ interface EventPageProps {
 const JSONBIN_EVENTS_BIN_ID = '6847dd9e8a456b7966aba67c';
 const JSONBIN_ACCESS_KEY = '$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy'; // <-- CORRECTED KEY
 
-async function fetchEventsForStaticParams(): Promise<EventType[]> {
-  console.log(`[EventSlugPage] Fetching events for static params from Bin ID: ${JSONBIN_EVENTS_BIN_ID} using Access Key (first 5 chars): ${JSONBIN_ACCESS_KEY.substring(0,5)}...`);
+const isValidEvent = (event: any): event is EventType => {
+  return event &&
+    typeof event.id === 'string' && event.id.trim() !== '' &&
+    typeof event.title === 'string' && event.title.trim() !== '' &&
+    typeof event.date === 'string' && event.date.trim() !== '' &&
+    typeof event.startTime === 'string' && event.startTime.trim() !== '' &&
+    typeof event.type === 'string' && event.type.trim() !== '' &&
+    typeof event.detailsPageSlug === 'string' && event.detailsPageSlug.trim() !== '';
+};
+
+async function fetchAllValidEvents(): Promise<EventType[]> {
+  console.log(`[EventUtils] Fetching all events from Bin ID: ${JSONBIN_EVENTS_BIN_ID} using Access Key (first 5 chars): ${JSONBIN_ACCESS_KEY.substring(0,5)}...`);
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_EVENTS_BIN_ID}/latest`, {
       method: 'GET',
       headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
-      next: { revalidate: 3600 } 
+      next: { revalidate: 600 } // Revalidate more frequently for event data
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[EventSlugPage] Error fetching events for static params. Status: ${response.status}, Key Used (prefix): ${JSONBIN_ACCESS_KEY.substring(0,5)}..., Response: ${errorText}`);
+      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (prefix): ${JSONBIN_ACCESS_KEY.substring(0,5)}..., Response: ${errorText}`);
       return [];
     }
     const data = await response.json();
-    return Array.isArray(data.record) ? data.record : [];
+    const rawEvents = Array.isArray(data.record) ? data.record : [];
+    const validEvents = rawEvents.filter(isValidEvent);
+     if (rawEvents.length > 0 && validEvents.length !== rawEvents.length) {
+      console.warn(`[EventUtils] Filtered out ${rawEvents.length - validEvents.length} malformed event entries during full fetch.`);
+    }
+    return validEvents;
   } catch (error) {
-    console.error("[EventSlugPage] Error fetching events for static params:", error);
+    console.error("[EventUtils] Error fetching all events:", error);
     return [];
   }
 }
 
 
 async function getEventBySlug(slug: string): Promise<EventType | null> {
-  console.log(`[EventSlugPage] getEventBySlug: Fetching event with slug '${slug}' from Bin ID: ${JSONBIN_EVENTS_BIN_ID} using Access Key (first 5 chars): ${JSONBIN_ACCESS_KEY.substring(0,5)}...`);
-  try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_EVENTS_BIN_ID}/latest`, {
-      method: 'GET',
-      headers: {
-        'X-Access-Key': JSONBIN_ACCESS_KEY,
-      },
-      next: { revalidate: 600 }
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[EventSlugPage] Failed to fetch events for slug ${slug}. Status: ${response.status}, Key Used (prefix): ${JSONBIN_ACCESS_KEY.substring(0,5)}..., Response: ${errorText}`);
-      return null;
-    }
-    const data = await response.json();
-    const events: EventType[] = Array.isArray(data.record) ? data.record : [];
-    const event = events.find(e => e.detailsPageSlug === slug);
-    return event || null;
-  } catch (error) {
-    console.error(`[EventSlugPage] Error fetching event by slug ${slug}:`, error);
-    return null;
+  console.log(`[EventSlugPage] getEventBySlug: Processing slug '${slug}'`);
+  const events = await fetchAllValidEvents(); // Uses the new function
+  const event = events.find(e => e.detailsPageSlug === slug);
+  if (event) {
+    console.log(`[EventSlugPage] Found event for slug '${slug}': ${event.title}`);
+  } else {
+    console.log(`[EventSlugPage] No event found for slug '${slug}' among valid events.`);
   }
+  return event || null;
 }
 
 export async function generateMetadata(
@@ -94,7 +95,8 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-  const events = await fetchEventsForStaticParams();
+  const events = await fetchAllValidEvents(); // Uses the new function
+  console.log(`[EventSlugPage] generateStaticParams: Found ${events.length} valid events for static generation.`);
   return events.map((event) => ({
     slug: event.detailsPageSlug,
   }));

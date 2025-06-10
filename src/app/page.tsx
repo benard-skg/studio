@@ -33,7 +33,24 @@ async function getEvents(): Promise<EventType[]> {
       return [];
     }
     const data = await response.json();
-    return Array.isArray(data.record) ? data.record : [];
+    const rawEvents = Array.isArray(data.record) ? data.record : [];
+    
+    // Filter out malformed or incomplete event objects
+    const validEvents = rawEvents.filter(event => 
+      event && 
+      typeof event.id === 'string' && event.id.trim() !== '' &&
+      typeof event.title === 'string' && event.title.trim() !== '' &&
+      typeof event.date === 'string' && event.date.trim() !== '' && // Basic check, could add regex for YYYY-MM-DD
+      typeof event.startTime === 'string' && event.startTime.trim() !== '' &&
+      typeof event.type === 'string' && event.type.trim() !== '' &&
+      typeof event.detailsPageSlug === 'string' && event.detailsPageSlug.trim() !== ''
+    );
+    
+    if (rawEvents.length > 0 && validEvents.length !== rawEvents.length) {
+      console.warn(`[HomePage] Filtered out ${rawEvents.length - validEvents.length} malformed event entries.`);
+    }
+    return validEvents;
+
   } catch (error) {
     console.error('[HomePage] Error fetching events from JSONBin.io:', error);
     return []; 
