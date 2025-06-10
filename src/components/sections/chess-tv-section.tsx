@@ -14,9 +14,10 @@ const LICHESS_USERNAME_KEY = 'lichessTvUsername';
 interface LichessUser {
   name: string;
   id: string;
+  rating?: number;
 }
 interface LichessPlayer {
-  user: LichessUser;
+  user?: LichessUser; // User can be undefined for AI or anonymous games
   rating?: number;
 }
 interface LichessGameData {
@@ -31,7 +32,7 @@ interface LichessGameData {
     white: LichessPlayer;
     black: LichessPlayer;
   };
-  // Add other fields if needed, like lastMove
+  // Add other fields if needed
 }
 
 export default function ChessTVSection() {
@@ -42,6 +43,7 @@ export default function ChessTVSection() {
   const [lichessUsername, setLichessUsername] = useState<string | null>(null);
   const [gameDetails, setGameDetails] = useState<Partial<LichessGameData> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [gameFoundInStream, setGameFoundInStream] = useState(false);
   const boardContainerRef = useRef<HTMLDivElement>(null);
   const streamControllerRef = useRef<AbortController | null>(null);
 
@@ -53,7 +55,8 @@ export default function ChessTVSection() {
       setStatusMessage(`Lichess username "${storedUsername}" loaded.`);
     } else {
       setStatusMessage("No Lichess username set. Please configure in Admin > Settings.");
-      setPosition(DEFAULT_FEN); // Ensure default FEN if no user
+      setPosition(DEFAULT_FEN);
+      setGameDetails(null);
     }
   }, []);
 
@@ -66,14 +69,13 @@ export default function ChessTVSection() {
             const calculated = Math.min(520, Math.max(250, containerWidth * 0.95));
             setBoardWidth(calculated);
           } else {
-            setBoardWidth(300); // Fallback if container width is 0
+            setBoardWidth(300); 
           }
         } else {
-          setBoardWidth(300); // Fallback if ref not available
+          setBoardWidth(300); 
         }
       };
       calculateSize();
-      // Optional: Recalculate on resize, though can be complex
       // window.addEventListener('resize', calculateSize);
       // return () => window.removeEventListener('resize', calculateSize);
     }
@@ -85,11 +87,11 @@ export default function ChessTVSection() {
         setStatusMessage("No Lichess username set for ChessTV.");
         setPosition(DEFAULT_FEN);
         setGameDetails(null);
+        setGameFoundInStream(false);
       }
       return;
     }
 
-    // Abort any existing stream
     if (streamControllerRef.current) {
       streamControllerRef.current.abort();
     }
@@ -97,10 +99,11 @@ export default function ChessTVSection() {
     const { signal } = streamControllerRef.current;
 
     setStatusMessage(`Attempting to connect to Lichess for ${lichessUsername}...`);
-    setPosition(DEFAULT_FEN); // Reset to default while attempting to connect
+    setPosition(DEFAULT_FEN);
     setGameDetails(null);
     setError(null);
-    let gameFound = false;
+    setGameFoundInStream(false);
+    let buffer = '';
 
     const fetchStream = async () => {
       try {
@@ -131,12 +134,11 @@ export default function ChessTVSection() {
         setStatusMessage(`Connected to Lichess for ${lichessUsername}. Waiting for game data...`);
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let buffer = '';
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) {
-            if (!gameFound) {
+            if (!gameFoundInStream) {
               setStatusMessage(`No live games found for ${lichessUsername} currently.`);
             } else {
               setStatusMessage(`Stream ended for ${lichessUsername}.`);
@@ -145,17 +147,17 @@ export default function ChessTVSection() {
           }
 
           buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\\n');
-          buffer = lines.pop() || ''; // Keep incomplete line for next chunk
+          const lines = buffer.split('\n'); // Corrected: split by actual newline
+          buffer = lines.pop() || ''; 
 
           for (const line of lines) {
             if (line.trim() === '') continue;
             try {
               const gameData = JSON.parse(line) as LichessGameData;
-              if (gameData && gameData.fen) {
-                if (!gameFound) {
-                  setStatusMessage(`Live game found! Displaying board for ${lichessUsername}.`);
-                  gameFound = true;
+              if (gameData && gameData.fen && gameData.id && gameData.players) {
+                if (!gameFoundInStream) {
+                  setStatusMessage(`Live game found for ${lichessUsername}.`);
+                  setGameFoundInStream(true);
                 }
                 setPosition(gameData.fen);
                 setGameDetails({
@@ -165,11 +167,10 @@ export default function ChessTVSection() {
                   speed: gameData.speed,
                   perf: gameData.perf,
                 });
-                setError(null); // Clear previous errors if any
+                setError(null);
               }
             } catch (e) {
               console.warn("Error parsing NDJSON line:", e, "Line:", line);
-              // Don't set error here as it might be an empty line or keep-alive ping
             }
           }
         }
@@ -257,7 +258,7 @@ export default function ChessTVSection() {
             >
               <Chessboard
                 id="LichessTVBoard"
-                key={position} // Add key to help re-render on FEN change if needed
+                key={position} 
                 position={position}
                 boardWidth={boardWidth}
                 arePiecesDraggable={false}
@@ -267,7 +268,7 @@ export default function ChessTVSection() {
                   borderRadius: '4px',
                   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
                 }}
-                customDarkSquareStyle={{ backgroundColor: '#B58863' }} // Example Lichess-like colors
+                customDarkSquareStyle={{ backgroundColor: '#B58863' }}
                 customLightSquareStyle={{ backgroundColor: '#F0D9B5' }}
               />
             </div>
@@ -286,7 +287,8 @@ export default function ChessTVSection() {
                 </Button>
               </div>
             )}
-             {!gameDetails && !error && statusMessage && (
+            {/* Show status message at the bottom only if a game is not yet found or there's no username */}
+            {lichessUsername && !gameFoundInStream && !error && statusMessage && (
                  <p className="font-body text-xs text-center text-muted-foreground mt-2 px-2">{statusMessage}</p>
              )}
           </CardContent>
@@ -295,3 +297,4 @@ export default function ChessTVSection() {
     </section>
   );
 }
+
