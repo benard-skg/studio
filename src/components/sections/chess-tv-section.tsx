@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { Chessboard } from 'react-chessboard'; // Using react-chessboard
+import { Chessboard } from 'react-chessboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tv, User, AlertCircle, ExternalLink, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -53,7 +53,7 @@ export default function ChessTVSection() {
   const [lichessUsername, setLichessUsername] = useState<string | null>(null);
   const [gameDetails, setGameDetails] = useState<Partial<LichessGameData> | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [gameFoundInStream, setGameFoundInStream] = useState(false); // Tracks if a game with FEN has been found
+  const [gameFoundInStream, setGameFoundInStream] = useState(false);
   const [lastRawStreamObject, setLastRawStreamObject] = useState<string | null>(null);
 
   const boardContainerRef = useRef<HTMLDivElement>(null);
@@ -88,20 +88,25 @@ export default function ChessTVSection() {
         }
       };
       calculateSize();
+      // Optional: Add resize listener if needed, but be careful with performance
+      // window.addEventListener('resize', calculateSize);
+      // return () => window.removeEventListener('resize', calculateSize);
     }
   }, [isMounted]);
 
   useEffect(() => {
-    if (!isMounted || !lichessUsername || boardWidth === 0) {
+    if (!isMounted || !lichessUsername) {
       if (isMounted && !lichessUsername) {
         setStatusMessage("No Lichess username. Set in Admin > Settings.");
         setPosition(DEFAULT_FEN);
         setGameDetails(null);
         setGameFoundInStream(false);
+        setError(null);
       }
       return;
     }
 
+    // Abort previous stream if username changes or component unmounts
     if (streamControllerRef.current) {
       streamControllerRef.current.abort();
     }
@@ -178,7 +183,6 @@ export default function ChessTVSection() {
               if (gameData && typeof gameData.fen === 'string' && gameData.fen.trim() !== '') {
                 fenToUse = gameData.fen;
               } else if (gameData && typeof gameData.initialFen === 'string' && gameData.initialFen.trim() !== '') {
-                // Only use initialFen if a current FEN hasn't been found yet
                 if (!gameFoundInStream || (gameDetails && gameDetails.id !== gameData.id)) {
                    fenToUse = gameData.initialFen;
                 }
@@ -195,18 +199,18 @@ export default function ChessTVSection() {
                 }
               }
 
-              if (gameData && gameData.players) {
+              if (gameData && gameData.players && gameData.id) { // Check for id here too
                 setGameDetails({
                   id: gameData.id,
                   players: gameData.players,
                   status: gameData.status,
                   speed: gameData.speed,
                   perf: gameData.perf,
-                  initialFen: gameData.initialFen,
-                  fen: gameData.fen, 
                   variant: gameData.variant,
+                  initialFen: gameData.initialFen, // Keep initialFen in details
+                  fen: gameData.fen, // Keep current FEN if available
                 });
-              } else if (gameData && gameData.id && !gameFoundInStream) { // If we got an ID but no FEN/players yet
+              } else if (gameData && gameData.id && !gameFoundInStream) { 
                  setStatusMessage(`Receiving game update (ID: ${gameData.id}). Parsing details...`);
               }
 
@@ -221,7 +225,8 @@ export default function ChessTVSection() {
         }
       } catch (err: any) {
         if (err.name === 'AbortError') {
-          setStatusMessage("Lichess stream aborted.");
+          // This is expected if the username changes or component unmounts
+          setStatusMessage("Lichess stream aborted."); 
         } else {
           setStatusMessage(`Error fetching Lichess stream: ${err.message}`);
           setError(`Stream error: ${err.message}`);
@@ -231,14 +236,17 @@ export default function ChessTVSection() {
       }
     };
 
-    fetchStream();
+    if (boardWidth > 0) { // Ensure boardWidth is calculated before fetching
+        fetchStream();
+    }
+
 
     return () => {
       if (streamControllerRef.current) {
         streamControllerRef.current.abort();
       }
     };
-  }, [isMounted, lichessUsername, boardWidth, gameDetails, gameFoundInStream]);
+  }, [isMounted, lichessUsername]); // Removed boardWidth from dependencies
 
 
   if (!isMounted || boardWidth === 0) {
@@ -337,7 +345,7 @@ export default function ChessTVSection() {
               </div>
             )}
             
-            {(!gameInfoAvailable && !error && statusMessage && !gameFoundInStream) && (
+            {(!gameInfoAvailable && !error && statusMessage && !gameFoundInStream && lichessUsername) && (
                  <p className="font-body text-xs text-center text-muted-foreground mt-2 px-2">{statusMessage}</p>
              )}
 
@@ -375,3 +383,4 @@ export default function ChessTVSection() {
     </section>
   );
 }
+
