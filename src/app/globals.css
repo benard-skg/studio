@@ -117,4 +117,23 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  /* Style for days with events */
+  .event-day-modifier {
+    @apply !font-bold relative;
+  }
+  /* Optional: Add a dot to event days */
+  .event-day-modifier::after {
+    content: '';
+    @apply absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-accent rounded-full;
+  }
+  .dark .event-day-modifier::after {
+     @apply bg-accent; /* Ensure dot is visible in dark mode */
+  }
+
+   /* Ensure selected event days keep their dot */
+  .rdp-day_selected.event-day-modifier::after,
+  button[name="day"][aria-selected="true"].event-day-modifier::after {
+    @apply bg-primary-foreground; /* Make dot contrast with primary selection color */
+  }
+  
 }
