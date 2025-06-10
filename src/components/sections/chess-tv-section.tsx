@@ -38,12 +38,21 @@ interface LichessGameData {
     black: LichessPlayer;
   };
   initialFen?: string;
-  fen?: string;
+  fen?: string; // For current game state if available
   winner?: string;
   moves?: string;
   pgn?: string;
   clock?: { initial: number; increment: number; totalTime: number };
 }
+
+// Define style objects outside the component to ensure stable identity
+const boardStyle = {
+  borderRadius: '4px',
+  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+};
+const darkSquareStyle = { backgroundColor: '#B58863' };
+const lightSquareStyle = { backgroundColor: '#F0D9B5' };
+
 
 export default function ChessTVSection() {
   const [isMounted, setIsMounted] = useState(false);
@@ -69,7 +78,7 @@ export default function ChessTVSection() {
       setStatusMessage("No Lichess username set. Configure in Admin > Settings.");
       setPosition(DEFAULT_FEN);
       setGameDetails(null);
-      setGameFoundInStream(false);
+      setGameFoundInStream(false); // Ensure this is reset
       setLastRawStreamObject("No Lichess username found in localStorage.");
     }
   }, []);
@@ -90,17 +99,20 @@ export default function ChessTVSection() {
         }
       };
       calculateSize();
+      // Optional: Add resize listener if dynamic resizing is needed
+      // window.addEventListener('resize', calculateSize);
+      // return () => window.removeEventListener('resize', calculateSize);
     }
   }, [isMounted]);
 
   useEffect(() => {
     if (!isMounted || !lichessUsername) {
-      if (isMounted && !lichessUsername) {
+      if (isMounted && !lichessUsername) { // Only update status if mounted but no username
         setStatusMessage("No Lichess username. Set in Admin > Settings.");
         setPosition(DEFAULT_FEN);
         setGameDetails(null);
         setGameFoundInStream(false);
-        setError(null);
+        setError(null); // Clear previous errors
         setLastRawStreamObject(prev => `Stream effect: No lichessUsername. Resetting state.\n---\n${prev?.substring(0,500)}`);
       }
       return;
@@ -114,11 +126,13 @@ export default function ChessTVSection() {
     const { signal } = streamControllerRef.current;
 
     setStatusMessage(`Attempting to connect to Lichess for ${lichessUsername}...`);
+    // Don't reset position to DEFAULT_FEN if a game was already found and stream is just reconnecting
+    // Only reset if gameFoundInStream is false
     if (!gameFoundInStream) {
       setPosition(DEFAULT_FEN); 
     }
-    setGameDetails(null); 
-    setError(null);
+    setGameDetails(null); // Reset game details for new stream/user
+    setError(null); // Clear previous errors
     setLastRawStreamObject(prev => `Stream effect: Initializing fetch for ${lichessUsername}. gameFoundInStream: ${gameFoundInStream}\n---\n${prev?.substring(0,500)}`);
     
     let buffer = '';
@@ -139,7 +153,7 @@ export default function ChessTVSection() {
           let errorMsg = `Lichess API error: ${response.statusText} (Status: ${response.status})`;
           if (response.status === 404) errorMsg = `User "${lichessUsername}" not found or no ongoing games.`;
           setStatusMessage(errorMsg); setError(errorMsg);
-          if (!gameFoundInStream) setPosition(DEFAULT_FEN);
+          if (!gameFoundInStream) setPosition(DEFAULT_FEN); // Reset to default if no game was ever found
           return;
         }
         if (!response.body) {
@@ -157,18 +171,20 @@ export default function ChessTVSection() {
         while (true) {
           setLastRawStreamObject(prev => `Loop iteration: Before reader.read()\n---\n${prev?.substring(0,500)}`);
           const { done, value } = await reader.read();
-          setLastRawStreamObject(prev => `reader.read() resolved. Done: ${done}. Value received: ${value ? 'Yes' : 'No'}\n---\n${prev?.substring(0,500)}`);
-          
           const rawChunk = value ? decoder.decode(value, { stream: true }) : "";
+          
+          setLastRawStreamObject(prev => `reader.read() resolved. Done: ${done}. Value received: ${value ? 'Yes' : 'No'}\n---\n${prev?.substring(0,500)}`);
           if (rawChunk) {
              setLastRawStreamObject(prev => `Received chunk (first 100 chars): ${rawChunk.substring(0,100)}...\n---\n${prev?.substring(0,500)}`);
           }
 
+
           if (done) {
             setLastRawStreamObject(prev => `Stream ended (done=true). gameFoundInStream: ${gameFoundInStream}\n---\n${prev?.substring(0,500)}`);
-            if (!gameFoundInStream) {
-              setStatusMessage(`Stream ended. No game FEN found for ${lichessUsername} in this session.`);
+            if (!gameFoundInStream) { // If stream ends and no valid game FEN was ever processed
+              setStatusMessage(`Stream ended. No suitable game data found for ${lichessUsername} in this session.`);
             } else {
+              // If a game was found, keep current board and details, indicate stream ended.
               setStatusMessage(`Lichess stream ended for ${lichessUsername}. Last processed game state shown.`);
             }
             break;
@@ -204,7 +220,7 @@ export default function ChessTVSection() {
               }
 
               if (gameData && gameData.id && gameData.players?.white?.user && gameData.players?.black?.user) {
-                setGameDetails({
+                setGameDetails({ // Update game details fully
                   id: gameData.id,
                   players: gameData.players,
                   status: gameData.status,
@@ -214,25 +230,25 @@ export default function ChessTVSection() {
                   initialFen: gameData.initialFen,
                   fen: gameData.fen, 
                 });
-                 if (fenSource === 'current') {
+                if (fenSource === 'current') {
                     setStatusMessage(`Displaying live board for game ${gameData.id}.`);
                 } else if (fenSource === 'initial') {
                     setStatusMessage(`Displaying initial board for game ${gameData.id}.`);
-                } else if (gameFoundInStream) { 
+                } else if (gameFoundInStream) { // If a FEN was already set previously
                     setStatusMessage(`Game details updated (ID: ${gameData.id}). Board shows last known FEN.`);
-                } else {
-                     setStatusMessage(`Received game data (ID: ${gameData.id}), no FEN found in this object. Awaiting valid FEN...`);
+                } else { // No FEN found in *this* object, but game ID exists
+                     setStatusMessage(`Received game data (ID: ${gameData.id}), no FEN in this object. Awaiting FEN...`);
                 }
-              } else if (gameData && gameData.id && !gameFoundInStream) {
+              } else if (gameData && gameData.id && !gameFoundInStream) { // gameData has ID, but not enough details for full header, and no FEN yet
                  setStatusMessage(`Processing game (ID: ${gameData.id}). Looking for FEN/Player details...`);
-              } else if ((!gameData || !gameData.id) && !gameFoundInStream) {
+              } else if ((!gameData || !gameData.id) && !gameFoundInStream) { // No game ID and no FEN found yet
                 setStatusMessage(`Received stream data. No recognized game ID or FEN yet.`);
               }
 
             } catch (e: any) {
               const errorLinePreview = line.substring(0, 200) + (line.length > 200 ? '...' : '');
               setLastRawStreamObject(prev => `Error parsing line as JSON: ${e.message}\nRaw Line: ${errorLinePreview}\n---\n${prev?.substring(0,500)}`);
-              if (!gameFoundInStream) { 
+              if (!gameFoundInStream) { // Only update status if no game FEN has been successfully processed yet
                 setStatusMessage(`Stream data parse error. Waiting for valid game info...`);
               }
             }
@@ -245,12 +261,11 @@ export default function ChessTVSection() {
         } else {
           setStatusMessage(`Error fetching Lichess stream: ${err.message}`);
           setError(`Stream error: ${err.message}`);
-          if (!gameFoundInStream) setPosition(DEFAULT_FEN);
+          if (!gameFoundInStream) setPosition(DEFAULT_FEN); // Reset if no game was ever found
         }
       }
     };
 
-    // Call fetchStream without waiting for boardWidth
     fetchStream();
     
     return () => {
@@ -259,7 +274,7 @@ export default function ChessTVSection() {
         setLastRawStreamObject(prev => `Stream effect cleanup: Aborted stream controller.\n---\n${prev?.substring(0,500)}`);
       }
     };
-  }, [isMounted, lichessUsername]);
+  }, [isMounted, lichessUsername]); // Removed boardWidth from dependencies
 
 
   if (!isMounted || boardWidth === 0) {
@@ -339,12 +354,9 @@ export default function ChessTVSection() {
                   arePiecesDraggable={false}
                   animationDuration={200}
                   boardOrientation="white"
-                  customBoardStyle={{
-                    borderRadius: '4px',
-                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-                  }}
-                  customDarkSquareStyle={{ backgroundColor: '#B58863' }}
-                  customLightSquareStyle={{ backgroundColor: '#F0D9B5' }}
+                  customBoardStyle={boardStyle}
+                  customDarkSquareStyle={darkSquareStyle}
+                  customLightSquareStyle={lightSquareStyle}
                 />
               ) : (
                 <Skeleton className="aspect-square w-full h-auto min-h-[280px]" />
@@ -358,7 +370,7 @@ export default function ChessTVSection() {
               </div>
             )}
             
-            {(!gameInfoAvailable && !error && lichessUsername && statusMessage && !statusMessage.toLowerCase().includes("displaying") && !statusMessage.toLowerCase().includes("connected")) && (
+            {(!gameInfoAvailable && !error && lichessUsername && statusMessage && !statusMessage.toLowerCase().includes("displaying") && !statusMessage.toLowerCase().includes("connected") && !statusMessage.toLowerCase().includes("ended")) && (
                  <p className="font-body text-xs text-center text-muted-foreground mt-2 px-2">{statusMessage}</p>
              )}
 
@@ -389,4 +401,3 @@ export default function ChessTVSection() {
     </section>
   );
 }
-
