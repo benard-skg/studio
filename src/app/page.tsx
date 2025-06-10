@@ -9,19 +9,14 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import type { EventType } from '@/lib/types';
 
 async function getEvents(): Promise<EventType[]> {
-  const binId = '6847dd9e8a456b7966aba67c';
-  // IMPORTANT: For production, move X-Access-Key to an environment variable!
-  const accessKey = '$2a$10$9F4n3c6g8L1b0K2e5R7T9O.XYZABCDEFGabcdefgHIJKLMNOPQ'; // Replace with your actual key from the prompt if different, but this is a placeholder format. The user provided '6847de318960c979a5a76655' which is also a placeholder.
-  
-  // Using the user-provided placeholder key directly for this prototype.
-  // In a real app, this should be process.env.JSONBIN_ACCESS_KEY
-  const actualUserAccessKey = '6847de318960c979a5a76655';
-
-
+  const binId = '6847dd9e8a456b7966aba67c'; 
   // SECURITY WARNING: The access key is hardcoded here for prototype demonstration ONLY.
   // In a real application, this key MUST be stored in environment variables (e.g., .env.local)
-  // and accessed via process.env.JSONBIN_ACCESS_KEY.
+  // and accessed via process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY.
   // Never commit sensitive keys directly into your codebase.
+  const actualUserAccessKey = '$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy'; // <-- CORRECTED KEY
+
+  console.log(`[HomePage] Fetching events from Bin ID: ${binId} using Access Key (first 5 chars): ${actualUserAccessKey.substring(0,5)}...`);
 
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
@@ -29,23 +24,19 @@ async function getEvents(): Promise<EventType[]> {
       headers: {
         'X-Access-Key': actualUserAccessKey,
       },
-      // Add cache revalidation strategy for Next.js 13+ App Router
-      next: { revalidate: 3600 } // Revalidate every hour, or choose what's appropriate
+      next: { revalidate: 3600 } 
     });
 
     if (!response.ok) {
-      // Log more detailed error information
       const errorBody = await response.text();
-      console.error(`Failed to fetch events. Status: ${response.status}, Body: ${errorBody}`);
-      // Fallback to empty array on error instead of throwing, so page can still render
+      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (prefix): ${actualUserAccessKey.substring(0,5)}..., Body: ${errorBody}`);
       return [];
     }
     const data = await response.json();
-    // JSONBin stores the actual array in data.record
     return Array.isArray(data.record) ? data.record : [];
   } catch (error) {
-    console.error('Error fetching events from JSONBin.io:', error);
-    return []; // Fallback to empty array on error
+    console.error('[HomePage] Error fetching events from JSONBin.io:', error);
+    return []; 
   }
 }
 
