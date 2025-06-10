@@ -5,7 +5,6 @@ import { useEffect, useState, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tv } from 'lucide-react';
-import ChessTVSectionLoader from './chess-tv-section-loader';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -13,58 +12,37 @@ const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 export default function ChessTVSection() {
   const [isMounted, setIsMounted] = useState(false);
   const [position, setPosition] = useState(DEFAULT_FEN);
-  // Start with a fixed, reasonable width. Will be updated dynamically.
-  const [boardWidth, setBoardWidth] = useState(320); 
-  // isLoading will be true until we've tried to calculate the board width
-  const [isLoading, setIsLoading] = useState(true); 
+  const [boardWidth, setBoardWidth] = useState(0); // Start at 0, will be calculated
   const boardContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
-    console.log("[ChessTVSection] Component did mount.");
+  }, []);
 
-    // Set a short timeout to ensure DOM elements are available for width calculation
-    const timer = setTimeout(() => {
-      if (boardContainerRef.current) {
-        const containerWidth = boardContainerRef.current.offsetWidth;
-        // Ensure a minimum width, e.g., 200px, and max of 520px or 95% of container
-        const calculatedWidth = Math.min(520, Math.max(200, containerWidth * 0.95));
-        console.log(`[ChessTVSection] Container width: ${containerWidth}, Calculated board width: ${calculatedWidth}`);
-        setBoardWidth(calculatedWidth);
+  useEffect(() => {
+    // This effect runs only on the client, after isMounted is true
+    if (isMounted && boardContainerRef.current) {
+      const containerWidth = boardContainerRef.current.offsetWidth;
+      let calculatedWidth = 0;
+
+      if (containerWidth > 0) {
+        // Use a percentage of container width, with min/max caps
+        calculatedWidth = Math.min(520, Math.max(200, containerWidth * 0.95));
       } else {
-        console.warn("[ChessTVSection] Board container ref not available on mount, using default width 320.");
-        setBoardWidth(320); // Fallback if ref is not immediately available
+        // Fallback if offsetWidth is 0 (e.g., display:none or not yet in layout)
+        calculatedWidth = 300; // A sensible default for mobile or if calculation fails
       }
-      setIsLoading(false); // Finished initial setup and width calculation
-      console.log("[ChessTVSection] Initial loading and width calculation complete.");
-    }, 100); // Small delay for DOM readiness
+      setBoardWidth(calculatedWidth);
+    } else if (isMounted && !boardContainerRef.current) {
+        // If ref is somehow still not available after mount (should be rare), set a default
+        // This might happen if the div with the ref is conditionally rendered itself based on another state
+        // For now, our ref is always on a div that should be there if isMounted.
+        setBoardWidth(300); 
+    }
+  }, [isMounted]); // Rerun when isMounted changes (and thus ref might become available)
 
-    // Resize listener
-    const handleResize = () => {
-      if (boardContainerRef.current) {
-        const containerWidth = boardContainerRef.current.offsetWidth;
-        const newCalculatedWidth = Math.min(520, Math.max(200, containerWidth * 0.95));
-        console.log(`[ChessTVSection] Resized. Container width: ${containerWidth}, New board width: ${newCalculatedWidth}`);
-        setBoardWidth(newCalculatedWidth);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
-      console.log("[ChessTVSection] Component will unmount.");
-    };
-  }, []); // Empty dependency array: runs once on mount, cleans up on unmount
-
-  if (!isMounted) {
-    console.log("[ChessTVSection] Not mounted yet. Rendering ChessTVSectionLoader.");
-    return <ChessTVSectionLoader />;
-  }
-
-  if (isLoading) {
-    console.log("[ChessTVSection] Still in loading state (calculating width). Rendering ChessTVSectionLoader.");
-    // You can use ChessTVSectionLoader or a more specific Skeleton here
+  // If not mounted or boardWidth is still 0 (not calculated yet), show loader/skeleton
+  if (!isMounted || boardWidth === 0) {
     return (
       <section id="chesstv" className="py-12 md:py-16 bg-secondary">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -74,13 +52,14 @@ export default function ChessTVSection() {
                 <Tv className="h-7 w-7 text-accent mr-2" />
                 <CardTitle className="font-headline text-2xl text-center">ChessTV</CardTitle>
               </div>
-               <CardDescription className="font-body text-sm text-center text-muted-foreground">
+              <CardDescription className="font-body text-sm text-center text-muted-foreground">
                 Initializing board...
               </CardDescription>
             </CardHeader>
             <CardContent className="p-2 sm:p-3 bg-card">
+              {/* This div with the ref is crucial for the width calculation in useEffect */}
               <div ref={boardContainerRef} className="w-full max-w-[520px] mx-auto my-2">
-                 <Skeleton className="aspect-square w-full h-auto min-h-[320px]" />
+                 <Skeleton className="aspect-square w-full h-auto min-h-[300px]" />
               </div>
             </CardContent>
           </Card>
@@ -89,8 +68,7 @@ export default function ChessTVSection() {
     );
   }
   
-  console.log(`[ChessTVSection] Ready to render Chessboard. isMounted: ${isMounted}, isLoading: ${isLoading}, boardWidth: ${boardWidth}, position: ${position}`);
-
+  // If we've reached here, isMounted is true and boardWidth > 0
   return (
     <section id="chesstv" className="py-12 md:py-16 bg-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -106,28 +84,24 @@ export default function ChessTVSection() {
           </CardHeader>
           <CardContent className="p-2 sm:p-3 bg-card">
             <div
-              ref={boardContainerRef}
+              // The ref is on the container in the skeleton part, which is fine.
+              // This div now just uses the calculated boardWidth for its minHeight.
               id="chess-tv-board-container"
               className="w-full max-w-[520px] mx-auto my-2 rounded-md overflow-hidden"
-              style={{ minHeight: `${boardWidth}px` }} // Ensure container height matches board for aspect ratio
+              style={{ minHeight: `${boardWidth}px` }} // Ensure container height matches board
             >
-              {boardWidth > 0 ? (
-                <Chessboard
-                  id="ChessTVBoard"
-                  position={position}
-                  boardWidth={boardWidth}
-                  arePiecesDraggable={false}
-                  animationDuration={200}
-                  // key is useful if boardWidth changes drastically and you need a full re-render
-                  key={`chessboard-${boardWidth}`} 
-                />
-              ) : (
-                <Skeleton className="w-full h-full min-h-[320px]" /> 
-              )}
+              <Chessboard
+                id="ChessTVBoard"
+                position={position}
+                boardWidth={boardWidth}
+                arePiecesDraggable={false} // Kept simple for now
+                animationDuration={200} // A little animation is fine
+                key={`chessboard-${boardWidth}`} // Helps re-render if width changes
+              />
             </div>
             <div className="font-body text-sm mt-3 px-1 text-center text-muted-foreground">
               <p>Displaying standard board position.</p>
-              {/* We'll re-add Lichess functionality later */}
+              {/* Lichess functionality will be re-added later */}
             </div>
           </CardContent>
         </Card>
