@@ -6,6 +6,7 @@ import ClassShowcaseSection from '@/components/sections/class-showcase-section';
 import BlogSection from '@/components/sections/blog-section';
 import Footer from '@/components/layout/footer';
 import EventCalendarSection from '@/components/sections/event-calendar-section';
+import ChessTVSection from '@/components/sections/chess-tv-section'; // Added import
 import type { EventType } from '@/lib/types';
 
 const BIN_ID = "6847dd9e8a456b7966aba67c";
@@ -68,6 +69,7 @@ export default async function Home() {
         <HeroSection />
         <CoachProfileSection displayMode="singleRandom" />
         <EventCalendarSection events={events} />
+        <ChessTVSection /> {/* Added ChessTVSection here */}
         <ClassShowcaseSection />
         <BlogSection />
       </main>
