@@ -27,6 +27,7 @@ const isValidEvent = (event: any): event is EventType => {
 };
 
 async function fetchAllValidEvents(): Promise<EventType[]> {
+  // Using hardcoded credentials as per user's current setup preference
   if (!BIN_ID || !ACCESS_KEY) {
     console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured (hardcoded).");
     return [];
@@ -37,7 +38,7 @@ async function fetchAllValidEvents(): Promise<EventType[]> {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
       method: 'GET',
       headers: { 'X-Access-Key': ACCESS_KEY },
-      next: { revalidate: 60 } // Revalidate frequently for event data
+      next: { revalidate: 60 } 
     });
     if (!response.ok) {
       const errorText = await response.text();
@@ -46,7 +47,9 @@ async function fetchAllValidEvents(): Promise<EventType[]> {
     }
     const data = await response.json();
     const rawEvents = Array.isArray(data.record) ? data.record : [];
-    const validEvents = rawEvents.filter(isValidEvent)
+    
+    const validEvents = rawEvents
+      .filter(isValidEvent) // Use the validator
       .sort((a: EventType, b: EventType) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.startTime.localeCompare(b.startTime));
 
      if (rawEvents.length > 0 && validEvents.length !== rawEvents.length) {
@@ -93,7 +96,7 @@ export async function generateMetadata(
     openGraph: {
       title: `${event.title} - LCA Event`,
       description: event.description || `Join us for ${event.title}!`,
-      type: 'event',
+      type: 'article', // Changed from 'event' to 'article'
     },
   };
 }
