@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getBlogPosts } from '@/lib/contentful';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Articles - LCA',
@@ -19,6 +20,10 @@ export const revalidate = 60;
 
 export default async function BlogIndexPage() {
   const blogPosts: BlogPost[] = await getBlogPosts();
+
+  const gridContainerClasses = blogPosts.length === 1
+    ? "flex justify-center"
+    : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10";
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -38,9 +43,15 @@ export default async function BlogIndexPage() {
             No articles published yet. Check back soon!
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
+          <div className={gridContainerClasses}>
             {blogPosts.map((post) => (
-              <Card key={post.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border">
+              <Card 
+                key={post.id} 
+                className={cn(
+                  "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border",
+                  blogPosts.length === 1 && "w-full max-w-2xl" // Apply max-width if it's the only card
+                )}
+              >
                 {post.thumbnail && post.thumbnail.fields.file.url && (
                   <Link href={`/blog/${post.slug}`} className="block">
                     <div className="aspect-[16/9] relative w-full">
@@ -64,7 +75,7 @@ export default async function BlogIndexPage() {
                 </CardHeader>
                 {post.excerpt && (
                    <CardContent className="flex-grow pb-4"> {/* Adjusted padding if CardFooter is removed */}
-                    <p className="font-body text-sm text-muted-foreground line-clamp-3">
+                    <p className="font-body text-sm text-muted-foreground line-clamp-4"> {/* Increased line-clamp here too */}
                       {post.excerpt}
                     </p>
                   </CardContent>

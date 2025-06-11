@@ -39,11 +39,12 @@ export default async function BlogSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+        {/* Grid container for a single, centered, larger card */}
+        <div className="flex justify-center">
           {postsToDisplay.map((post) => (
             <Card 
               key={post.slug} 
-              className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 w-full max-w-xl mx-auto" // Changed max-w-lg to max-w-xl
+              className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden w-full max-w-2xl mx-auto" // Increased max-width
             >
               {post.featuredImage && post.featuredImage.fields.file.url && (
                 <Link href={`/blog/${post.slug}`} className={cn("block", linkClasses)}>
@@ -67,7 +68,7 @@ export default async function BlogSection() {
                 <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow pb-4"> {/* Adjusted padding */}
-                <p className="font-body text-sm text-muted-foreground line-clamp-3">
+                <p className="font-body text-sm text-muted-foreground line-clamp-4"> {/* Increased line-clamp */}
                   {post.excerpt}
                 </p>
               </CardContent>
