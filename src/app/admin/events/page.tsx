@@ -46,8 +46,8 @@ import Footer from '@/components/layout/footer';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
-const BIN_ID = "YOUR_JSONBIN_EVENTS_BIN_ID"; // Placeholder for events bin
+const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG";
+const BIN_ID = "6847dd9e8a456b7966aba67c";
 
 const PageContentSkeleton = () => (
   <>
@@ -110,11 +110,11 @@ export default function AdminEventsPage() {
   });
 
   const fetchEvents = useCallback(async () => {
-    if (!ACCESS_KEY || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG' || !BIN_ID || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
-      setError("JSONBin.io Access Key or Events Bin ID is not configured. Please set them appropriately.");
+    if (ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
+      setError("JSONBin.io Access Key or Events Bin ID is not configured. Please replace placeholders.");
       setIsConfigured(false);
       setIsLoading(false);
-      console.warn("Admin Events page: JSONBin.io Access Key or Events Bin ID is not configured or is using placeholder values.");
+      console.warn("Admin Events page: JSONBin.io Access Key or Events Bin ID is using placeholder values.");
       return;
     }
     setIsConfigured(true);
@@ -142,7 +142,7 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [BIN_ID]);
+  }, []);
 
   useEffect(() => {
     fetchEvents();
@@ -303,7 +303,7 @@ export default function AdminEventsPage() {
     }
   };
 
-  if (!isConfigured && (!ACCESS_KEY || !BIN_ID) ) {
+  if (!isConfigured && (ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') ) {
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />

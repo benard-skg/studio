@@ -9,9 +9,10 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
-// Hardcoded Bin ID and Access Key. Replace 'YOUR_JSONBIN_EVENTS_BIN_ID' with your actual Events Bin ID.
-const ENV_EVENTS_BIN_ID = 'YOUR_JSONBIN_EVENTS_BIN_ID'; // Placeholder - User MUST replace this with their actual Bin ID
-const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // User provided key
+// Hardcoded Bin ID and Access Key. User MUST replace 'YOUR_JSONBIN_EVENTS_BIN_ID' with their actual Events Bin ID.
+// The ACCESS_KEY has been set by the user.
+const ENV_EVENTS_BIN_ID = "6847dd9e8a456b7966aba67c";
+const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG";
 
 // Log raw values at module load time for debugging
 console.log(`[HomePage] INIT - ENV_EVENTS_BIN_ID being used: "${ENV_EVENTS_BIN_ID}"`);
@@ -27,16 +28,19 @@ async function getEvents(): Promise<EventType[]> {
     console.error("[HomePage] ERROR: JSONBin.io Access Key is UNDEFINED in the code. This is a critical configuration issue.");
     return [];
   }
-  if (currentBinId === undefined) {
+   if (currentBinId === undefined) {
     console.error("[HomePage] ERROR: JSONBin.io Events Bin ID is UNDEFINED in the code. This is a critical configuration issue.");
     return [];
   }
-  // Removed the specific check for currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID'
-  // The user still needs to replace the placeholder value at the top of the file.
 
-   if (!currentBinId || currentBinId.trim() === "" || currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
-    console.error(`[HomePage] WARNING: JSONBin.io Events Bin ID is either not set, an empty string, or still the default placeholder ('${currentBinId}'). Fetching events will likely fail. Please set a valid Bin ID.`);
-    // Allow to proceed to fetch to see actual API error if placeholder is used.
+  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') { // Keep this check as a general safeguard
+    console.warn("[HomePage] WARNING: JSONBin.io Events Bin ID is still the default placeholder string 'YOUR_JSONBIN_EVENTS_BIN_ID'. This will likely fail. Please ensure it is replaced with a valid Bin ID if you haven't set one yet.");
+    // Allow to proceed to see actual API error if placeholder is somehow still used.
+  }
+
+   if (!currentBinId || currentBinId.trim() === "") {
+    console.error("[HomePage] ERROR: JSONBin.io Events Bin ID is an EMPTY STRING or not set in the code. Fetching events will fail.");
+    return [];
   }
   if (!currentAccessKey || currentAccessKey.trim() === "") {
     console.error("[HomePage] ERROR: JSONBin.io Access Key is an EMPTY STRING or not set in the code. Fetching events will fail.");
@@ -59,7 +63,7 @@ async function getEvents(): Promise<EventType[]> {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used: (hardcoded), Body: ${errorBody}`);
+      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (hardcoded), Body: ${errorBody}`);
       return [];
     }
     const data = await response.json();

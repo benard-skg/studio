@@ -13,8 +13,8 @@ interface EventPageProps {
   };
 }
 
-const BIN_ID = "YOUR_JSONBIN_EVENTS_BIN_ID"; // Placeholder for events bin
-const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
+const BIN_ID = "6847dd9e8a456b7966aba67c";
+const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG";
 
 const isValidEvent = (event: any): event is EventType => {
   return event &&
@@ -27,8 +27,8 @@ const isValidEvent = (event: any): event is EventType => {
 };
 
 async function fetchAllValidEvents(): Promise<EventType[]> {
-  if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG') {
-    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values.");
+  if (BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
+    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is using placeholder values.");
     return [];
   }
   
