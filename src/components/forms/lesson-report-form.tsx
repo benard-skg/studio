@@ -226,7 +226,7 @@ export default function LessonReportForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
 
             {/* Section 1: Basic Info */}
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
@@ -493,3 +493,4 @@ export default function LessonReportForm() {
     </Card>
   );
 }
+
