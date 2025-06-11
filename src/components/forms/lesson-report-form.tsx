@@ -22,7 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Trash2, BookOpen, Users, Target, AlertTriangle, CheckCircle, PlusCircle } from "lucide-react";
-import type { LessonReportData, LessonTopic } from "@/lib/types";
+import type { LessonReportData, LessonTopic } from "@/lib/types"; // Ensure LessonReportData matches form fields
 import { commonLessonTopics } from "@/lib/types";
 
 const lessonReportSchema = z.object({
@@ -48,8 +48,21 @@ const lessonReportSchema = z.object({
   path: ["customTopic"],
 });
 
+// Define a type for the data structure to be saved to JSONBin
+// This might differ slightly from LessonReportData (e.g., pgnFile handled as pgnFilename)
+type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & {
+  id: string;
+  submittedAt: string;
+  pgnFilename?: string;
+};
+
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
+const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
+const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653";
+// Using the same Access Key as the events admin page. Ensure this key has write permissions for the new Bin ID.
+const JSONBIN_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+
 
 export default function LessonReportForm() {
   const { toast } = useToast();
@@ -60,13 +73,14 @@ export default function LessonReportForm() {
     resolver: zodResolver(lessonReportSchema),
     defaultValues: {
       studentName: "",
-      lessonDateTime: new Date().toISOString().substring(0, 16), // Defaults to current date and time in 'YYYY-MM-DDTHH:mm'
-      coachName: "", // Prefill later if auth is available
+      lessonDateTime: new Date().toISOString().substring(0, 16), 
+      coachName: "", 
       ratingBefore: undefined,
       ratingAfter: undefined,
       topicCovered: "",
       customTopic: "",
       keyConcepts: "",
+      pgnFile: undefined,
       gameExampleLinks: "",
       strengths: "",
       areasToImprove: "",
@@ -87,10 +101,12 @@ export default function LessonReportForm() {
         if (parsedDraft.topicCovered) {
           setSelectedTopic(parsedDraft.topicCovered);
         }
-        toast({ title: "Draft Loaded", description: "Your previous lesson report draft has been loaded." });
+        // Do not show "Draft Loaded" toast every time to avoid annoyance,
+        // but it's useful for confirming it works during development.
+        // toast({ title: "Draft Loaded", description: "Your previous lesson report draft has been loaded." });
       } catch (error) {
         console.error("Failed to parse lesson report draft from localStorage", error);
-        localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear corrupted draft
+        localStorage.removeItem(LOCAL_STORAGE_KEY); 
       }
     }
   }, [form, toast]);
@@ -102,43 +118,92 @@ export default function LessonReportForm() {
     return () => subscription.unsubscribe();
   }, [form]);
 
-  function onSubmit(values: z.infer<typeof lessonReportSchema>) {
+  async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
     setIsSubmitting(true);
-    console.log("Lesson Report Submitted:", values);
 
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Report Saved (Logged)",
-        description: "Lesson report data has been logged to the console.",
+    const finalTopic = values.topicCovered === "Custom" ? values.customTopic || "Custom" : values.topicCovered;
+
+    const newReportData: StoredLessonReport = {
+      id: `report-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      studentName: values.studentName,
+      lessonDateTime: values.lessonDateTime,
+      coachName: values.coachName,
+      ratingBefore: values.ratingBefore,
+      ratingAfter: values.ratingAfter,
+      topicCovered: finalTopic,
+      keyConcepts: values.keyConcepts,
+      gameExampleLinks: values.gameExampleLinks,
+      strengths: values.strengths,
+      areasToImprove: values.areasToImprove,
+      mistakesMade: values.mistakesMade,
+      assignedPuzzles: values.assignedPuzzles,
+      practiceGames: values.practiceGames,
+      readingVideos: values.readingVideos,
+      additionalNotes: values.additionalNotes,
+      pgnFilename: values.pgnFile && values.pgnFile.length > 0 ? values.pgnFile[0].name : undefined,
+      submittedAt: new Date().toISOString(),
+    };
+
+    try {
+      // 1. Fetch current reports
+      const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
+        method: 'GET',
+        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
       });
-      // Potentially clear form or redirect after successful "save"
-      // form.reset(); // Uncomment to clear form after submission
-      // localStorage.removeItem(LOCAL_STORAGE_KEY); // Uncomment to clear draft after submission
+
+      let currentReports: StoredLessonReport[] = [];
+      if (getResponse.ok) {
+        const data = await getResponse.json();
+        currentReports = Array.isArray(data.record) ? data.record : [];
+      } else if (getResponse.status === 404) {
+        // Bin doesn't exist or is empty, which is fine. We'll create it.
+        console.log("Lesson reports bin not found or empty. Will create/overwrite.");
+      } else {
+        const errorText = await getResponse.text();
+        throw new Error(`Failed to fetch existing reports. Status: ${getResponse.status}. ${errorText}`);
+      }
+
+      // 2. Add new report
+      const updatedReports = [...currentReports, newReportData];
+
+      // 3. Persist updated reports
+      const putResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Access-Key': JSONBIN_ACCESS_KEY,
+          'X-Bin-Versioning': 'false', // Overwrite the bin with the new collection
+        },
+        body: JSON.stringify(updatedReports),
+      });
+
+      if (!putResponse.ok) {
+        const errorText = await putResponse.text();
+        throw new Error(`Failed to save lesson report. Status: ${putResponse.status}. ${errorText}`);
+      }
+
+      toast({
+        title: "Report Saved!",
+        description: "Lesson report has been successfully saved to JSONBin.io.",
+      });
+      form.reset(); // Clear form
+      localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear draft
+      setSelectedTopic(""); // Reset topic selector
+
+    } catch (error: any) {
+      console.error("Error saving lesson report:", error);
+      toast({
+        variant: "destructive",
+        title: "Save Error",
+        description: error.message || "Could not save the report. Check console for details.",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   }
 
   const handleClearDraft = () => {
-    form.reset({ // Reset to initial default values
-      studentName: "",
-      lessonDateTime: new Date().toISOString().substring(0, 16),
-      coachName: "",
-      ratingBefore: undefined,
-      ratingAfter: undefined,
-      topicCovered: "",
-      customTopic: "",
-      keyConcepts: "",
-      pgnFile: undefined,
-      gameExampleLinks: "",
-      strengths: "",
-      areasToImprove: "",
-      mistakesMade: "",
-      assignedPuzzles: "",
-      practiceGames: "",
-      readingVideos: "",
-      additionalNotes: "",
-    });
+    form.reset();
     setSelectedTopic("");
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     toast({ title: "Draft Cleared", description: "The lesson report draft has been cleared." });
@@ -238,7 +303,7 @@ export default function LessonReportForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Topic Covered</FormLabel>
-                    <Select onValueChange={onTopicChange} defaultValue={field.value}>
+                    <Select onValueChange={onTopicChange} value={selectedTopic || field.value} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Select a topic" /></SelectTrigger>
                       </FormControl>
@@ -280,18 +345,18 @@ export default function LessonReportForm() {
                  <FormField
                     control={form.control}
                     name="pgnFile"
-                    render={({ field: { onChange, value, ...restField } }) => (
+                    render={({ field: { onChange, value, ...restField } }) => ( // `value` is managed internally by input type="file"
                       <FormItem>
-                        <FormLabel>Game Examples (PGN Upload - Optional)</FormLabel>
+                        <FormLabel>Game PGN Upload (Optional)</FormLabel>
                         <FormControl>
                             <Input 
                                 type="file" 
                                 accept=".pgn" 
-                                onChange={(e) => onChange(e.target.files)} 
-                                {...restField} 
+                                onChange={(e) => onChange(e.target.files)} // Pass FileList to react-hook-form
+                                {...restField} // name, onBlur, ref
                             />
                         </FormControl>
-                        <FormDescription>Upload a PGN file for game analysis.</FormDescription>
+                        <FormDescription>Upload a PGN file (max 1MB).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -301,7 +366,7 @@ export default function LessonReportForm() {
                   name="gameExampleLinks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Game Examples (Lichess/Chess.com Link - Optional)</FormLabel>
+                      <FormLabel>Analysis Link (Lichess/Chess.com - Optional)</FormLabel>
                       <FormControl><Input type="url" placeholder="https://lichess.org/..." {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -412,15 +477,19 @@ export default function LessonReportForm() {
               <Button type="button" variant="outline" onClick={handleClearDraft} disabled={isSubmitting}>
                 <Trash2 className="mr-2 h-4 w-4" /> Clear Draft
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
+              <Button type="submit" disabled={isSubmitting || !JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID} className="bg-accent hover:bg-accent/90">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Report (Log to Console)
+                Save Report
               </Button>
             </div>
+             {(!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID) && (
+                <p className="text-xs text-destructive text-center pt-2">
+                    JSONBin.io configuration (Access Key or Bin ID for reports) is missing. Saving is disabled.
+                </p>
+            )}
           </form>
         </Form>
       </CardContent>
     </Card>
   );
 }
-
