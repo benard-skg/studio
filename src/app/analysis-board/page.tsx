@@ -13,10 +13,11 @@ export default function AnalysisBoardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="flex-grow pt-20"> {/* pt-20 to ensure content is below fixed navbar */}
+      <main className="flex-grow pt-20 flex flex-col items-center py-8 px-2 sm:px-4"> {/* Added px-2 sm:px-4 for small horizontal margins */}
         <InteractiveChessboardSection />
       </main>
       <Footer />
     </div>
   );
 }
+

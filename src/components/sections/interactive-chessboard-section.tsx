@@ -7,7 +7,8 @@ import type { Square, Piece } from 'react-chessboard/dist/chessboard/types';
 import { Chess, type Move } from 'chess.js';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Rewind, FastForward, Repeat, SkipBack, SkipForward } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { RotateCcw, Rewind, FastForward, Repeat, SkipBack, SkipForward, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -18,12 +19,12 @@ const lichessDarkSquareStyle: React.CSSProperties = { backgroundColor: '#B58863'
 
 const boardBaseStyle: React.CSSProperties = {
   borderRadius: '0.125rem', // rounded-sm (2px)
-  boxShadow: 'none', 
+  boxShadow: 'none',
 };
 
 // Highlight styles
-const selectedSquareStyle: React.CSSProperties = { background: "rgba(255, 255, 0, 0.4)" }; 
-const legalMoveSquareStyle: React.CSSProperties = { background: "rgba(144, 238, 144, 0.5)" }; 
+const selectedSquareStyle: React.CSSProperties = { background: "rgba(255, 255, 0, 0.4)" };
+const legalMoveSquareStyle: React.CSSProperties = { background: "rgba(144, 238, 144, 0.5)" }; // Light green, semi-transparent
 const lastMoveHighlightStyle: React.CSSProperties = { background: "rgba(205, 133, 63, 0.5)" }; // Peru, slightly transparent
 
 export default function InteractiveChessboardSection() {
@@ -38,6 +39,7 @@ export default function InteractiveChessboardSection() {
 
   const [fenHistory, setFenHistory] = useState<string[]>([initialFen]);
   const [currentFenIndex, setCurrentFenIndex] = useState(0);
+  const [moveHistoryForDisplay, setMoveHistoryForDisplay] = useState<string[]>([]);
 
   const boardContainerRef = useRef<HTMLDivElement>(null);
 
@@ -60,75 +62,83 @@ export default function InteractiveChessboardSection() {
       return () => window.removeEventListener('resize', calculateSize);
     }
   }, [isMounted]);
-  
-  const updateGameAndHistory = useCallback((updatedGame: Chess, move: Move | null) => {
-    const newFen = updatedGame.fen();
-    const newHistory = fenHistory.slice(0, currentFenIndex + 1); // Truncate history if we went back and made a new move
-    newHistory.push(newFen);
-    setFenHistory(newHistory);
-    setCurrentFenIndex(newHistory.length - 1);
-    setPosition(newFen);
-    setGame(updatedGame);
-    if (move) {
-      setLastMove({ from: move.from, to: move.to });
-    } else {
-      setLastMove(null); // Clear last move on reset or if move is null
+
+  const updateMoveHistoryDisplay = useCallback((currentGame: Chess) => {
+    const history = currentGame.history({ verbose: false }); // Get SAN moves
+    const formattedMoves: string[] = [];
+    for (let i = 0; i < history.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      let turn = `${moveNumber}. ${history[i]}`;
+      if (history[i+1]) {
+        turn += ` ${history[i+1]}`;
+      }
+      formattedMoves.push(turn);
     }
-  }, [fenHistory, currentFenIndex]);
+    setMoveHistoryForDisplay(formattedMoves);
+  }, []);
+
+  const updateGameAndHistory = useCallback((updatedGame: Chess, moveResult: Move | null) => {
+    const newFen = updatedGame.fen();
+    const newFenHistory = fenHistory.slice(0, currentFenIndex + 1);
+    newFenHistory.push(newFen);
+    setFenHistory(newFenHistory);
+    setCurrentFenIndex(newFenHistory.length - 1);
+
+    setPosition(newFen);
+    setGame(updatedGame); // Keep the game instance synchronized
+
+    if (moveResult) {
+      setLastMove({ from: moveResult.from, to: moveResult.to });
+    } else {
+      setLastMove(null);
+    }
+    updateMoveHistoryDisplay(updatedGame);
+  }, [fenHistory, currentFenIndex, updateMoveHistoryDisplay]);
 
 
   const safeGameMutate = useCallback((modify: (g: Chess) => Move | null) => {
-    const newGameInstance = new Chess(game.fen());
-    const moveResult = modify(newGameInstance);
-    if (moveResult) {
+    const newGameInstance = new Chess(game.fen()); // Create a new instance from current FEN
+    const moveResult = modify(newGameInstance); // Operate on the new instance
+
+    if (moveResult) { // If the move was successful
       updateGameAndHistory(newGameInstance, moveResult);
     }
     return moveResult;
   }, [game, updateGameAndHistory]);
 
 
-  function getSquareOptions(square: Square | null) {
+  function getSquareOptions(squareToHighlight: Square | null) {
     const newOptions: Record<string, React.CSSProperties> = {};
-    
-    // Highlight last move
     if (lastMove) {
-      newOptions[lastMove.from] = lastMoveHighlightStyle;
-      newOptions[lastMove.to] = lastMoveHighlightStyle;
+      newOptions[lastMove.from] = { ...lastMoveHighlightStyle };
+      newOptions[lastMove.to] = { ...lastMoveHighlightStyle };
     }
+    if (!squareToHighlight) return newOptions;
 
-    if (!square) return newOptions; // Only last move highlights if no square selected
-
-    const currentMoves = game.moves({ square, verbose: true }) as Move[];
-    
+    const currentMoves = game.moves({ square: squareToHighlight, verbose: true }) as Move[];
     currentMoves.forEach((move) => {
-      newOptions[move.to] = { ...legalMoveSquareStyle }; // Ensure new object for React to detect change
+      newOptions[move.to] = { ...legalMoveSquareStyle };
     });
-    if (currentMoves.length > 0 || game.get(square)) { 
-      newOptions[square] = { ...selectedSquareStyle };
+    if (currentMoves.length > 0 || game.get(squareToHighlight)) {
+      newOptions[squareToHighlight] = { ...selectedSquareStyle };
     }
     return newOptions;
   }
-  
+
   useEffect(() => {
-    // Update highlights whenever selectedSquare or lastMove changes
     setMoveOptions(getSquareOptions(selectedSquare));
-  }, [selectedSquare, lastMove, game]); // Add game to dependencies as game.moves() depends on it
+  }, [selectedSquare, lastMove, game]);
 
 
   function makeMove(move: string | { from: Square; to: Square; promotion?: Piece[1] }) {
     const moveResult = safeGameMutate((g) => {
-        try {
-            return g.move(move);
-        } catch (e) {
-            // This can happen if the move is illegal for various reasons (e.g., not piece's turn)
-            // chess.js might throw an error, or return null.
-            // We want to clear selections if the attempt was invalid.
-            return null; 
-        }
+      try {
+        return g.move(move);
+      } catch (e) {
+        return null;
+      }
     });
-    
-    setSelectedSquare(null); 
-    // setMoveOptions is now handled by useEffect based on selectedSquare and lastMove
+    setSelectedSquare(null);
     return !!moveResult;
   }
 
@@ -136,26 +146,23 @@ export default function InteractiveChessboardSection() {
     return makeMove({
       from: sourceSquare,
       to: targetSquare,
-      promotion: 'q', // Always promote to queen for simplicity in this context
+      promotion: 'q',
     });
   }
 
   function onSquareClick(square: Square) {
     if (selectedSquare) {
-      if (selectedSquare === square) { // Clicked the same square
+      if (selectedSquare === square) {
         setSelectedSquare(null);
         return;
       }
-      // Attempt to make a move
       makeMove({ from: selectedSquare, to: square, promotion: 'q' });
-      // setSelectedSquare(null) will be handled in makeMove or its aftermath via useEffect
     } else {
-      // No square selected yet, check if there's a piece to select
       const piece = game.get(square);
-      if (piece && piece.color === game.turn()) { 
+      if (piece && piece.color === game.turn()) {
         setSelectedSquare(square);
       } else {
-        setSelectedSquare(null); // Clicked empty square or opponent's piece
+        setSelectedSquare(null);
       }
     }
   }
@@ -168,7 +175,7 @@ export default function InteractiveChessboardSection() {
     setCurrentFenIndex(0);
     setSelectedSquare(null);
     setLastMove(null);
-    // setMoveOptions({}); // Handled by useEffect
+    updateMoveHistoryDisplay(newGame);
   }
 
   const navigateHistory = (newIndex: number) => {
@@ -176,15 +183,11 @@ export default function InteractiveChessboardSection() {
       setCurrentFenIndex(newIndex);
       const targetFen = fenHistory[newIndex];
       setPosition(targetFen);
-      const newGameInstance = new Chess(targetFen); // Load game state for this FEN
-      setGame(newGameInstance); 
+      const newGameInstance = new Chess(targetFen);
+      setGame(newGameInstance);
       setSelectedSquare(null);
-      // Determine the "last move" that led to this FEN
-      // This is tricky: if going back, the "last move" is the one that was undone.
-      // For simplicity, we might only highlight the actual last move of the game *if at the end*
-      // Or, if we have move objects in history, we could derive it.
-      // For now, clearing lastMove on history navigation is safest unless we store full Move objects.
-      setLastMove(null); 
+      setLastMove(null); // Clear last move highlight when navigating history
+      updateMoveHistoryDisplay(newGameInstance);
     }
   };
 
@@ -192,19 +195,21 @@ export default function InteractiveChessboardSection() {
   const handlePreviousMove = () => navigateHistory(currentFenIndex - 1);
   const handleNextMove = () => navigateHistory(currentFenIndex + 1);
   const handleGoToEnd = () => navigateHistory(fenHistory.length - 1);
-
-  const handleFlipBoard = () => {
-    setBoardOrientation(prev => prev === 'white' ? 'black' : 'white');
+  const handleFlipBoard = () => setBoardOrientation(prev => prev === 'white' ? 'black' : 'white');
+  const handleDownload = () => {
+    // Placeholder for PGN download functionality
+    console.log("Download PGN:", game.pgn());
+    alert("PGN Download functionality to be implemented. Check console for PGN.");
   };
 
   return (
-    <div className="w-full flex flex-col items-center py-8">
+    <div className="w-full flex flex-col items-center">
       <Card className="shadow-xl border-border overflow-hidden bg-card w-full max-w-lg rounded-lg">
         <CardContent ref={boardContainerRef} className="p-0">
           {isMounted && boardWidth > 0 ? (
             <Chessboard
               id="InteractiveChessboard"
-              key="static-interactive-board" 
+              key="static-interactive-board"
               position={position}
               onSquareClick={onSquareClick}
               onPieceDrop={onPieceDrop}
@@ -223,8 +228,8 @@ export default function InteractiveChessboardSection() {
           )}
         </CardContent>
       </Card>
-      
-      <div className="mt-6 p-3 bg-card rounded-lg shadow-md flex justify-center space-x-2 flex-wrap gap-2">
+
+      <div className="mt-3 p-2 bg-card rounded-lg shadow-md flex flex-wrap justify-center items-center gap-1 sm:gap-2 w-full max-w-lg">
         <Button variant="outline" size="default" onClick={handleGoToStart} disabled={currentFenIndex === 0} aria-label="Go to Start">
           <SkipBack className="h-5 w-5" />
         </Button>
@@ -234,7 +239,7 @@ export default function InteractiveChessboardSection() {
         <Button variant="outline" size="default" onClick={handleNextMove} disabled={currentFenIndex === fenHistory.length - 1} aria-label="Next Move">
           <FastForward className="h-5 w-5" />
         </Button>
-         <Button variant="outline" size="default" onClick={handleGoToEnd} disabled={currentFenIndex === fenHistory.length - 1} aria-label="Go to End">
+        <Button variant="outline" size="default" onClick={handleGoToEnd} disabled={currentFenIndex === fenHistory.length - 1} aria-label="Go to End">
           <SkipForward className="h-5 w-5" />
         </Button>
         <Button variant="outline" size="default" onClick={resetGame} aria-label="Reset Board">
@@ -243,7 +248,37 @@ export default function InteractiveChessboardSection() {
         <Button variant="outline" size="default" onClick={handleFlipBoard} aria-label="Flip Board">
           <Repeat className="h-5 w-5" />
         </Button>
+        <Button variant="outline" size="default" onClick={handleDownload} aria-label="Download PGN">
+          <Download className="h-5 w-5" />
+        </Button>
       </div>
+
+      {moveHistoryForDisplay.length > 0 && (
+         <Card className="mt-3 p-2 bg-card rounded-lg shadow-md w-full max-w-lg">
+            <CardContent className="p-0">
+                <h3 className="font-headline text-md font-semibold mb-1 text-center">Move History</h3>
+                <ScrollArea className="h-[100px] w-full rounded-md border border-border p-2 text-sm bg-background">
+                    <div className="grid grid-cols-[auto_1fr_1fr] sm:grid-cols-[auto_1fr_1fr_1fr_1fr] gap-x-2 gap-y-1 font-mono">
+                    {moveHistoryForDisplay.map((moveTurn, index) => {
+                        const parts = moveTurn.match(/(\d+)\.\s*(\S+)(?:\s+(\S+))?/);
+                        if (!parts) return <div key={index} className="col-span-full">{moveTurn}</div>;
+                        const moveNumber = parts[1];
+                        const whiteMove = parts[2];
+                        const blackMove = parts[3];
+                        return (
+                        <React.Fragment key={index}>
+                            <div className="text-right text-muted-foreground">{moveNumber}.</div>
+                            <div>{whiteMove}</div>
+                            {blackMove && <div>{blackMove}</div>}
+                            {!blackMove && <div></div>} {/* Placeholder for alignment if only white move */}
+                        </React.Fragment>
+                        );
+                    })}
+                    </div>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
