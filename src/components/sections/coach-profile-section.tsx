@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { slugify } from '@/lib/utils'; // Import slugify
 
 interface Coach {
   name: string;
+  nickname?: string; // Added nickname
   title: string;
   imageSrc: string;
   imageAlt: string;
@@ -18,9 +20,11 @@ interface Coach {
   profileInfo: string;
 }
 
-const allCoachesData: Coach[] = [
+// Updated coach data with nicknames
+export const allCoachesData: Coach[] = [ // Export for use in admin page
   {
     name: "Mahomole S.K",
+    nickname: "KG",
     title: "Certified Chess Coach & Strategist",
     imageSrc: "https://i.ibb.co/GzyZvGj/20250512-215848.jpg",
     imageAlt: "Portrait of Coach Mahomole S.K.",
@@ -42,29 +46,8 @@ const allCoachesData: Coach[] = [
     My coaching blends <strong>elite tournament insights</strong> with structured training to help players <em>think sharper, react faster, and win more</em>.`
   },
   {
-    name: "Mahomole T.R",
-    title: "Certified Chess Coach & Strategist",
-    imageSrc: "https://i.ibb.co/fJBTzr1/IMG-20250119-WA0000-41538-e1738142791424-780x470.jpg",
-    imageAlt: "Portrait of Coach Mahomole T.R.",
-    imageAiHint: "chess coach profile",
-    chessSaId: "189019610",
-    fideId: "14303884",
-    profileInfo: `With a strong background in competitive chess and a focus on youth development, I specialize in building foundational skills and tactical awareness. My approach includes:
-    <ul class="list-disc list-inside space-y-1 pl-4">
-      <li>
-        <strong>Passionate about developing young talent</strong> and fostering a love for the game.
-      </li>
-      <li>
-        Specializes in <strong>opening theory and tactical sharpness</strong> tailored for improving players.
-      </li>
-      <li>
-        Believes in a <strong>personalized approach to coaching</strong>, adapting to each student's unique learning style and goals.
-      </li>
-    </ul>
-    My goal is to empower students with the skills and confidence to <em>excel in chess and beyond</em>.`
-  },
-  {
     name: "Mahomole M.J",
+    nickname: "Joe",
     title: "Certified Chess Coach & Strategist",
     imageSrc: "https://i.ibb.co/RTDZx7fc/Screenshot-20250609-224422-You-Tube.jpg",
     imageAlt: "Portrait of Coach Mahomole M.J.",
@@ -85,6 +68,29 @@ const allCoachesData: Coach[] = [
     </ul>
     Dedicated to helping students achieve their full potential by <em>building a strong foundation and a winning mindset</em>.`
   },
+  {
+    name: "Mahomole T.R",
+    nickname: "Tebogo",
+    title: "Certified Chess Coach & Strategist",
+    imageSrc: "https://i.ibb.co/fJBTzr1/IMG-20250119-WA0000-41538-e1738142791424-780x470.jpg",
+    imageAlt: "Portrait of Coach Mahomole T.R.",
+    imageAiHint: "chess coach profile",
+    chessSaId: "189019610",
+    fideId: "14303884",
+    profileInfo: `With a strong background in competitive chess and a focus on youth development, I specialize in building foundational skills and tactical awareness. My approach includes:
+    <ul class="list-disc list-inside space-y-1 pl-4">
+      <li>
+        <strong>Passionate about developing young talent</strong> and fostering a love for the game.
+      </li>
+      <li>
+        Specializes in <strong>opening theory and tactical sharpness</strong> tailored for improving players.
+      </li>
+      <li>
+        Believes in a <strong>personalized approach to coaching</strong>, adapting to each student's unique learning style and goals.
+      </li>
+    </ul>
+    My goal is to empower students with the skills and confidence to <em>excel in chess and beyond</em>.`
+  },
 ];
 
 interface CoachProfileSectionProps {
@@ -93,7 +99,7 @@ interface CoachProfileSectionProps {
 
 export default function CoachProfileSection({ displayMode = "all" }: CoachProfileSectionProps) {
   const [coachesToDisplay, setCoachesToDisplay] = useState<Coach[]>(
-    displayMode === "all" ? allCoachesData : [] // Start empty if random to avoid SSR mismatch
+    displayMode === "all" ? allCoachesData : [] 
   );
 
   useEffect(() => {
@@ -110,9 +116,6 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
   }, [displayMode]);
 
   if (coachesToDisplay.length === 0 && displayMode === "singleRandom") {
-    // Optional: Render a skeleton or null while waiting for client-side random selection
-    // For now, it will just not render anything until the client-side effect runs.
-    // This could also be a place for a specific loading skeleton for a single coach card.
     return null; 
   }
   
@@ -157,7 +160,9 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
                   <CardHeader>
                     <div>
                       <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter leading-tight">
-                        {coach.name}
+                        <Link href={`/admin/coaches/${slugify(coach.name)}`} className="hover:text-accent transition-colors">
+                          {coach.name} {coach.nickname && `(${coach.nickname})`}
+                        </Link>
                       </CardTitle>
                       {coach.chessSaId && (
                         <p className="font-body text-sm text-muted-foreground leading-tight mt-1">
@@ -186,3 +191,5 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
     </section>
   );
 }
+
+    
