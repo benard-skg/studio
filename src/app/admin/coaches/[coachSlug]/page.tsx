@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound }_next_static_data_._next_static_data_ from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
@@ -10,20 +10,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2 } from 'lucide-react';
 import { allCoachesData } from '@/components/sections/coach-profile-section'; // Import coach data
-import type { LessonReportData } from '@/lib/types'; // Use existing definition
+import type { LessonReportData } from '@/lib/types'; 
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-// Define StoredLessonReport based on actual fields being saved (from lesson-report-form.tsx)
+// Define StoredLessonReport based on actual fields being saved and displayed
 interface StoredLessonReport extends Omit<LessonReportData, 'pgnFile'> {
   id: string;
-  submittedAt: string;
+  submittedAt: string; // Expect ISO string
   pgnFilename?: string;
-  // Add all fields from LessonReportData that are expected to be strings or numbers
   studentName: string;
-  lessonDateTime: string;
+  lessonDateTime: string; // Expect ISO string or datetime-local string
   coachName: string;
   ratingBefore?: number;
   ratingAfter?: number;
@@ -55,8 +54,10 @@ export default function CoachAdminProfilePage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchLessonReports = useCallback(async (currentCoachName: string) => {
+    console.log(`[CoachAdminProfilePage] fetchLessonReports called for coach: "${currentCoachName}"`);
     if (!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID) {
       setError("JSONBin.io Access Key or Reports Bin ID is not configured.");
+      console.error("[CoachAdminProfilePage] JSONBin.io Access Key or Reports Bin ID is not configured.");
       return [];
     }
     try {
@@ -66,22 +67,37 @@ export default function CoachAdminProfilePage() {
       });
       if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`Failed to fetch lesson reports. Status: ${response.status}. ${errorData}`);
+        console.error(`[CoachAdminProfilePage] Failed to fetch lesson reports. Status: ${response.status}. Response: ${errorData}`);
+        throw new Error(`Failed to fetch lesson reports. Status: ${response.status}.`);
       }
       const data = await response.json();
+      
       const allReports: StoredLessonReport[] = (Array.isArray(data.record) ? data.record : [])
         .filter((report: any): report is StoredLessonReport => 
             report && 
             typeof report.id === 'string' &&
             typeof report.coachName === 'string' &&
             typeof report.studentName === 'string' &&
-            typeof report.lessonDateTime === 'string'
+            typeof report.lessonDateTime === 'string' &&
+            typeof report.submittedAt === 'string' // Added submittedAt to guard
         );
       
+      console.log(`[CoachAdminProfilePage] Fetched ${allReports.length} total reports. Sample coachName from first report (if any): "${allReports[0]?.coachName}"`);
+
       const coachReports = allReports.filter(report => report.coachName === currentCoachName)
-        .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+        .sort((a, b) => {
+            const dateA = parseISO(a.submittedAt);
+            const dateB = parseISO(b.submittedAt);
+            if (!isValid(dateA) && isValid(dateB)) return 1; // put invalid dates last
+            if (isValid(dateA) && !isValid(dateB)) return -1;
+            if (!isValid(dateA) && !isValid(dateB)) return 0;
+            return dateB.getTime() - dateA.getTime();
+        });
+      
+      console.log(`[CoachAdminProfilePage] Filtered down to ${coachReports.length} reports for coach: "${currentCoachName}"`);
       return coachReports;
     } catch (e: any) {
+      console.error("[CoachAdminProfilePage] Error in fetchLessonReports:", e);
       setError(e.message || "An unknown error occurred while fetching reports.");
       return [];
     }
@@ -89,32 +105,48 @@ export default function CoachAdminProfilePage() {
 
   useEffect(() => {
     if (coachSlug) {
+      console.log(`[CoachAdminProfilePage] useEffect triggered with coachSlug: "${coachSlug}"`);
       const currentCoach = allCoachesData.find(c => 
         c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') === coachSlug
       );
 
       if (currentCoach) {
+        console.log(`[CoachAdminProfilePage] Found coach: "${currentCoach.name}"`);
         setCoach(currentCoach);
-        fetchLessonReports(currentCoach.name).then(reports => {
-          setLessonReports(reports);
-          setIsLoading(false);
-        }).catch(() => setIsLoading(false)); 
+        setIsLoading(true); // Ensure loading is true before fetching reports
+        setError(null); // Clear previous errors
+        fetchLessonReports(currentCoach.name)
+          .then(reports => {
+            setLessonReports(reports);
+          })
+          .catch((e) => { // Catch errors from fetchLessonReports promise itself
+            console.error("[CoachAdminProfilePage] Error fetching reports in useEffect:", e);
+            // setError is already set inside fetchLessonReports, but this is a fallback.
+            if (!error) setError("Failed to load reports due to an unexpected error.");
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
       } else {
+        console.warn(`[CoachAdminProfilePage] Coach profile not found for slug: "${coachSlug}".`);
         setIsLoading(false);
         setError(`Coach profile not found for slug: "${coachSlug}".`);
+        setCoach(null); // Ensure coach is null if not found
+        setLessonReports([]); // Clear reports
       }
     } else {
       setIsLoading(false);
       setError("Coach slug is missing from URL.");
+      setCoach(null);
+      setLessonReports([]);
     }
-  }, [coachSlug, fetchLessonReports]);
+  }, [coachSlug, fetchLessonReports, error]); // Added `error` to dependency array to avoid stale closure issue if setError was called inside fetch and then this effect ran again.
 
-  if (isLoading) {
-    // Loading state is handled by loading.tsx
-    return null; 
+  if (isLoading && !coach) { // Show main loading skeleton if coach profile itself is loading
+    return null; // loading.tsx will handle this
   }
 
-  if (error && !coach) { 
+  if (!coach && !isLoading) { // If done loading and no coach found (or slug error)
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -122,7 +154,7 @@ export default function CoachAdminProfilePage() {
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
                 <h1 className="font-headline text-3xl mb-2">Error</h1>
-                <p className="font-body text-muted-foreground">{error}</p>
+                <p className="font-body text-muted-foreground">{error || "Coach profile could not be loaded."}</p>
                  <Button asChild className="mt-6">
                     <Link href="/coaches">Back to Coaches</Link>
                 </Button>
@@ -133,7 +165,7 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (!coach) { 
+  if (!coach) { // Should be caught above, but as a fallback
     notFound(); 
   }
 
@@ -169,8 +201,9 @@ export default function CoachAdminProfilePage() {
             <FileText className="mr-3 h-7 w-7 text-accent" />
             Lesson Reports
           </h2>
-          {error && !lessonReports.length && <p className="text-destructive font-body mb-4">Error loading reports: {error}</p>}
-          {lessonReports.length > 0 ? (
+          {isLoading && <p className="font-body text-muted-foreground">Loading reports...</p>}
+          {!isLoading && error && <p className="text-destructive font-body mb-4">Error loading reports: {error}</p>}
+          {!isLoading && !error && lessonReports.length > 0 && (
             <div className="space-y-4">
               {lessonReports.map(report => (
                 <Card key={report.id} className="shadow-md hover:shadow-lg transition-shadow border-border">
@@ -197,8 +230,9 @@ export default function CoachAdminProfilePage() {
                 </Card>
               ))}
             </div>
-          ) : (
-            <p className="font-body text-muted-foreground">{isLoading ? "Loading reports..." : "No lesson reports found for this coach."}</p>
+          )}
+          {!isLoading && !error && lessonReports.length === 0 && (
+            <p className="font-body text-muted-foreground">No lesson reports found for this coach.</p>
           )}
         </section>
 
@@ -227,5 +261,4 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
-
     
