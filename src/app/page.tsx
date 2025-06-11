@@ -6,7 +6,7 @@ import ClassShowcaseSection from '@/components/sections/class-showcase-section';
 import BlogSection from '@/components/sections/blog-section';
 import Footer from '@/components/layout/footer';
 import EventCalendarSection from '@/components/sections/event-calendar-section';
-import ChessTVSection from '@/components/sections/chess-tv-section'; // Added import
+import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section'; // Changed
 import type { EventType } from '@/lib/types';
 
 const BIN_ID = "6847dd9e8a456b7966aba67c";
@@ -65,11 +65,11 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="flex-grow pt-20"> {/* Add pt-20 to account for fixed navbar height */}
+      <main className="flex-grow pt-20">
         <HeroSection />
         <CoachProfileSection displayMode="singleRandom" />
         <EventCalendarSection events={events} />
-        <ChessTVSection /> {/* Added ChessTVSection here */}
+        <LichessTVEmbedSection /> {/* Changed from ChessTVSection */}
         <ClassShowcaseSection />
         <BlogSection />
       </main>

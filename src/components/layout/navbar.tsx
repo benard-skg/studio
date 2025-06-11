@@ -12,6 +12,7 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/coaches', label: 'Coaches' },
   { href: '/classes', label: 'Classes' },
+  { href: '/analysis-board', label: 'Analysis Board' }, // Added new link
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
