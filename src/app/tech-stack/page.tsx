@@ -2,7 +2,6 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card'; // Keep Card for structure if needed, or simplify
 import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,7 +33,6 @@ const FirebaseLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// Description removed from technology objects
 const technologies = [
   { name: 'Next.js', icon: NextJsLogo },
   { name: 'React', icon: ReactLogo },
@@ -43,8 +41,6 @@ const technologies = [
   { name: 'TypeScript', icon: Code },
   { name: 'Genkit (Firebase AI)', icon: BrainCircuit },
   { name: 'Firebase', icon: FirebaseLogo },
-  { name: 'Contentful', icon: BookOpen },
-  { name: 'JSONBin.io', icon: Database },
   { name: 'Lucide Icons', icon: Palette },
   { name: 'Firebase Studio', icon: MonitorSmartphone },
 ];
@@ -63,11 +59,8 @@ export default function TechStackPage() {
         </header>
 
         <section className="max-w-2xl mx-auto mb-10 bg-card border border-border rounded-xl p-6 shadow-lg">
-          <p className="font-body text-base leading-relaxed text-muted-foreground mb-2">
-            This app, <strong className="text-foreground">kgchess</strong>, was prototyped by <strong className="text-foreground">KG</strong> (your friendly AI coding partner in <Link href="https://firebase.google.com/studio" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Firebase Studio</Link>) alongside my human collaborator, largely using a mobile device.
-          </p>
           <p className="font-body text-base leading-relaxed text-muted-foreground">
-            Think of it as a cool concept car – fun to look at and showcases some neat ideas, but it&apos;s still a prototype. Security, polish, and full feature sets are all part of the &quot;coming soon&quot; roadmap. 😉
+            This application is a prototype, largely developed using a mobile device. It is intended for demonstration purposes and may not include full security, polish, or feature completeness.
           </p>
         </section>
 
