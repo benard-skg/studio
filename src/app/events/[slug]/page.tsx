@@ -13,8 +13,8 @@ interface EventPageProps {
   };
 }
 
-const BIN_ID = "6847dd9e8a456b7966aba67c";
-const ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
+const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 
 const isValidEvent = (event: any): event is EventType => {
   return event &&
@@ -27,13 +27,12 @@ const isValidEvent = (event: any): event is EventType => {
 };
 
 async function fetchAllValidEvents(): Promise<EventType[]> {
-  // Using hardcoded credentials as per user's current setup preference
-  if (!BIN_ID || !ACCESS_KEY) {
-    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured (hardcoded).");
+  if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
+    console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values.");
     return [];
   }
   
-  console.log(`[EventUtils] Fetching all events from Bin ID: ${BIN_ID} using Access Key (hardcoded).`);
+  console.log(`[EventUtils] Fetching all events from Bin ID: ${BIN_ID} using Access Key (from .env).`);
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
       method: 'GET',
@@ -42,14 +41,14 @@ async function fetchAllValidEvents(): Promise<EventType[]> {
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (hardcoded), Response: ${errorText}`);
+      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (from .env), Response: ${errorText}`);
       return [];
     }
     const data = await response.json();
     const rawEvents = Array.isArray(data.record) ? data.record : [];
     
     const validEvents = rawEvents
-      .filter(isValidEvent) // Use the validator
+      .filter(isValidEvent) 
       .sort((a: EventType, b: EventType) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.startTime.localeCompare(b.startTime));
 
      if (rawEvents.length > 0 && validEvents.length !== rawEvents.length) {
@@ -96,7 +95,7 @@ export async function generateMetadata(
     openGraph: {
       title: `${event.title} - LCA Event`,
       description: event.description || `Join us for ${event.title}!`,
-      type: 'article', // Changed from 'event' to 'article'
+      type: 'article', 
     },
   };
 }

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2, Trash2, FilePlus2, Loader2 } from 'lucide-react';
 import { allCoachesData } from '@/components/sections/coach-profile-section';
-import type { Coach as CoachDataType, LessonReportData } from '@/lib/types';
+import type { Coach as CoachDataType } from '@/lib/types'; // Renamed LessonReportData to avoid conflict
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -28,7 +28,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 
-interface StoredLessonReport extends Omit<LessonReportData, 'pgnFile'> {
+interface StoredLessonReport { // This is the type for reports stored in JSONBin
   id: string;
   submittedAt: string; 
   pgnFilename?: string;
@@ -51,8 +51,8 @@ interface StoredLessonReport extends Omit<LessonReportData, 'pgnFile'> {
 }
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653";
-const JSONBIN_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+const LESSON_REPORTS_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_LESSON_REPORTS_BIN_ID;
+const JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 
 
 export default function CoachAdminProfilePage() {
@@ -68,15 +68,20 @@ export default function CoachAdminProfilePage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<StoredLessonReport | null>(null);
   const { toast } = useToast();
+  const [isConfigured, setIsConfigured] = useState(true);
 
 
   const fetchLessonReports = useCallback(async (currentCoach: CoachDataType) => {
     console.log(`[CoachAdminProfilePage] fetchLessonReports called for coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
-    if (!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID) {
-      setError("JSONBin.io Access Key or Reports Bin ID is not configured.");
-      console.error("[CoachAdminProfilePage] JSONBin.io Access Key or Reports Bin ID is not configured.");
+    if (!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID || JSONBIN_ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || LESSON_REPORTS_BIN_ID === 'YOUR_JSONBIN_LESSON_REPORTS_BIN_ID') {
+      const configErrorMsg = "JSONBin.io Access Key or Lesson Reports Bin ID is not configured. Please set them in .env and restart.";
+      setError(configErrorMsg);
+      setIsConfigured(false);
+      console.error("[CoachAdminProfilePage]", configErrorMsg);
       return [];
     }
+    setIsConfigured(true);
+
     try {
       const response = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
         method: 'GET',
@@ -142,12 +147,14 @@ export default function CoachAdminProfilePage() {
         console.log(`[CoachAdminProfilePage] Found coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
         setCoach(currentCoach);
         setIsLoading(true);
-        setError(null);
+        setError(null); // Reset error before fetching
         fetchLessonReports(currentCoach) 
           .then(reports => {
             setLessonReports(reports);
+            // If there was a global config error from fetchLessonReports, it would be set there.
+            // If reports are empty but no error, it means no reports matched or bin is empty.
           })
-          .catch((e) => {
+          .catch((e) => { // This catch is for unexpected errors during the promise chain itself
             console.error("[CoachAdminProfilePage] Error fetching reports in useEffect:", e);
             if (!error) setError("Failed to load reports due to an unexpected error.");
           })
@@ -168,15 +175,15 @@ export default function CoachAdminProfilePage() {
       setLessonReports([]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coachSlug, fetchLessonReports]);
+  }, [coachSlug, fetchLessonReports]); // Error state is managed internally by fetchLessonReports now
 
   const handleDeleteReport = async () => {
-    if (!reportToDelete || !coach) return;
+    if (!reportToDelete || !coach || !isConfigured) return;
     setIsDeleting(true);
     try {
       const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
         method: 'GET',
-        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
+        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY! },
       });
 
       let allReports: StoredLessonReport[] = [];
@@ -194,7 +201,7 @@ export default function CoachAdminProfilePage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': JSONBIN_ACCESS_KEY,
+          'X-Access-Key': JSONBIN_ACCESS_KEY!,
           'X-Bin-Versioning': 'false',
         },
         body: JSON.stringify(updatedReports),
@@ -206,7 +213,6 @@ export default function CoachAdminProfilePage() {
       }
 
       toast({ title: "Report Deleted!", description: `Report for ${reportToDelete.studentName} has been removed.` });
-      // Refresh reports for the current coach
       fetchLessonReports(coach).then(reports => setLessonReports(reports));
     } catch (e: any) {
       console.error("[CoachAdminProfilePage] Error deleting report:", e);
@@ -219,11 +225,11 @@ export default function CoachAdminProfilePage() {
   };
 
 
-  if (isLoading && !coach) {
+  if (isLoading && !coach && !error) { // Show global loading skeleton or null only if truly loading initial coach data
     return null; 
   }
 
-  if (!coach && !isLoading) {
+  if ((!coach && !isLoading) || (!isConfigured && error)) { // If coach not found OR if not configured and there's an error message
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -242,7 +248,7 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (!coach) {
+  if (!coach) { // Should be caught by above, but as a fallback
     notFound();
   }
 
@@ -279,16 +285,21 @@ export default function CoachAdminProfilePage() {
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={!isConfigured}>
               <Link href="/admin/lesson-reports/create">
                 <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report
               </Link>
             </Button>
           </div>
+          
+          {!isConfigured && (
+             <p className="text-destructive font-body mb-4">Report functionality disabled: {error}</p>
+          )}
 
-          {isLoading && <p className="font-body text-muted-foreground">Loading reports...</p>}
-          {!isLoading && error && <p className="text-destructive font-body mb-4">Error loading reports: {error}</p>}
-          {!isLoading && !error && lessonReports.length > 0 && (
+          {isLoading && isConfigured && <p className="font-body text-muted-foreground">Loading reports...</p>}
+          {!isLoading && error && isConfigured && <p className="text-destructive font-body mb-4">Error loading reports: {error}</p>}
+          
+          {!isLoading && !error && isConfigured && lessonReports.length > 0 && (
             <div className="space-y-4">
               {lessonReports.map(report => (
                 <Card key={report.id} className="shadow-md hover:shadow-lg transition-shadow border-border">
@@ -309,7 +320,7 @@ export default function CoachAdminProfilePage() {
                         size="icon" 
                         className="text-destructive hover:text-destructive/80"
                         onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true);}}
-                        disabled={isDeleting}
+                        disabled={isDeleting || !isConfigured}
                         aria-label="Delete report"
                       >
                         {isDeleting && reportToDelete?.id === report.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -328,7 +339,7 @@ export default function CoachAdminProfilePage() {
               ))}
             </div>
           )}
-          {!isLoading && !error && lessonReports.length === 0 && (
+          {!isLoading && !error && isConfigured && lessonReports.length === 0 && (
             <p className="font-body text-muted-foreground">No lesson reports found for this coach.</p>
           )}
         </section>
@@ -382,6 +393,3 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
-    
-
-      

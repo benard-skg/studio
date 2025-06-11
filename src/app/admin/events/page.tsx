@@ -43,18 +43,17 @@ import type { EventType } from '@/lib/types';
 import { slugify } from '@/lib/utils';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
-import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
+import { Skeleton } from '@/components/ui/skeleton';
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
-const BIN_ID = "6847dd9e8a456b7966aba67c";
+const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
 
-// Define an inline skeleton component for the loading state within the page
 const PageContentSkeleton = () => (
   <>
     <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
-      <Skeleton className="h-10 w-2/5 sm:w-1/3 mb-4 sm:mb-0" /> {/* Title: Manage Events */}
-      <Skeleton className="h-10 w-48 rounded-md" /> {/* Add New Event Button */}
+      <Skeleton className="h-10 w-2/5 sm:w-1/3 mb-4 sm:mb-0" />
+      <Skeleton className="h-10 w-48 rounded-md" />
     </header>
     <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
       <div className="p-4 sm:p-6">
@@ -111,14 +110,15 @@ export default function AdminEventsPage() {
   });
 
   const fetchEvents = useCallback(async () => {
-    if (!ACCESS_KEY || !BIN_ID) {
-      setError("JSONBin.io Access Key or Events Bin ID is not configured (hardcoded).");
+    if (!ACCESS_KEY || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || !BIN_ID || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
+      setError("JSONBin.io Access Key or Events Bin ID is not configured. Please set them in .env and restart the server.");
       setIsConfigured(false);
       setIsLoading(false);
+      console.warn("Admin Events page: JSONBin.io Access Key or Events Bin ID is not configured or is using placeholder values.");
       return;
     }
     setIsConfigured(true);
-    setIsLoading(true); // Set loading true at the start of fetch
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -142,7 +142,7 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [ACCESS_KEY, BIN_ID]);
 
   useEffect(() => {
     fetchEvents();
@@ -215,7 +215,7 @@ export default function AdminEventsPage() {
         const data = await currentEventsResponse.json();
         currentEventsList = (Array.isArray(data.record) ? data.record : [])
           .filter((event: any) => event && event.id && event.title && event.date);
-      } else if (currentEventsResponse.status !== 404) { // Allow 404 for empty bin
+      } else if (currentEventsResponse.status !== 404) { 
         const errorText = await currentEventsResponse.text();
         throw new Error(`Failed to fetch current events before saving. Status: ${currentEventsResponse.status}. Response: ${errorText}`);
       }
@@ -314,7 +314,7 @@ export default function AdminEventsPage() {
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Configuration Error</p>
-            <p className="font-body text-center">{error || "JSONBin.io keys are missing (hardcoded check)."}</p>
+            <p className="font-body text-center">{error || "JSONBin.io keys are missing. Please set them in .env and restart."}</p>
           </div>
         </main>
         <Footer />
@@ -326,7 +326,7 @@ export default function AdminEventsPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading && events.length === 0 ? ( // Show skeleton only on initial load when events are empty
+        {isLoading && events.length === 0 ? ( 
           <PageContentSkeleton />
         ) : !isLoading && error ? (
           <>
@@ -404,7 +404,7 @@ export default function AdminEventsPage() {
                 </Table>
               </div>
             )}
-             {isLoading && events.length > 0 && ( // Show a smaller loader if loading more events but some are already displayed
+             {isLoading && events.length > 0 && ( 
                 <div className="flex justify-center items-center py-6">
                     <Loader2 className="h-6 w-6 animate-spin text-accent" />
                     <p className="ml-2 font-body text-sm">Updating events...</p>
@@ -415,7 +415,6 @@ export default function AdminEventsPage() {
       </main>
       <Footer />
 
-      {/* Add/Edit Event Dialog */}
       <Dialog open={isAddEditDialogOpen} onOpenChange={setIsAddEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -476,7 +475,6 @@ export default function AdminEventsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* View Event Dialog */}
       {currentEvent && (
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent>
@@ -508,7 +506,6 @@ export default function AdminEventsPage() {
         </Dialog>
       )}
 
-      {/* Delete Confirmation Dialog */}
       {eventToDelete && (
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
@@ -535,5 +532,3 @@ export default function AdminEventsPage() {
     </div>
   );
 }
-
-    

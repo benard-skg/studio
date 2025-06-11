@@ -4,7 +4,7 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { useEffect, useState, useCallback } from 'react';
-import { AlertCircle, Trash2, Eye, Loader2 } from 'lucide-react';
+import { AlertCircle, Trash2, Eye, Loader2, Mail } from 'lucide-react'; // Added Mail
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -23,7 +23,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialogTrigger, // Keep if you intend to add delete back
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -47,14 +47,15 @@ export default function AdminPage() {
   const { toast } = useToast();
 
   const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-  const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_BIN_ID;
+  const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID;
 
   const fetchSubmissions = useCallback(async () => {
-    if (!ACCESS_KEY || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || !BIN_ID || BIN_ID === 'YOUR_JSONBIN_BIN_ID') {
-      setError("JSONBin.io Access Key or Bin ID is not configured. Please set them in .env.local and restart the server.");
+    if (!ACCESS_KEY || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || 
+        !BIN_ID || BIN_ID === 'YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE' || BIN_ID === 'YOUR_JSONBIN_BIN_ID') { // Adjusted placeholder check
+      setError("JSONBin.io Access Key or Contact Submissions Bin ID is not configured. Please set them in .env and restart the server.");
       setIsConfigured(false);
       setIsLoading(false);
-      console.warn("Admin page: JSONBin.io Access Key or Bin ID is not configured or is using placeholder values.");
+      console.warn("Admin page: JSONBin.io Access Key or Bin ID for contact submissions is not configured or is using placeholder values.");
       return;
     }
     setIsConfigured(true);
@@ -76,7 +77,6 @@ export default function AdminPage() {
         throw new Error(`Failed to fetch submissions. Status: ${response.status}`);
       }
       const data = await response.json();
-      // Ensure data.record is an array, default to empty array if not or if it's an empty object
       const fetchedSubmissions = Array.isArray(data.record) ? data.record : (typeof data.record === 'object' && Object.keys(data.record).length === 0 ? [] : []);
       setSubmissions(fetchedSubmissions.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()));
     } catch (e: any) {
@@ -92,8 +92,6 @@ export default function AdminPage() {
     fetchSubmissions();
   }, [fetchSubmissions]);
   
-  // Note: Deletion functionality is not re-implemented in this setup pass to keep it simple.
-  // If you need deletion, we can add it in a subsequent step.
 
   if (!isConfigured) {
     return (
@@ -109,7 +107,7 @@ export default function AdminPage() {
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Configuration Error</p>
             <p className="font-body text-center">
-              {error || "JSONBin.io Access Key or Bin ID is not configured. Please set them in .env.local and restart the server."}
+              {error || "JSONBin.io Access Key or Bin ID is not configured. Please set them in .env and restart the server."}
             </p>
           </div>
         </main>
@@ -186,30 +184,6 @@ export default function AdminPage() {
                         <Eye className="h-4 w-4" />
                       </Button>
                       {/* Delete button placeholder - functionality not re-implemented yet */}
-                      {/* 
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete this submission.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDeleteSubmission(index)}
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                      */}
                     </TableCell>
                   </TableRow>
                 ))}

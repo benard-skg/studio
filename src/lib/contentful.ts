@@ -4,20 +4,22 @@ import type { BlogPost, ContentfulAsset } from './types';
 import type { Document } from '@contentful/rich-text-types';
 
 // --- Configuration (Embedded as requested) ---
-const CONTENTFUL_SPACE_ID = 'htjrh4mjuk93';
-const CONTENTFUL_ACCESS_TOKEN = 'OOGdUgBWVYfhwdmQDxQoJHR6OkdAbZ8BwOJKjUDWPAk';
+const CONTENTFUL_SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
+const CONTENTFUL_ACCESS_TOKEN = process.env.CONTENTFUL_ACCESS_TOKEN;
 const CONTENTFUL_CONTENT_TYPE_ID = 'blog'; // User confirmed this ID
 // --- End Configuration ---
 
 if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
   console.error(
-    '[Contentful] CRITICAL ERROR: Contentful Space ID or Access Token is not defined.'
+    '[Contentful] CRITICAL ERROR: Contentful Space ID or Access Token is not defined in environment variables.'
   );
+  // Potentially throw an error or return empty data to prevent app from crashing partially
+  // For now, it will proceed and Contentful client will likely fail or return no data.
 }
 
 const client = createClient({
-  space: CONTENTFUL_SPACE_ID,
-  accessToken: CONTENTFUL_ACCESS_TOKEN,
+  space: CONTENTFUL_SPACE_ID || '', // Provide a fallback empty string if undefined
+  accessToken: CONTENTFUL_ACCESS_TOKEN || '', // Provide a fallback
 });
 
 // Define the expected Field IDs from Contentful
@@ -108,6 +110,7 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return [];
   console.log(`[Contentful] getBlogPosts: Fetching entries with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -137,6 +140,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return null;
   console.log(`[Contentful] getBlogPostBySlug: Fetching entry with slug '${slug}' and Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -168,6 +172,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 }
 
 export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return [];
   console.log(`[Contentful] getAllBlogPostSlugs: Fetching slugs with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -189,6 +194,7 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
 }
 
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return null;
   console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -214,5 +220,3 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
     return null;
   }
 }
-
-    

@@ -25,15 +25,13 @@ import { Loader2, Save, Trash2, BookOpen, Users, Target, AlertTriangle, CheckCir
 import type { LessonReportData, LessonTopic } from "@/lib/types";
 import { commonLessonTopics } from "@/lib/types";
 
-// Adjusted schema: most string fields are now optional or default to empty string
-// Removed min length constraints for now.
 const lessonReportSchema = z.object({
   studentName: z.string().default(''),
   lessonDateTime: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid date/time format."),
   coachName: z.string().default(''),
   ratingBefore: z.coerce.number().optional(),
   ratingAfter: z.coerce.number().optional(),
-  topicCovered: z.string().default(''), // User can leave the default "Select a topic"
+  topicCovered: z.string().default(''), 
   customTopic: z.string().default(''),
   keyConcepts: z.string().default(''),
   pgnFile: z.custom<FileList>().optional(),
@@ -46,7 +44,6 @@ const lessonReportSchema = z.object({
   readingVideos: z.string().url("Must be a valid URL for reading/video material").optional().or(z.literal('')),
   additionalNotes: z.string().default(''),
 });
-// Removed .refine for customTopic as topicCovered is now optional/default empty
 
 type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & {
   id: string;
@@ -57,14 +54,25 @@ type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & 
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653";
-const JSONBIN_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+const LESSON_REPORTS_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_LESSON_REPORTS_BIN_ID;
+const JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 
 
 export default function LessonReportForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedTopic, setSelectedTopic] = React.useState<string>("");
+  const [isConfigured, setIsConfigured] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!LESSON_REPORTS_BIN_ID || LESSON_REPORTS_BIN_ID === 'YOUR_JSONBIN_LESSON_REPORTS_BIN_ID' ||
+        !JSONBIN_ACCESS_KEY || JSONBIN_ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
+      setIsConfigured(false);
+      console.warn("Lesson Report Form: JSONBin.io Access Key or Lesson Reports Bin ID is not configured or is using placeholder values in .env.");
+    } else {
+      setIsConfigured(true);
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof lessonReportSchema>>({
     resolver: zodResolver(lessonReportSchema),
@@ -113,17 +121,22 @@ export default function LessonReportForm() {
   }, [form]);
 
   async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
+    if (!isConfigured) {
+      toast({
+        variant: "destructive",
+        title: "Configuration Error",
+        description: "Cannot save report. JSONBin.io is not properly configured. Please check .env variables and restart."
+      });
+      return;
+    }
     setIsSubmitting(true);
 
-    // Handle empty optional fields by ensuring they are empty strings or undefined as per schema
     const processedValues = { ...values };
     (Object.keys(processedValues) as Array<keyof typeof processedValues>).forEach(key => {
         if (processedValues[key] === undefined && typeof lessonReportSchema.shape[key]?.parse('') === 'string') {
-             // If Zod default('') was used, undefined shouldn't happen, but this is a safeguard
             (processedValues as any)[key] = '';
         }
     });
-
 
     const newReportData: StoredLessonReport = {
       id: `report-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -150,7 +163,7 @@ export default function LessonReportForm() {
     try {
       const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
         method: 'GET',
-        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
+        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY! },
       });
 
       let currentReports: StoredLessonReport[] = [];
@@ -170,7 +183,7 @@ export default function LessonReportForm() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': JSONBIN_ACCESS_KEY,
+          'X-Access-Key': JSONBIN_ACCESS_KEY!,
           'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedReports),
@@ -185,7 +198,7 @@ export default function LessonReportForm() {
         title: "Report Saved!",
         description: "Lesson report has been successfully saved to JSONBin.io.",
       });
-      form.reset({ // Reset to initial default values
+      form.reset({ 
         studentName: "",
         lessonDateTime: new Date().toISOString().substring(0, 16),
         coachName: "",
@@ -323,7 +336,6 @@ export default function LessonReportForm() {
                         <SelectTrigger><SelectValue placeholder="Select a topic" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {/* Removed: <SelectItem value="">Select a topic</SelectItem> */}
                         {commonLessonTopics.map(topic => (
                           <SelectItem key={topic} value={topic}>{topic}</SelectItem>
                         ))}
@@ -490,14 +502,14 @@ export default function LessonReportForm() {
               <Button type="button" variant="outline" onClick={handleClearDraft} disabled={isSubmitting}>
                 <Trash2 className="mr-2 h-4 w-4" /> Clear Draft
               </Button>
-              <Button type="submit" disabled={isSubmitting || !JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID} className="bg-accent hover:bg-accent/90">
+              <Button type="submit" disabled={isSubmitting || !isConfigured} className="bg-accent hover:bg-accent/90">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Save Report
               </Button>
             </div>
-             {(!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID) && (
+             {!isConfigured && (
                 <p className="text-xs text-destructive text-center pt-2">
-                    JSONBin.io configuration (Access Key or Bin ID for reports) is missing. Saving is disabled.
+                    JSONBin.io configuration (Access Key or Bin ID for reports) is missing. Saving is disabled. Please check .env variables.
                 </p>
             )}
           </form>

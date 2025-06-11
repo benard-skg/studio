@@ -9,16 +9,16 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
-const BIN_ID = "6847dd9e8a456b7966aba67c";
-const ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
+const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
+const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 
 async function getEvents(): Promise<EventType[]> {
-  if (!BIN_ID || !ACCESS_KEY) {
-    console.error("[HomePage] JSONBin.io Bin ID or Access Key is not configured (hardcoded).");
+  if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
+    console.error("[HomePage] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values.");
     return [];
   }
 
-  console.log(`[HomePage] Fetching events from Bin ID: ${BIN_ID} using Access Key (hardcoded).`);
+  console.log(`[HomePage] Fetching events from Bin ID: ${BIN_ID} using Access Key (from .env).`);
 
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
@@ -31,7 +31,7 @@ async function getEvents(): Promise<EventType[]> {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (hardcoded), Body: ${errorBody}`);
+      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (from .env), Body: ${errorBody}`);
       return [];
     }
     const data = await response.json();
@@ -69,13 +69,11 @@ export default async function Home() {
         <HeroSection />
         <CoachProfileSection displayMode="singleRandom" />
         
-        {/* Wrapper for side-by-side Event Calendar and Lichess TV */}
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 items-start">
           <EventCalendarSection events={events} />
           <LichessTVEmbedSection />
         </div>
 
-        {/* Wrapper for side-by-side Class Showcase and Blog Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 items-start">
           <ClassShowcaseSection />
           <BlogSection />
