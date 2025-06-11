@@ -2,15 +2,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, notFound }_next_static_data_._next_static_data_ from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2 } from 'lucide-react';
-import { allCoachesData } from '@/components/sections/coach-profile-section'; // Import coach data
-import type { LessonReportData } from '@/lib/types'; 
+import { allCoachesData } from '@/components/sections/coach-profile-section';
+import type { Coach as CoachDataType, LessonReportData } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -23,7 +23,7 @@ interface StoredLessonReport extends Omit<LessonReportData, 'pgnFile'> {
   pgnFilename?: string;
   studentName: string;
   lessonDateTime: string; // Expect ISO string or datetime-local string
-  coachName: string;
+  coachName: string; // This is the field we'll be matching against
   ratingBefore?: number;
   ratingAfter?: number;
   topicCovered: string;
@@ -40,7 +40,7 @@ interface StoredLessonReport extends Omit<LessonReportData, 'pgnFile'> {
 }
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653"; 
+const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653";
 const JSONBIN_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy";
 
 
@@ -48,13 +48,13 @@ export default function CoachAdminProfilePage() {
   const params = useParams();
   const coachSlug = typeof params.coachSlug === 'string' ? params.coachSlug : undefined;
 
-  const [coach, setCoach] = useState<(typeof allCoachesData)[0] | null>(null);
+  const [coach, setCoach] = useState<CoachDataType | null>(null);
   const [lessonReports, setLessonReports] = useState<StoredLessonReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLessonReports = useCallback(async (currentCoachName: string) => {
-    console.log(`[CoachAdminProfilePage] fetchLessonReports called for coach: "${currentCoachName}"`);
+  const fetchLessonReports = useCallback(async (currentCoach: CoachDataType) => {
+    console.log(`[CoachAdminProfilePage] fetchLessonReports called for coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
     if (!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID) {
       setError("JSONBin.io Access Key or Reports Bin ID is not configured.");
       console.error("[CoachAdminProfilePage] JSONBin.io Access Key or Reports Bin ID is not configured.");
@@ -73,19 +73,34 @@ export default function CoachAdminProfilePage() {
       const data = await response.json();
       
       const allReports: StoredLessonReport[] = (Array.isArray(data.record) ? data.record : [])
-        .filter((report: any): report is StoredLessonReport => 
-            report && 
+        .filter((report: any): report is StoredLessonReport =>
+            report &&
             typeof report.id === 'string' &&
-            typeof report.coachName === 'string' &&
+            typeof report.coachName === 'string' && // coachName is crucial
             typeof report.studentName === 'string' &&
             typeof report.lessonDateTime === 'string' &&
-            typeof report.submittedAt === 'string' // Added submittedAt to guard
+            typeof report.submittedAt === 'string'
         );
       
       console.log(`[CoachAdminProfilePage] Fetched ${allReports.length} total reports. Sample coachName from first report (if any): "${allReports[0]?.coachName}"`);
 
-      const coachReports = allReports.filter(report => report.coachName === currentCoachName)
-        .sort((a, b) => {
+      const coachFullNameLower = currentCoach.name.toLowerCase();
+      const coachNicknameLower = currentCoach.nickname?.toLowerCase();
+
+      const coachReports = allReports.filter(report => {
+        const reportCoachNameLower = report.coachName.toLowerCase();
+        
+        // Exact match full name
+        if (reportCoachNameLower === coachFullNameLower) return true;
+        // Exact match nickname (if nickname exists and is not empty)
+        if (coachNicknameLower && coachNicknameLower.length > 0 && reportCoachNameLower === coachNicknameLower) return true;
+        // Contains full name
+        if (reportCoachNameLower.includes(coachFullNameLower)) return true;
+        // Contains nickname (if nickname exists and is not empty)
+        if (coachNicknameLower && coachNicknameLower.length > 0 && reportCoachNameLower.includes(coachNicknameLower)) return true;
+        
+        return false;
+      }).sort((a, b) => {
             const dateA = parseISO(a.submittedAt);
             const dateB = parseISO(b.submittedAt);
             if (!isValid(dateA) && isValid(dateB)) return 1; // put invalid dates last
@@ -94,7 +109,7 @@ export default function CoachAdminProfilePage() {
             return dateB.getTime() - dateA.getTime();
         });
       
-      console.log(`[CoachAdminProfilePage] Filtered down to ${coachReports.length} reports for coach: "${currentCoachName}"`);
+      console.log(`[CoachAdminProfilePage] Filtered down to ${coachReports.length} reports for coach: "${currentCoach.name}" using flexible matching.`);
       return coachReports;
     } catch (e: any) {
       console.error("[CoachAdminProfilePage] Error in fetchLessonReports:", e);
@@ -106,22 +121,21 @@ export default function CoachAdminProfilePage() {
   useEffect(() => {
     if (coachSlug) {
       console.log(`[CoachAdminProfilePage] useEffect triggered with coachSlug: "${coachSlug}"`);
-      const currentCoach = allCoachesData.find(c => 
+      const currentCoach = allCoachesData.find(c =>
         c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') === coachSlug
       );
 
       if (currentCoach) {
-        console.log(`[CoachAdminProfilePage] Found coach: "${currentCoach.name}"`);
+        console.log(`[CoachAdminProfilePage] Found coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
         setCoach(currentCoach);
-        setIsLoading(true); // Ensure loading is true before fetching reports
-        setError(null); // Clear previous errors
-        fetchLessonReports(currentCoach.name)
+        setIsLoading(true);
+        setError(null);
+        fetchLessonReports(currentCoach) // Pass the full coach object
           .then(reports => {
             setLessonReports(reports);
           })
-          .catch((e) => { // Catch errors from fetchLessonReports promise itself
+          .catch((e) => {
             console.error("[CoachAdminProfilePage] Error fetching reports in useEffect:", e);
-            // setError is already set inside fetchLessonReports, but this is a fallback.
             if (!error) setError("Failed to load reports due to an unexpected error.");
           })
           .finally(() => {
@@ -131,8 +145,8 @@ export default function CoachAdminProfilePage() {
         console.warn(`[CoachAdminProfilePage] Coach profile not found for slug: "${coachSlug}".`);
         setIsLoading(false);
         setError(`Coach profile not found for slug: "${coachSlug}".`);
-        setCoach(null); // Ensure coach is null if not found
-        setLessonReports([]); // Clear reports
+        setCoach(null);
+        setLessonReports([]);
       }
     } else {
       setIsLoading(false);
@@ -140,13 +154,14 @@ export default function CoachAdminProfilePage() {
       setCoach(null);
       setLessonReports([]);
     }
-  }, [coachSlug, fetchLessonReports, error]); // Added `error` to dependency array to avoid stale closure issue if setError was called inside fetch and then this effect ran again.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachSlug, fetchLessonReports]); // Removed `error` from dep array as per standard exhaustive-deps advice. fetchLessonReports itself doesn't change.
 
-  if (isLoading && !coach) { // Show main loading skeleton if coach profile itself is loading
-    return null; // loading.tsx will handle this
+  if (isLoading && !coach) {
+    return null;
   }
 
-  if (!coach && !isLoading) { // If done loading and no coach found (or slug error)
+  if (!coach && !isLoading) {
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -165,8 +180,8 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (!coach) { // Should be caught above, but as a fallback
-    notFound(); 
+  if (!coach) {
+    notFound();
   }
 
 
