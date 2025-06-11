@@ -44,3 +44,47 @@ export interface EventType {
   description?: string;
   detailsPageSlug: string; // Unique slug for the event's detail page
 }
+
+export interface LessonReportData {
+  studentName: string;
+  lessonDateTime: string;
+  coachName: string;
+  ratingBefore?: number;
+  ratingAfter?: number;
+  topicCovered: string;
+  customTopic?: string;
+  keyConcepts: string;
+  pgnFile?: FileList; // For PGN upload
+  gameExampleLinks?: string; // For Lichess/Chess.com links
+  strengths: string;
+  areasToImprove: string;
+  mistakesMade: string;
+  assignedPuzzles: string;
+  practiceGames: string;
+  readingVideos?: string;
+  additionalNotes?: string;
+}
+
+export type LessonTopic = 
+  | "Opening Principles" 
+  | "Middlegame Strategy" 
+  | "Endgame Fundamentals" 
+  | "Tactics Training" 
+  | "Positional Play" 
+  | "Specific Opening (e.g., Sicilian Defense)"
+  | "Game Analysis"
+  | "Tournament Preparation"
+  | "Custom";
+
+export const commonLessonTopics: LessonTopic[] = [
+  "Opening Principles",
+  "Middlegame Strategy",
+  "Endgame Fundamentals",
+  "Tactics Training",
+  "Positional Play",
+  "Specific Opening (e.g., Sicilian Defense)",
+  "Game Analysis",
+  "Tournament Preparation",
+  "Custom",
+];
+
