@@ -323,7 +323,7 @@ export default function LessonReportForm() {
                         <SelectTrigger><SelectValue placeholder="Select a topic" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Select a topic</SelectItem>
+                        {/* Removed: <SelectItem value="">Select a topic</SelectItem> */}
                         {commonLessonTopics.map(topic => (
                           <SelectItem key={topic} value={topic}>{topic}</SelectItem>
                         ))}
@@ -506,5 +506,3 @@ export default function LessonReportForm() {
     </Card>
   );
 }
-
-    
