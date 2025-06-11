@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Wind } from 'lucide-react'; 
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const NextJsLogo = (props: React.SVGProps<SVGSVGElement>) => (
   <svg 
@@ -16,6 +17,7 @@ const NextJsLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default function Footer() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -33,7 +35,10 @@ export default function Footer() {
         <div className="font-body text-xs text-muted-foreground mt-4 space-y-1">
           <p>
             Designed by{' '}
-            <Link href="/tech-stack" className="font-bold text-accent hover:text-accent/80 transition-colors">
+            <Link 
+              href="/tech-stack" 
+              className={cn("font-bold text-accent hover:text-accent/80", linkClasses)}
+            >
               KG
             </Link>
             {' '}👨🏾‍💻

@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { slugify } from '@/lib/utils'; // Import slugify
+import { slugify, cn } from '@/lib/utils'; 
 
 interface Coach {
   name: string;
-  nickname?: string; // Added nickname
+  nickname?: string; 
   title: string;
   imageSrc: string;
   imageAlt: string;
@@ -20,8 +20,7 @@ interface Coach {
   profileInfo: string;
 }
 
-// Updated coach data with nicknames
-export const allCoachesData: Coach[] = [ // Export for use in admin page
+export const allCoachesData: Coach[] = [ 
   {
     name: "Mahomole S.K",
     nickname: "KG",
@@ -97,6 +96,8 @@ interface CoachProfileSectionProps {
   displayMode?: "all" | "singleRandom";
 }
 
+const linkClasses = "transition-all duration-200 ease-out hover:text-accent hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
+
 export default function CoachProfileSection({ displayMode = "all" }: CoachProfileSectionProps) {
   const [coachesToDisplay, setCoachesToDisplay] = useState<Coach[]>(
     displayMode === "all" ? allCoachesData : [] 
@@ -129,8 +130,8 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
               Meet Our Coaches
             </h2>
           ) : (
-            <Link href="/coaches" className="inline-block">
-              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors duration-300">
+            <Link href="/coaches" className={cn("inline-block p-1 -m-1",linkClasses)}>
+              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
                 Meet Our Coaches
               </h2>
             </Link>
@@ -160,7 +161,7 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
                   <CardHeader>
                     <div>
                       <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter leading-tight">
-                        <Link href={`/admin/coaches/${slugify(coach.name)}`} className="hover:text-accent transition-colors">
+                        <Link href={`/admin/coaches/${slugify(coach.name)}`} className={cn("p-1 -m-1",linkClasses)}>
                           {coach.name} {coach.nickname && `(${coach.nickname})`}
                         </Link>
                       </CardTitle>

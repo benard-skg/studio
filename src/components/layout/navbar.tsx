@@ -7,15 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Crown } from 'lucide-react';
 import { ThemeToggleButton } from './theme-toggle-button';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/about', label: 'About' },
   { href: '/coaches', label: 'Coaches' },
   { href: '/classes', label: 'Classes' },
-  { href: '/analysis-board', label: 'Analysis Board' }, // Added new link
+  { href: '/analysis-board', label: 'Analysis Board' }, 
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
+
+const linkClasses = "font-body text-sm font-medium transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
+const mobileLinkClasses = "font-body text-lg transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
+
 
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
@@ -38,7 +43,14 @@ export default function Navbar() {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/80 backdrop-blur-md shadow-md' : 'bg-transparent'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <Link href="/" className="flex items-center space-x-2 text-2xl font-headline font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
+          <Link 
+            href="/" 
+            className={cn(
+              "flex items-center space-x-2 text-2xl font-headline font-extrabold tracking-tighter leading-tight transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm p-1 -m-1",
+              linkClasses,
+              "text-2xl" 
+            )}
+          >
             <Crown className="h-7 w-7 text-accent" />
             <span>LCA</span>
           </Link>
@@ -49,7 +61,7 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="font-body text-sm font-medium hover:text-accent transition-colors"
+                  className={linkClasses}
                 >
                   {item.label}
                 </Link>
@@ -66,7 +78,14 @@ export default function Navbar() {
                 <SheetContent side="right" className="w-[280px] bg-background p-6">
                   <SheetHeader className="text-left mb-6">
                     <SheetTitle asChild>
-                       <Link href="/" className="flex items-center space-x-2 text-xl font-headline font-extrabold tracking-tighter leading-tight">
+                       <Link 
+                          href="/" 
+                          className={cn(
+                            "flex items-center space-x-2 text-xl font-headline font-extrabold tracking-tighter leading-tight",
+                            mobileLinkClasses,
+                            "text-xl p-1 -m-1"
+                          )}
+                        >
                         <Crown className="h-6 w-6 text-accent" />
                         <span>LCA</span>
                       </Link>
@@ -77,7 +96,7 @@ export default function Navbar() {
                       <SheetClose key={item.label} asChild>
                         <Link
                           href={item.href}
-                          className="font-body text-lg hover:text-accent transition-colors"
+                          className={mobileLinkClasses}
                         >
                           {item.label}
                         </Link>

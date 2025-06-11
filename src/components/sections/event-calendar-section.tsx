@@ -16,6 +16,8 @@ interface EventCalendarSectionProps {
   events: EventType[];
 }
 
+const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
+
 export default function EventCalendarSection({ events }: EventCalendarSectionProps) {
   const router = useRouter();
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(startOfMonth(new Date()));
@@ -173,9 +175,9 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
                 {eventsForSelectedDate.map(event => (
                   <Card 
                     key={event.id} 
-                    className="shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5"
+                    className={cn("shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5", linkClasses)}
                     onClick={() => router.push(`/events/${event.detailsPageSlug}`)}
-                    tabIndex={0} // Make card focusable for keyboard navigation
+                    tabIndex={0} 
                     onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/events/${event.detailsPageSlug}`); }}
                   >
                     <CardContent className="p-4">

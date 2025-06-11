@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { GraduationCap, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const classesData = [
   {
@@ -20,14 +21,16 @@ const classesData = [
   },
 ];
 
+const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
+
 export default function ClassShowcaseSection() {
   return (
     <section id="classes" className="py-16 md:py-24 bg-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/classes" className="inline-block">
-            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors duration-300">
+          <Link href="/classes" className={cn("inline-block p-1 -m-1", linkClasses)}>
+            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent">
               Coaching Classes
             </h2>
           </Link>

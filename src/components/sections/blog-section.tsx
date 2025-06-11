@@ -6,9 +6,12 @@ import { Button } from '@/components/ui/button';
 import { getLatestBlogPost, getBlogPosts } from '@/lib/contentful'; // Updated to get latest post
 import type { BlogPost } from '@/lib/types';
 import { Newspaper } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Revalidate this component's data periodically (e.g., every hour)
 export const revalidate = 3600;
+
+const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default async function BlogSection() {
   const latestPost: BlogPost | null = await getLatestBlogPost();
@@ -26,8 +29,8 @@ export default async function BlogSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Newspaper className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/blog" className="inline-block">
-            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors duration-300">
+          <Link href="/blog" className={cn("inline-block p-1 -m-1",linkClasses)}>
+            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent">
               Latest From The Blog
             </h2>
           </Link>
@@ -40,7 +43,7 @@ export default async function BlogSection() {
           {postsToDisplay.map((post) => (
             <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 max-w-lg mx-auto">
               {post.featuredImage && post.featuredImage.fields.file.url && (
-                <Link href={`/blog/${post.slug}`} className="block">
+                <Link href={`/blog/${post.slug}`} className={cn("block", linkClasses)}>
                   <div className="aspect-[16/9] relative w-full">
                     <Image
                       src={`https:${post.featuredImage.fields.file.url}`}
@@ -53,8 +56,8 @@ export default async function BlogSection() {
                 </Link>
               )}
               <CardHeader>
-                <Link href={`/blog/${post.slug}`}>
-                  <CardTitle className="font-headline text-xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
+                <Link href={`/blog/${post.slug}`} className={cn("p-0.5 -m-0.5", linkClasses)}>
+                  <CardTitle className="font-headline text-xl font-extrabold tracking-tighter leading-tight hover:text-accent">
                     {post.title}
                   </CardTitle>
                 </Link>

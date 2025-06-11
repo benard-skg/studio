@@ -49,16 +49,6 @@ const technologies = [
   { name: 'Firebase Studio', icon: MonitorSmartphone },
 ];
 
-const unlinkedRoutes = [
-    { path: '/admin', description: 'Admin Dashboard (Submissions)' },
-    { path: '/admin/settings', description: 'Admin Settings (Lichess TV Username)' },
-    { path: '/admin/events', description: 'Admin Event Management' },
-    { path: '/admin/lesson-reports/create', description: 'Create Lesson Report Form' },
-    { path: '/admin/coaches/[coachSlug]', description: 'Coach Specific Admin Dashboard' },
-    { path: '/events/[slug]', description: 'Individual Event Detail Page' },
-    { path: '/blog/[slug]', description: 'Individual Blog Post Page' },
-];
-
 const deferredFeatures = [
     "PGN file processing and storage (beyond just filename)",
     "Direct PGN parsing and board replay from uploads in Lesson Reports",
@@ -79,7 +69,7 @@ export default function TechStackPage() {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         
-        <section className="max-w-2xl mx-auto mb-10 bg-destructive/15 text-destructive-foreground/90 border border-destructive/30 rounded-xl p-6 shadow-lg animate-subtle-pulse-15s">
+        <section className="max-w-2xl mx-auto mb-10 bg-destructive/20 text-destructive dark:bg-destructive/15 dark:text-destructive-foreground/90 border border-destructive/30 rounded-xl p-6 shadow-lg animate-subtle-pulse-15s">
           <p className="font-body text-base leading-relaxed">
             This application is a prototype, largely developed using a mobile device. It is intended for demonstration purposes and may not include full security, polish, or feature completeness.
           </p>
@@ -120,31 +110,6 @@ export default function TechStackPage() {
           </Card>
         </section>
         
-        <Separator className="my-12" />
-
-        <section className="mb-12">
-           <Card>
-            <CardHeader>
-              <CardTitle className="font-headline text-2xl flex items-center">
-                <Route className="mr-3 h-6 w-6 text-accent" />
-                Unlinked Application Routes
-              </CardTitle>
-              <CardDescription className="font-body">
-                These pages exist but are not directly linked in the main navigation menu. They are typically accessed via other parts of the application (e.g., admin panels, dynamic content).
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc space-y-2 pl-5 font-body text-sm">
-                {unlinkedRoutes.map((route) => (
-                  <li key={route.path}>
-                    <code className="font-code bg-muted px-1 py-0.5 rounded-sm text-foreground/80">{route.path}</code> - {route.description}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </section>
-
         <Separator className="my-12" />
         
         <section className="mb-0 pb-0"> {/* Removed bottom margin */}
@@ -219,3 +184,4 @@ export default function TechStackPage() {
     </div>
   );
 }
+
