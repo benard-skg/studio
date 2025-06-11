@@ -28,7 +28,7 @@ export default function LichessTVEmbedSection() {
               <iframe 
                 src="https://lichess.org/tv/frame?theme=brown&bg=dark" 
                 style={{ width: '100%', maxWidth: '400px', aspectRatio: '10 / 11', border: 'none', borderRadius: '0.25rem' }}
-                title="Lichess TV Embed" // Added title for accessibility
+                title="Lichess TV Embed"
               ></iframe>
             ) : (
               <Skeleton className="w-full max-w-[400px]" style={{aspectRatio: '10 / 11'}} />
