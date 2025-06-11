@@ -62,7 +62,6 @@ export async function generateStaticParams() {
   }));
 }
 
-// Simplified richTextOptions for debugging
 const richTextOptions = {
   renderNode: {
     [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
@@ -70,18 +69,24 @@ const richTextOptions = {
       if (asset && asset.fields?.file?.url && asset.fields.file.contentType.startsWith('image/')) {
         const imageUrl = `https:${asset.fields.file.url}`;
         const altText = asset.fields.description || asset.fields.title || 'Embedded blog image';
-        // Ensure this returns an HTML string
         return `<div style="margin: 1.5rem 0; text-align: center;"><img src="${imageUrl}" alt="${altText}" loading="lazy" style="max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" /></div>`;
       }
       return ''; 
     },
-    // Temporarily remove other custom renderers to isolate the issue
-    // [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${children}</p>`,
-    // [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${children}</h2>`,
-    // [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${children}</h3>`,
-    // [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${children}</ul>`,
-    // [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${children}</ol>`,
-    // [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${children}</blockquote>`,
+    [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${children}</p>`,
+    [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${children}</h2>`,
+    [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${children}</h3>`,
+    // Add HEADING_1, HEADING_4, HEADING_5, HEADING_6 if needed, following the pattern
+    [BLOCKS.HEADING_1]: (node: any, children: any) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold mt-10 mb-5">${children}</h1>`,
+    [BLOCKS.HEADING_4]: (node: any, children: any) => `<h4 class="font-headline text-lg sm:text-xl font-semibold mt-5 mb-2">${children}</h4>`,
+    [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${children}</ul>`,
+    [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${children}</ol>`,
+    [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${children}</blockquote>`,
+    // For hyperlinks, ensure they open in a new tab and have appropriate styling
+    [BLOCKS.HYPERLINK]: (node: any, children: any) => {
+        const href = node.data.uri;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-medium">${children}</a>`;
+    }
   },
 };
 
@@ -92,32 +97,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  // Ensure post.content is defined and is a Document object before passing
   const htmlContent = post && post.content && typeof post.content === 'object' && post.content.nodeType === 'document'
     ? documentToHtmlString(post.content, richTextOptions) 
     : '';
-
-  // For debugging on the server side (if you could see logs)
-  // console.log("Type of post.content:", typeof post?.content);
-  // console.log("Is post.content a Document:", post?.content?.nodeType === 'document');
-  // console.log("Generated htmlContent (first 100 chars):", typeof htmlContent, htmlContent.substring(0, 100));
-
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-28 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-          {/* "Back to Articles" button removed */}
-          {/* <div className="mb-8">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/blog">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Articles
-              </Link>
-            </Button>
-          </div> */}
-
           <article className="prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl mx-auto">
             <header className="mb-8">
               <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight mb-3">
@@ -141,7 +129,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             )}
             
-            {/* Ensure htmlContent is a string before rendering */}
             {typeof htmlContent === 'string' ? (
               <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
             ) : (
