@@ -6,9 +6,9 @@ import { Chessboard } from 'react-chessboard';
 import type { Square, Piece } from 'react-chessboard/dist/chessboard/types';
 import { Chess, type Move } from 'chess.js';
 import { Card, CardContent } from '@/components/ui/card';
-import { RotateCcw } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { RotateCcw, Rewind, FastForward, Repeat } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -18,19 +18,26 @@ const lichessDarkSquareStyle: React.CSSProperties = { backgroundColor: '#B58863'
 
 const boardBaseStyle: React.CSSProperties = {
   borderRadius: '0.125rem', // rounded-sm (2px)
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', // Softer shadow, still visible on most backgrounds
+  boxShadow: 'none', // Shadow will be on the Card
 };
 
+// Highlight styles
+const selectedSquareStyle: React.CSSProperties = { background: "rgba(255, 255, 0, 0.4)" }; // Translucent yellow
+const legalMoveSquareStyle: React.CSSProperties = { background: "rgba(144, 238, 144, 0.5)" }; // Translucent light green/jade
 
 export default function ChessTVSection() {
   const [isMounted, setIsMounted] = useState(false);
   const [game, setGame] = useState(new Chess());
-  const [position, setPosition] = useState(game.fen());
+  const [position, setPosition] = useState(initialFen);
   const [boardWidth, setBoardWidth] = useState(0);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
-  const [legalMoveOptions, setLegalMoveOptions] = useState<Record<string, React.CSSProperties>>({});
+  const [moveOptions, setMoveOptions] = useState<Record<string, React.CSSProperties>>({});
+  const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white');
 
-  const boardContainerRef = useRef<HTMLDivElement>(null); // Will refer to CardContent
+  const [fenHistory, setFenHistory] = useState<string[]>([initialFen]);
+  const [currentFenIndex, setCurrentFenIndex] = useState(0);
+
+  const boardContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -43,7 +50,7 @@ export default function ChessTVSection() {
           const containerWidth = boardContainerRef.current.offsetWidth;
           setBoardWidth(containerWidth > 0 ? Math.min(560, containerWidth) : 300);
         } else {
-          setBoardWidth(300); // Fallback
+          setBoardWidth(300);
         }
       };
       calculateSize();
@@ -51,125 +58,164 @@ export default function ChessTVSection() {
       return () => window.removeEventListener('resize', calculateSize);
     }
   }, [isMounted]);
+  
+  const updateGameAndHistory = useCallback((updatedGame: Chess) => {
+    const newFen = updatedGame.fen();
+    const newHistory = fenHistory.slice(0, currentFenIndex + 1);
+    newHistory.push(newFen);
+    setFenHistory(newHistory);
+    setCurrentFenIndex(newHistory.length - 1);
+    setPosition(newFen);
+    setGame(updatedGame);
+  }, [fenHistory, currentFenIndex]);
 
-  const safeGameMutate = useCallback((modify: (g: Chess) => void) => {
-    setGame((g) => {
-      const update = new Chess(g.fen());
-      modify(update);
-      setPosition(update.fen());
-      return update;
-    });
-  }, []);
 
-  function getLegalMoveOptions(square: Square) {
-    const moves = game.moves({ square, verbose: true }) as Move[];
-    if (moves.length === 0) {
-      return {};
+  const safeGameMutate = useCallback((modify: (g: Chess) => Move | null) => {
+    const newGameInstance = new Chess(game.fen());
+    const moveResult = modify(newGameInstance);
+    if (moveResult) {
+      updateGameAndHistory(newGameInstance);
     }
+    return moveResult;
+  }, [game, updateGameAndHistory]);
+
+
+  function getSquareOptions(square: Square | null) {
+    if (!square) return {};
+    const currentMoves = game.moves({ square, verbose: true }) as Move[];
     const newOptions: Record<string, React.CSSProperties> = {};
-    moves.forEach((move) => {
-      newOptions[move.to] = {
-        background: "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)", // Subtle dot for legal moves
-        borderRadius: "50%",
-      };
+
+    currentMoves.forEach((move) => {
+      newOptions[move.to] = legalMoveSquareStyle;
     });
-    newOptions[square] = {
-      background: "rgba(255, 255, 0, 0.3)", // Highlight selected square
-    };
+    if (currentMoves.length > 0 || game.get(square)) { // Highlight selected square if it has moves or a piece
+      newOptions[square] = selectedSquareStyle;
+    }
     return newOptions;
   }
   
   function makeMove(move: string | { from: Square; to: Square; promotion?: Piece[1] }) {
-    let moveSuccessful = false;
-    safeGameMutate((g) => {
+    const moveResult = safeGameMutate((g) => {
         try {
-            const result = g.move(move);
-            if (result) moveSuccessful = true;
+            return g.move(move);
         } catch (e) {
-            // Illegal move, chess.js might throw or return null/false
-            moveSuccessful = false;
+            return null;
         }
     });
     
-    // Always clear highlights after an attempt
-    setLegalMoveOptions({});
     setSelectedSquare(null);
-    return moveSuccessful;
+    setMoveOptions({});
+    return !!moveResult;
   }
 
   function onPieceDrop(sourceSquare: Square, targetSquare: Square) {
     return makeMove({
       from: sourceSquare,
       to: targetSquare,
-      promotion: 'q', // Always promote to queen for simplicity
+      promotion: 'q', 
     });
   }
 
   function onSquareClick(square: Square) {
     if (selectedSquare) {
-      // If same square is clicked again, deselect
       if (selectedSquare === square) { 
         setSelectedSquare(null);
-        setLegalMoveOptions({});
+        setMoveOptions({});
         return;
       }
-      // Otherwise, try to make the move
       makeMove({ from: selectedSquare, to: square, promotion: 'q' });
-      // `makeMove` now handles clearing selectedSquare and legalMoveOptions
     } else {
-      // If no piece is selected, select this one if it's a piece
       const piece = game.get(square);
-      // For local play, allow selecting any piece, regardless of turn for simplicity
-      if (piece) { 
+      if (piece && piece.color === game.turn()) { 
         setSelectedSquare(square);
-        setLegalMoveOptions(getLegalMoveOptions(square));
+        setMoveOptions(getSquareOptions(square));
+      } else {
+        setSelectedSquare(null);
+        setMoveOptions({});
       }
     }
   }
 
   function resetGame() {
-    safeGameMutate((g) => {
-      g.load(initialFen);
-    });
-    setLegalMoveOptions({});
+    const newGame = new Chess(initialFen);
+    setGame(newGame);
+    setPosition(initialFen);
+    setFenHistory([initialFen]);
+    setCurrentFenIndex(0);
     setSelectedSquare(null);
+    setMoveOptions({});
   }
+
+  const handlePreviousMove = () => {
+    if (currentFenIndex > 0) {
+      const newIndex = currentFenIndex - 1;
+      setCurrentFenIndex(newIndex);
+      const prevFen = fenHistory[newIndex];
+      setPosition(prevFen);
+      game.load(prevFen); // Sync chess.js instance
+      setSelectedSquare(null);
+      setMoveOptions({});
+    }
+  };
+
+  const handleNextMove = () => {
+    if (currentFenIndex < fenHistory.length - 1) {
+      const newIndex = currentFenIndex + 1;
+      setCurrentFenIndex(newIndex);
+      const nextFen = fenHistory[newIndex];
+      setPosition(nextFen);
+      game.load(nextFen); // Sync chess.js instance
+      setSelectedSquare(null);
+      setMoveOptions({});
+    }
+  };
+
+  const handleFlipBoard = () => {
+    setBoardOrientation(prev => prev === 'white' ? 'black' : 'white');
+  };
 
   return (
     <section id="interactive-chessboard" className="py-12 md:py-16 bg-secondary">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-lg mx-auto shadow-xl border-border overflow-hidden bg-card">
-          {/* CardHeader removed for cleaner look */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-lg"> {/* Constrain width for aesthetics */}
+        <Card className="shadow-xl border-border overflow-hidden bg-card">
           <CardContent ref={boardContainerRef} className="p-0"> {/* No padding for CardContent */}
             {isMounted && boardWidth > 0 ? (
               <Chessboard
                 id="InteractiveChessboard"
-                key="static-interactive-board" // Static key to prevent remounts
+                key="static-interactive-board"
                 position={position}
                 onSquareClick={onSquareClick}
                 onPieceDrop={onPieceDrop}
                 arePiecesDraggable={true}
                 boardWidth={boardWidth}
                 animationDuration={150}
-                boardOrientation="white"
+                boardOrientation={boardOrientation}
                 customBoardStyle={boardBaseStyle}
                 customDarkSquareStyle={lichessDarkSquareStyle}
                 customLightSquareStyle={lichessLightSquareStyle}
-                squareStyles={legalMoveOptions}
-                dropOffBoard="snapback" // Pieces snap back if dropped off board
+                customSquareStyles={moveOptions}
+                dropOffBoard="snapback"
               />
             ) : (
-              // Ensure skeleton also respects max-width and aspect ratio
               <Skeleton className="aspect-square w-full h-auto min-h-[300px] mx-auto rounded-sm" style={{maxWidth: '560px'}}/>
             )}
           </CardContent>
-          <div className="p-3 text-center border-t border-border">
-            <Button onClick={resetGame} variant="outline" size="sm">
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Reset Board
-            </Button>
-          </div>
         </Card>
+        
+        <div className="mt-4 flex justify-center space-x-2">
+          <Button variant="outline" size="icon" onClick={handlePreviousMove} disabled={currentFenIndex === 0} aria-label="Previous Move">
+            <Rewind className="h-5 w-5" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleNextMove} disabled={currentFenIndex === fenHistory.length - 1} aria-label="Next Move">
+            <FastForward className="h-5 w-5" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={resetGame} aria-label="Reset Board">
+            <RotateCcw className="h-5 w-5" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleFlipBoard} aria-label="Flip Board">
+            <Repeat className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </section>
   );
