@@ -2,8 +2,8 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Layers, Wind, BrainCircuit, Database, Code, Server, BookOpen, Settings2, Palette, GitMerge, MonitorSmartphone } from 'lucide-react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'; // Keep Card for structure if needed, or simplify
+import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -34,18 +34,19 @@ const FirebaseLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// Description removed from technology objects
 const technologies = [
-  { name: 'Next.js', icon: NextJsLogo, description: 'The React framework for building full-stack web applications with server-side rendering and static site generation.' },
-  { name: 'React', icon: ReactLogo, description: 'A JavaScript library for building user interfaces based on components.' },
-  { name: 'ShadCN UI', icon: Layers, description: 'A collection of beautifully designed, accessible, and customizable UI components built with Radix UI and Tailwind CSS.' },
-  { name: 'Tailwind CSS', icon: Wind, description: 'A utility-first CSS framework for rapidly building custom user interfaces directly in your markup.' },
-  { name: 'TypeScript', icon: Code, description: 'A superset of JavaScript that adds static types, improving code quality and developer experience.' },
-  { name: 'Genkit (Firebase AI)', icon: BrainCircuit, description: 'A toolkit for building AI-powered features, integrated with Firebase for seamless deployment and management.' },
-  { name: 'Firebase', icon: FirebaseLogo, description: 'A comprehensive platform from Google for building web and mobile applications, used here for App Hosting.' },
-  { name: 'Contentful', icon: BookOpen, description: 'A headless Content Management System (CMS) used for managing blog posts and other dynamic content.' },
-  { name: 'JSONBin.io', icon: Database, description: 'A simple and free JSON storage service, used for contact form submissions and event data in this prototype.' },
-  { name: 'Lucide Icons', icon: Palette, description: 'A beautiful and consistent open-source icon library.' },
-  { name: 'Firebase Studio', icon: MonitorSmartphone, description: 'The AI-powered development environment where this app is being built. Facilitates conversational coding and rapid prototyping.' },
+  { name: 'Next.js', icon: NextJsLogo },
+  { name: 'React', icon: ReactLogo },
+  { name: 'ShadCN UI', icon: Layers },
+  { name: 'Tailwind CSS', icon: Wind },
+  { name: 'TypeScript', icon: Code },
+  { name: 'Genkit (Firebase AI)', icon: BrainCircuit },
+  { name: 'Firebase', icon: FirebaseLogo },
+  { name: 'Contentful', icon: BookOpen },
+  { name: 'JSONBin.io', icon: Database },
+  { name: 'Lucide Icons', icon: Palette },
+  { name: 'Firebase Studio', icon: MonitorSmartphone },
 ];
 
 export default function TechStackPage() {
@@ -53,7 +54,7 @@ export default function TechStackPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="mb-12 text-center">
+        <header className="mb-10 text-center">
           <Link href="/" className="inline-block mb-4">
             <h1 className="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
               kgchess - Tech Stack
@@ -61,31 +62,23 @@ export default function TechStackPage() {
           </Link>
         </header>
 
-        <section className="max-w-3xl mx-auto mb-12 bg-card border border-border rounded-xl p-6 shadow-lg">
-          <p className="font-body text-lg leading-relaxed text-muted-foreground mb-2">
-            Hey there! This app, <strong className="text-foreground">kgchess</strong>, was prototyped by <strong className="text-foreground">KG</strong> (that&apos;s me, your friendly AI coding partner here in <Link href="https://firebase.google.com/studio" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Firebase Studio</Link>) alongside my human collaborator.
-          </p>
+        <section className="max-w-2xl mx-auto mb-10 bg-card border border-border rounded-xl p-6 shadow-lg">
           <p className="font-body text-base leading-relaxed text-muted-foreground mb-2">
-            It&apos;s been an interesting journey, largely put together using a mobile device (yes, you read that right!), so it&apos;s definitely an ongoing project and still evolving.
+            This app, <strong className="text-foreground">kgchess</strong>, was prototyped by <strong className="text-foreground">KG</strong> (your friendly AI coding partner in <Link href="https://firebase.google.com/studio" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Firebase Studio</Link>) alongside my human collaborator, largely using a mobile device.
           </p>
           <p className="font-body text-base leading-relaxed text-muted-foreground">
-            Think of it as a cool concept car – fun to look at, showcases some neat ideas (like this very page!), but perhaps don&apos;t enter your most sensitive data just yet. Security, polish, and full feature sets are all part of the "coming soon" roadmap as this prototype matures. 😉
+            Think of it as a cool concept car – fun to look at and showcases some neat ideas, but it&apos;s still a prototype. Security, polish, and full feature sets are all part of the &quot;coming soon&quot; roadmap. 😉
           </p>
         </section>
 
         <section>
-          <h2 className="font-headline text-3xl md:text-4xl font-bold mb-8 text-center">Core Technologies</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="font-headline text-3xl md:text-4xl font-bold mb-6 text-center">Core Technologies</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {technologies.map((tech) => (
-              <Card key={tech.name} className="shadow-md hover:shadow-lg transition-shadow flex flex-col">
-                <CardHeader className="flex flex-row items-center space-x-3 pb-3">
-                  <tech.icon className="h-8 w-8 text-accent shrink-0" />
-                  <CardTitle className="font-headline text-xl">{tech.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <CardDescription className="font-body text-sm">{tech.description}</CardDescription>
-                </CardContent>
-              </Card>
+              <div key={tech.name} className="flex flex-col items-center justify-center p-4 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow h-full">
+                <tech.icon className="h-10 w-10 text-accent mb-2 shrink-0" />
+                <span className="font-headline text-base text-center break-words">{tech.name}</span>
+              </div>
             ))}
           </div>
         </section>
