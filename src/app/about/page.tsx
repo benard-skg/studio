@@ -26,8 +26,8 @@ export default function AboutPage() {
           </p>
         </header>
 
-        <section className="mb-16">
-          <Card className="shadow-lg border-border bg-card">
+        <section className="mb-16 grid md:grid-cols-2 gap-8">
+          <Card className="shadow-lg border-border bg-card h-full"> {/* Added h-full for consistent height in grid */}
             <CardHeader>
               <CardTitle className="font-headline text-3xl flex items-center">
                 <Target className="h-8 w-8 mr-3 text-accent" />
@@ -40,10 +40,8 @@ export default function AboutPage() {
               </p>
             </CardContent>
           </Card>
-        </section>
 
-        <section className="mb-16">
-          <Card className="shadow-lg border-border bg-card">
+          <Card className="shadow-lg border-border bg-card h-full"> {/* Added h-full for consistent height in grid */}
             <CardHeader>
               <CardTitle className="font-headline text-3xl flex items-center">
                 <Eye className="h-8 w-8 mr-3 text-accent" />

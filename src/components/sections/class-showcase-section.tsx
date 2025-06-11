@@ -24,6 +24,10 @@ const classesData = [
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default function ClassShowcaseSection() {
+  const gridContainerClasses = classesData.length === 1 
+    ? "flex justify-center" // For a single, larger, centered card
+    : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"; // For multiple cards
+
   return (
     <section id="classes" className="py-16 md:py-24 bg-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,9 +43,15 @@ export default function ClassShowcaseSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+        <div className={gridContainerClasses}>
           {classesData.map((cls) => (
-            <Card key={cls.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden max-w-md md:col-span-1 lg:col-span-1">
+            <Card 
+              key={cls.name} 
+              className={cn(
+                "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden",
+                classesData.length === 1 ? "w-full max-w-xl" : "max-w-md" 
+              )}
+            >
               <CardHeader className="bg-card">
                 <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter leading-tight">{cls.name}</CardTitle>
                 <CardDescription className="font-body text-sm">{cls.description}</CardDescription>

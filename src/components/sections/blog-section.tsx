@@ -41,7 +41,10 @@ export default async function BlogSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
           {postsToDisplay.map((post) => (
-            <Card key={post.slug} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 max-w-lg mx-auto">
+            <Card 
+              key={post.slug} 
+              className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden md:col-start-1 md:col-span-2 lg:col-start-2 lg:col-span-1 w-full max-w-xl mx-auto" // Changed max-w-lg to max-w-xl
+            >
               {post.featuredImage && post.featuredImage.fields.file.url && (
                 <Link href={`/blog/${post.slug}`} className={cn("block", linkClasses)}>
                   <div className="aspect-[16/9] relative w-full">

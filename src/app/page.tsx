@@ -6,7 +6,7 @@ import ClassShowcaseSection from '@/components/sections/class-showcase-section';
 import BlogSection from '@/components/sections/blog-section';
 import Footer from '@/components/layout/footer';
 import EventCalendarSection from '@/components/sections/event-calendar-section';
-import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section'; // Changed
+import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
 const BIN_ID = "6847dd9e8a456b7966aba67c";
@@ -68,10 +68,18 @@ export default async function Home() {
       <main className="flex-grow pt-20">
         <HeroSection />
         <CoachProfileSection displayMode="singleRandom" />
-        <EventCalendarSection events={events} />
-        <LichessTVEmbedSection /> {/* Changed from ChessTVSection */}
-        <ClassShowcaseSection />
-        <BlogSection />
+        
+        {/* Wrapper for side-by-side Event Calendar and Lichess TV */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 items-start">
+          <EventCalendarSection events={events} />
+          <LichessTVEmbedSection />
+        </div>
+
+        {/* Wrapper for side-by-side Class Showcase and Blog Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 items-start">
+          <ClassShowcaseSection />
+          <BlogSection />
+        </div>
       </main>
       <Footer />
     </div>
