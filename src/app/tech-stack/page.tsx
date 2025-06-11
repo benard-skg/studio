@@ -3,7 +3,7 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
 import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone } from 'lucide-react';
-import Link from 'next/link';
+import Link from 'next/link'; // Link import might not be needed if no other links are present
 
 export const metadata: Metadata = {
   title: 'Tech Stack - kgchess',
@@ -50,16 +50,10 @@ export default function TechStackPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
-        <header className="mb-10 text-center">
-          <Link href="/" className="inline-block mb-4">
-            <h1 className="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
-              kgchess - Tech Stack
-            </h1>
-          </Link>
-        </header>
-
-        <section className="max-w-2xl mx-auto mb-10 bg-card border border-border rounded-xl p-6 shadow-lg">
-          <p className="font-body text-base leading-relaxed text-muted-foreground">
+        {/* Heading removed */}
+        
+        <section className="max-w-2xl mx-auto mb-10 bg-destructive/15 text-destructive-foreground/90 border border-destructive/30 rounded-xl p-6 shadow-lg animate-subtle-pulse-15s">
+          <p className="font-body text-base leading-relaxed">
             This application is a prototype, largely developed using a mobile device. It is intended for demonstration purposes and may not include full security, polish, or feature completeness.
           </p>
         </section>

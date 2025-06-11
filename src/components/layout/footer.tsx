@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from 'react';
 import { Wind } from 'lucide-react'; 
@@ -34,7 +33,7 @@ export default function Footer() {
         <div className="font-body text-xs text-muted-foreground mt-4 space-y-1">
           <p>
             Designed by{' '}
-            <Link href="/tech-stack" className="font-bold hover:text-accent transition-colors">
+            <Link href="/tech-stack" className="font-bold text-accent hover:text-accent/80 transition-colors">
               KG
             </Link>
             {' '}👨🏾‍💻

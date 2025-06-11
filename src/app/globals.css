@@ -137,3 +137,11 @@ body {
   }
   
 }
+
+@layer utilities {
+  @keyframes subtle-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    2.5% { opacity: 0.7; transform: scale(0.98); } /* Pulse phase (0.375s of 15s) */
+    5% { opacity: 1; transform: scale(1); }   /* End of pulse, start of wait (0.75s of 15s) */
+  }
+}
