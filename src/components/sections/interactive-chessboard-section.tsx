@@ -267,19 +267,13 @@ export default function InteractiveChessboardSection() {
   };
 
   const handleOpenPgnDialog = () => {
-    console.log("handleOpenPgnDialog called");
     if (!pgnFormValues.Date || !isValid(new Date(pgnFormValues.Date))) {
-      console.log("Setting default date in PGN form because current date is invalid or not set:", pgnFormValues.Date);
       setPgnFormValues(prev => ({ ...prev, Date: format(new Date(), 'yyyy-MM-dd') }));
-    } else {
-      console.log("PGN form date is already set and valid:", pgnFormValues.Date);
     }
-    console.log("Setting isPgnDialogOpen to true");
     setIsPgnDialogOpen(true);
   };
   
   const handleGenerateAndDownloadPgn = () => {
-    console.log("handleGenerateAndDownloadPgn called with form values:", pgnFormValues);
     let pgn = "";
     const headers = [
       { key: "Event", value: pgnFormValues.Event },
@@ -301,7 +295,6 @@ export default function InteractiveChessboardSection() {
     pgn += "\n";
 
     let moveText = "";
-    // Use the full sanMoveHistory for PGN generation
     for (let i = 0; i < sanMoveHistory.length; i += 2) {
       const moveNumber = Math.floor(i / 2) + 1;
       moveText += `${moveNumber}. ${sanMoveHistory[i]}`;
@@ -314,8 +307,6 @@ export default function InteractiveChessboardSection() {
     }
     pgn += moveText.trim() + (pgnFormValues.Result && pgnFormValues.Result !== "*" ? " " + pgnFormValues.Result : "");
     
-    console.log("Generated PGN string:", pgn);
-
     const element = document.createElement("a");
     const file = new Blob([pgn], {type: 'application/x-chess-pgn'});
     element.href = URL.createObjectURL(file);
@@ -326,7 +317,7 @@ export default function InteractiveChessboardSection() {
     element.click();
     document.body.removeChild(element);
     setIsPgnDialogOpen(false);
-    resetGame(); // Reset the board after download
+    resetGame();
   };
 
 
