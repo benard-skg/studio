@@ -94,11 +94,19 @@ export default {
           '2.5%': { opacity: '0.7', transform: 'scale(0.98)' },
           '5%': { opacity: '1', transform: 'scale(1)' },
         },
+        'double-subtle-pulse': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '2.5%': { opacity: '0.6', transform: 'scale(0.97)' },
+          '5%': { opacity: '1', transform: 'scale(1)' },
+          '7.5%': { opacity: '0.6', transform: 'scale(0.97)' },
+          '10%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'subtle-pulse-15s': 'subtle-pulse 15s infinite ease-in-out',
+        'double-subtle-pulse-5s': 'double-subtle-pulse 5s infinite ease-in-out',
       },
       typography: ({ theme }: { theme: (path: string) => string }) => ({
         DEFAULT: {

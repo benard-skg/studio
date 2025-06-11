@@ -2,12 +2,16 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
-import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone } from 'lucide-react';
-import Link from 'next/link'; // Link import might not be needed if no other links are present
+import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
+
 
 export const metadata: Metadata = {
-  title: 'Tech Stack - kgchess',
-  description: 'Learn about the technologies used to build the kgchess application.',
+  title: 'Tech Stack & Project Info - kgchess',
+  description: 'Learn about the technologies used to build the kgchess application and its development journey.',
 };
 
 const NextJsLogo = (props: React.SVGProps<SVGSVGElement>) => (
@@ -45,12 +49,35 @@ const technologies = [
   { name: 'Firebase Studio', icon: MonitorSmartphone },
 ];
 
+const unlinkedRoutes = [
+    { path: '/admin', description: 'Admin Dashboard (Submissions)' },
+    { path: '/admin/settings', description: 'Admin Settings (Lichess TV Username)' },
+    { path: '/admin/events', description: 'Admin Event Management' },
+    { path: '/admin/lesson-reports/create', description: 'Create Lesson Report Form' },
+    { path: '/admin/coaches/[coachSlug]', description: 'Coach Specific Admin Dashboard' },
+    { path: '/events/[slug]', description: 'Individual Event Detail Page' },
+    { path: '/blog/[slug]', description: 'Individual Blog Post Page' },
+];
+
+const deferredFeatures = [
+    "PGN file processing and storage (beyond just filename)",
+    "Direct PGN parsing and board replay from uploads in Lesson Reports",
+    "PDF export for lesson reports",
+    "Full student dashboard integration (linking reports, progress tracking)",
+    "Lesson report editing functionality",
+    "Advanced AI-driven analysis suggestions based on lesson reports",
+    "Real-time collaborative analysis board features",
+    "Linking reports to student dashboards from coach admin page",
+    "Authentication and role-based access control for admin areas",
+    "More robust error handling and data validation across all forms and API interactions"
+];
+
+
 export default function TechStackPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading removed */}
         
         <section className="max-w-2xl mx-auto mb-10 bg-destructive/15 text-destructive-foreground/90 border border-destructive/30 rounded-xl p-6 shadow-lg animate-subtle-pulse-15s">
           <p className="font-body text-base leading-relaxed">
@@ -58,7 +85,7 @@ export default function TechStackPage() {
           </p>
         </section>
 
-        <section>
+        <section className="mb-12">
           <h2 className="font-headline text-3xl md:text-4xl font-bold mb-6 text-center">Core Technologies</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {technologies.map((tech) => (
@@ -69,6 +96,124 @@ export default function TechStackPage() {
             ))}
           </div>
         </section>
+
+        <Separator className="my-12" />
+
+        <section className="mb-12">
+          <Card className="bg-amber-500/15 border-amber-500/30 text-amber-900 dark:text-amber-200 animate-double-subtle-pulse-5s">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl flex items-center">
+                <ListChecks className="mr-3 h-6 w-6 text-amber-600 dark:text-amber-400" />
+                Future Enhancements & Deferred Items
+              </CardTitle>
+              <CardDescription className="font-body text-amber-700 dark:text-amber-300">
+                Features and improvements planned or discussed but not yet implemented.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc space-y-1 pl-5 font-body text-sm">
+                {deferredFeatures.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </section>
+        
+        <Separator className="my-12" />
+
+        <section className="mb-12">
+           <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl flex items-center">
+                <Route className="mr-3 h-6 w-6 text-accent" />
+                Unlinked Application Routes
+              </CardTitle>
+              <CardDescription className="font-body">
+                These pages exist but are not directly linked in the main navigation menu. They are typically accessed via other parts of the application (e.g., admin panels, dynamic content).
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc space-y-2 pl-5 font-body text-sm">
+                {unlinkedRoutes.map((route) => (
+                  <li key={route.path}>
+                    <code className="font-code bg-muted px-1 py-0.5 rounded-sm text-foreground/80">{route.path}</code> - {route.description}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </section>
+
+        <Separator className="my-12" />
+        
+        <section className="mb-0 pb-0"> {/* Removed bottom margin */}
+          <Card className="mb-0"> {/* Removed bottom margin */}
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl flex items-center">
+                <Rocket className="mr-3 h-6 w-6 text-accent" />
+                Development Timeline (Placeholder)
+              </CardTitle>
+              <CardDescription className="font-body">
+                A conceptual overview of the project's development phases. Please fill with actual data.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Milestone 1 Example */}
+              <Card className="border-border hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <CardTitle className="font-headline text-xl mb-1 sm:mb-0">Version 0.1.0 - Initial Prototype</CardTitle>
+                    <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
+                  </div>
+                  <CardDescription className="font-body text-xs">Released: YYYY-MM-DD</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-body text-sm mb-2">Key Features:</p>
+                  <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
+                    <li>Basic Next.js setup with ShadCN UI.</li>
+                    <li>Core pages: Home, About, Coaches, Classes.</li>
+                    <li>Initial Contentful integration for Blog.</li>
+                  </ul>
+                  <div className="mt-3 flex space-x-2">
+                    {/* <Button variant="outline" size="sm" asChild><Link href="#" target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-1.5"/>GitHub</Link></Button> */}
+                    {/* <Button variant="outline" size="sm" asChild><Link href="#" target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-1.5"/>Live Demo</Link></Button> */}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Separator />
+
+              {/* Milestone 2 Example */}
+              <Card className="border-border hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <CardTitle className="font-headline text-xl mb-1 sm:mb-0">Version 0.2.0 - Admin & Interactivity</CardTitle>
+                    <Badge variant="secondary" className="bg-blue-500 text-white">In Progress</Badge>
+                  </div>
+                  <CardDescription className="font-body text-xs">Target: YYYY-MM-DD</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-body text-sm mb-2">Key Features:</p>
+                  <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
+                    <li>Admin panel for contact submissions & settings.</li>
+                    <li>Interactive Analysis Board.</li>
+                    <li>Lesson Report creation for coaches.</li>
+                    <li>JSONBin.io integration for dynamic data.</li>
+                  </ul>
+                   <div className="mt-3 flex space-x-2">
+                     {/* <Button variant="outline" size="sm" asChild><Link href="#" target="_blank" rel="noopener noreferrer"><Wrench className="mr-1.5"/>View Tasks</Link></Button> */}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Add more milestones as needed */}
+
+            </CardContent>
+          </Card>
+        </section>
+
+
       </main>
       <Footer />
     </div>
