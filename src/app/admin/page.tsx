@@ -36,6 +36,8 @@ interface Submission {
 }
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
+const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
+const BIN_ID = "YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE"; // Placeholder for specific bin
 
 export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -46,13 +48,10 @@ export default function AdminPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-  const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID;
-
   const fetchSubmissions = useCallback(async () => {
-    if (!ACCESS_KEY || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || 
-        !BIN_ID || BIN_ID === 'YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE' || BIN_ID === 'YOUR_JSONBIN_BIN_ID') { // Adjusted placeholder check
-      setError("JSONBin.io Access Key or Contact Submissions Bin ID is not configured. Please set them in .env and restart the server.");
+    if (!ACCESS_KEY || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG' || // Check against actual key if needed for "not configured" logic
+        !BIN_ID || BIN_ID === 'YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE' ) {
+      setError("JSONBin.io Access Key or Contact Submissions Bin ID is not configured. Please set them appropriately.");
       setIsConfigured(false);
       setIsLoading(false);
       console.warn("Admin page: JSONBin.io Access Key or Bin ID for contact submissions is not configured or is using placeholder values.");
@@ -63,11 +62,11 @@ export default function AdminPage() {
     setError(null);
 
     try {
-      console.log(`fetchSubmissions: Attempting to fetch with Access Key: ${ACCESS_KEY ? ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${BIN_ID || 'UNDEFINED'}`);
+      console.log(`fetchSubmissions: Attempting to fetch with Bin ID: ${BIN_ID || 'UNDEFINED'}`);
       const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
         method: 'GET',
         headers: {
-          'X-Access-Key': ACCESS_KEY!,
+          'X-Access-Key': ACCESS_KEY,
         },
       });
 
@@ -86,7 +85,7 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [ACCESS_KEY, BIN_ID]);
+  }, [BIN_ID]); // ACCESS_KEY is now a constant, so not needed in deps array
 
   useEffect(() => {
     fetchSubmissions();
@@ -107,7 +106,7 @@ export default function AdminPage() {
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Configuration Error</p>
             <p className="font-body text-center">
-              {error || "JSONBin.io Access Key or Bin ID is not configured. Please set them in .env and restart the server."}
+              {error || "JSONBin.io Access Key or Bin ID is not configured. Please set them appropriately."}
             </p>
           </div>
         </main>

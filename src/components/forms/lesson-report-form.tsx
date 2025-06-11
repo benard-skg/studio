@@ -54,8 +54,8 @@ type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & 
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const LESSON_REPORTS_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_LESSON_REPORTS_BIN_ID;
-const JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+const LESSON_REPORTS_BIN_ID = "YOUR_JSONBIN_LESSON_REPORTS_BIN_ID"; // Placeholder
+const JSONBIN_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
 
 
 export default function LessonReportForm() {
@@ -66,9 +66,9 @@ export default function LessonReportForm() {
 
   React.useEffect(() => {
     if (!LESSON_REPORTS_BIN_ID || LESSON_REPORTS_BIN_ID === 'YOUR_JSONBIN_LESSON_REPORTS_BIN_ID' ||
-        !JSONBIN_ACCESS_KEY || JSONBIN_ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
+        !JSONBIN_ACCESS_KEY || JSONBIN_ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG') { // Check against actual key if needed for "not configured" logic
       setIsConfigured(false);
-      console.warn("Lesson Report Form: JSONBin.io Access Key or Lesson Reports Bin ID is not configured or is using placeholder values in .env.");
+      console.warn("Lesson Report Form: JSONBin.io Access Key or Lesson Reports Bin ID is not configured or is using placeholder values.");
     } else {
       setIsConfigured(true);
     }
@@ -125,7 +125,7 @@ export default function LessonReportForm() {
       toast({
         variant: "destructive",
         title: "Configuration Error",
-        description: "Cannot save report. JSONBin.io is not properly configured. Please check .env variables and restart."
+        description: "Cannot save report. JSONBin.io is not properly configured. Please check placeholders."
       });
       return;
     }
@@ -163,7 +163,7 @@ export default function LessonReportForm() {
     try {
       const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
         method: 'GET',
-        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY! },
+        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
       });
 
       let currentReports: StoredLessonReport[] = [];
@@ -183,7 +183,7 @@ export default function LessonReportForm() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': JSONBIN_ACCESS_KEY!,
+          'X-Access-Key': JSONBIN_ACCESS_KEY,
           'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedReports),
@@ -509,7 +509,7 @@ export default function LessonReportForm() {
             </div>
              {!isConfigured && (
                 <p className="text-xs text-destructive text-center pt-2">
-                    JSONBin.io configuration (Access Key or Bin ID for reports) is missing. Saving is disabled. Please check .env variables.
+                    JSONBin.io configuration (Access Key or Bin ID for reports) is missing or using placeholders. Saving is disabled.
                 </p>
             )}
           </form>

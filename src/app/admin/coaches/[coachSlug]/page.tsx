@@ -51,8 +51,8 @@ interface StoredLessonReport { // This is the type for reports stored in JSONBin
 }
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const LESSON_REPORTS_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_LESSON_REPORTS_BIN_ID;
-const JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+const LESSON_REPORTS_BIN_ID = "YOUR_JSONBIN_LESSON_REPORTS_BIN_ID"; // Placeholder
+const JSONBIN_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
 
 
 export default function CoachAdminProfilePage() {
@@ -73,8 +73,9 @@ export default function CoachAdminProfilePage() {
 
   const fetchLessonReports = useCallback(async (currentCoach: CoachDataType) => {
     console.log(`[CoachAdminProfilePage] fetchLessonReports called for coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
-    if (!JSONBIN_ACCESS_KEY || !LESSON_REPORTS_BIN_ID || JSONBIN_ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || LESSON_REPORTS_BIN_ID === 'YOUR_JSONBIN_LESSON_REPORTS_BIN_ID') {
-      const configErrorMsg = "JSONBin.io Access Key or Lesson Reports Bin ID is not configured. Please set them in .env and restart.";
+    if (!JSONBIN_ACCESS_KEY || JSONBIN_ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG' || 
+        !LESSON_REPORTS_BIN_ID || LESSON_REPORTS_BIN_ID === 'YOUR_JSONBIN_LESSON_REPORTS_BIN_ID') {
+      const configErrorMsg = "JSONBin.io Access Key or Lesson Reports Bin ID is not configured. Please set them appropriately.";
       setError(configErrorMsg);
       setIsConfigured(false);
       console.error("[CoachAdminProfilePage]", configErrorMsg);
@@ -151,10 +152,8 @@ export default function CoachAdminProfilePage() {
         fetchLessonReports(currentCoach) 
           .then(reports => {
             setLessonReports(reports);
-            // If there was a global config error from fetchLessonReports, it would be set there.
-            // If reports are empty but no error, it means no reports matched or bin is empty.
           })
-          .catch((e) => { // This catch is for unexpected errors during the promise chain itself
+          .catch((e) => { 
             console.error("[CoachAdminProfilePage] Error fetching reports in useEffect:", e);
             if (!error) setError("Failed to load reports due to an unexpected error.");
           })
@@ -175,7 +174,7 @@ export default function CoachAdminProfilePage() {
       setLessonReports([]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coachSlug, fetchLessonReports]); // Error state is managed internally by fetchLessonReports now
+  }, [coachSlug, fetchLessonReports]); 
 
   const handleDeleteReport = async () => {
     if (!reportToDelete || !coach || !isConfigured) return;
@@ -183,7 +182,7 @@ export default function CoachAdminProfilePage() {
     try {
       const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
         method: 'GET',
-        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY! },
+        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
       });
 
       let allReports: StoredLessonReport[] = [];
@@ -201,7 +200,7 @@ export default function CoachAdminProfilePage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': JSONBIN_ACCESS_KEY!,
+          'X-Access-Key': JSONBIN_ACCESS_KEY,
           'X-Bin-Versioning': 'false',
         },
         body: JSON.stringify(updatedReports),
@@ -225,11 +224,11 @@ export default function CoachAdminProfilePage() {
   };
 
 
-  if (isLoading && !coach && !error) { // Show global loading skeleton or null only if truly loading initial coach data
+  if (isLoading && !coach && !error) { 
     return null; 
   }
 
-  if ((!coach && !isLoading) || (!isConfigured && error)) { // If coach not found OR if not configured and there's an error message
+  if ((!coach && !isLoading) || (!isConfigured && error)) { 
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -248,7 +247,7 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (!coach) { // Should be caught by above, but as a fallback
+  if (!coach) { 
     notFound();
   }
 

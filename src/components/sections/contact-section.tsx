@@ -37,6 +37,8 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
+const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
+const BIN_ID = "YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE"; // Placeholder for specific bin
 
 export default function ContactSection() {
   const { toast } = useToast();
@@ -44,20 +46,17 @@ export default function ContactSection() {
   const [isConfigured, setIsConfigured] = useState(true);
   const whatsappNumber = "+27834544862"; 
 
-  const NEXT_PUBLIC_JSONBIN_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-  const NEXT_PUBLIC_JSONBIN_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID; // Use the specific bin ID
-
   useEffect(() => {
-    console.log("ContactSection: NEXT_PUBLIC_JSONBIN_ACCESS_KEY:", NEXT_PUBLIC_JSONBIN_ACCESS_KEY ? NEXT_PUBLIC_JSONBIN_ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED');
-    console.log("ContactSection: NEXT_PUBLIC_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID:", NEXT_PUBLIC_JSONBIN_BIN_ID || 'UNDEFINED');
-    if (!NEXT_PUBLIC_JSONBIN_ACCESS_KEY || NEXT_PUBLIC_JSONBIN_ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || 
-        !NEXT_PUBLIC_JSONBIN_BIN_ID || NEXT_PUBLIC_JSONBIN_BIN_ID === 'YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE' || NEXT_PUBLIC_JSONBIN_BIN_ID === 'YOUR_JSONBIN_BIN_ID') { // Check against new placeholder
+    console.log("ContactSection: ACCESS_KEY set.");
+    console.log("ContactSection: BIN_ID:", BIN_ID || 'UNDEFINED');
+    if (!ACCESS_KEY || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG' || // Check against actual key if needed for "not configured" logic
+        !BIN_ID || BIN_ID === 'YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE') {
       setIsConfigured(false);
       console.warn("Contact form: JSONBin.io Access Key or Contact Submissions Bin ID is not configured or is using placeholder values.");
     } else {
       setIsConfigured(true);
     }
-  }, [NEXT_PUBLIC_JSONBIN_ACCESS_KEY, NEXT_PUBLIC_JSONBIN_BIN_ID]);
+  }, [BIN_ID]); // ACCESS_KEY is now a constant
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(ContactFormSchema),
@@ -80,11 +79,11 @@ export default function ContactSection() {
     setIsSubmitting(true);
 
     try {
-      console.log(`ContactSection onSubmit: Attempting to fetch with Access Key: ${NEXT_PUBLIC_JSONBIN_ACCESS_KEY ? NEXT_PUBLIC_JSONBIN_ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${NEXT_PUBLIC_JSONBIN_BIN_ID || 'UNDEFINED'}`);
-      const getResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}/latest`, {
+      console.log(`ContactSection onSubmit: Attempting to fetch with Bin ID: ${BIN_ID || 'UNDEFINED'}`);
+      const getResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
         method: 'GET',
         headers: {
-          'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
+          'X-Access-Key': ACCESS_KEY,
         },
       });
 
@@ -106,12 +105,12 @@ export default function ContactSection() {
       };
       const updatedSubmissions = [...submissions, newSubmission];
 
-      console.log(`ContactSection onSubmit: Attempting to PUT with Access Key: ${NEXT_PUBLIC_JSONBIN_ACCESS_KEY ? NEXT_PUBLIC_JSONBIN_ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'} and Bin ID: ${NEXT_PUBLIC_JSONBIN_BIN_ID || 'UNDEFINED'}`);
-      const putResponse = await fetch(`${JSONBIN_API_BASE}/${NEXT_PUBLIC_JSONBIN_BIN_ID}`, {
+      console.log(`ContactSection onSubmit: Attempting to PUT with Bin ID: ${BIN_ID || 'UNDEFINED'}`);
+      const putResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': NEXT_PUBLIC_JSONBIN_ACCESS_KEY!,
+          'X-Access-Key': ACCESS_KEY,
           'X-Bin-Versioning': 'false', 
         },
         body: JSON.stringify(updatedSubmissions),
@@ -171,7 +170,7 @@ export default function ContactSection() {
           <div className="max-w-2xl mx-auto my-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center">
             <AlertCircle className="h-5 w-5 mr-3" />
             <p className="font-body text-sm">
-              The contact form submission is currently not configured. Please contact the administrator or ensure API keys are set in .env and the server is restarted.
+              The contact form submission is currently not configured. Please contact the administrator or ensure API keys are set and valid.
             </p>
           </div>
         )}

@@ -13,8 +13,8 @@ interface EventPageProps {
   };
 }
 
-const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
-const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+const BIN_ID = "YOUR_JSONBIN_EVENTS_BIN_ID"; // Placeholder for events bin
+const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
 
 const isValidEvent = (event: any): event is EventType => {
   return event &&
@@ -27,12 +27,12 @@ const isValidEvent = (event: any): event is EventType => {
 };
 
 async function fetchAllValidEvents(): Promise<EventType[]> {
-  if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
+  if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG') {
     console.error("[EventUtils] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values.");
     return [];
   }
   
-  console.log(`[EventUtils] Fetching all events from Bin ID: ${BIN_ID} using Access Key (from .env).`);
+  console.log(`[EventUtils] Fetching all events from Bin ID: ${BIN_ID}.`);
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
       method: 'GET',
@@ -41,7 +41,7 @@ async function fetchAllValidEvents(): Promise<EventType[]> {
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Key Used (from .env), Response: ${errorText}`);
+      console.error(`[EventUtils] Error fetching all events. Status: ${response.status}, Response: ${errorText}`);
       return [];
     }
     const data = await response.json();

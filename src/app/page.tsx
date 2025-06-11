@@ -9,33 +9,47 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
-const ENV_EVENTS_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
-const ENV_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+// Using constants for environment variables
+const ENV_EVENTS_BIN_ID = "YOUR_JSONBIN_EVENTS_BIN_ID";
+const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
 
 // Log raw environment variable values at module load time
 console.log(`[HomePage] INIT - Raw ENV_EVENTS_BIN_ID: "${ENV_EVENTS_BIN_ID}" (type: ${typeof ENV_EVENTS_BIN_ID})`);
-console.log(`[HomePage] INIT - Raw ENV_ACCESS_KEY: "${ENV_ACCESS_KEY ? ENV_ACCESS_KEY.substring(0,5) + '...' : ENV_ACCESS_KEY}" (type: ${typeof ENV_ACCESS_KEY})`);
+console.log(`[HomePage] INIT - Raw ENV_ACCESS_KEY: "${ENV_ACCESS_KEY ? (typeof ENV_ACCESS_KEY === 'string' ? ENV_ACCESS_KEY.substring(0,5) : 'NOT_A_STRING') + '...' : ENV_ACCESS_KEY}" (type: ${typeof ENV_ACCESS_KEY})`);
 
 
 async function getEvents(): Promise<EventType[]> {
   const currentBinId = ENV_EVENTS_BIN_ID;
   const currentAccessKey = ENV_ACCESS_KEY;
 
-  if (currentBinId === undefined || currentAccessKey === undefined) {
-    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID or Access Key is UNDEFINED in environment. Check .env file, ensure variable names (NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID, NEXT_PUBLIC_JSONBIN_ACCESS_KEY) are correct, and that the server was restarted.");
+  // Detailed checks
+  if (currentAccessKey === undefined) {
+    console.error("[HomePage] CRITICAL: JSONBin.io Access Key is UNDEFINED. Check if it's set in this file.");
     return [];
   }
-  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID' || currentAccessKey === 'YOUR_JSONBIN_ACCESS_KEY') {
-    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID or Access Key is using PLACEHOLDER values (e.g., 'YOUR_JSONBIN_EVENTS_BIN_ID'). Please replace them in your .env file with your actual credentials and restart the server.");
+  if (currentBinId === undefined) {
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is UNDEFINED. Check if it's set in this file.");
     return [];
   }
-   if (!currentBinId || !currentAccessKey) { // Catches empty strings if they somehow pass the above
-    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID or Access Key is an EMPTY STRING. Check .env file values and ensure server was restarted.");
+  if (currentAccessKey === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG') { // Check against actual key if used as placeholder
+    console.warn("[HomePage] NOTICE: JSONBin.io Access Key is using a placeholder value. Ensure this is intended for your setup.");
+  }
+  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is using a PLACEHOLDER value ('YOUR_JSONBIN_EVENTS_BIN_ID'). Please replace it with your actual Bin ID.");
+    return [];
+  }
+   if (!currentBinId || currentBinId.trim() === "") {
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is an EMPTY STRING or not set. Check its value in this file.");
+    return [];
+  }
+  if (!currentAccessKey || currentAccessKey.trim() === "") {
+    console.error("[HomePage] CRITICAL: JSONBin.io Access Key is an EMPTY STRING or not set. Check its value in this file.");
     return [];
   }
 
-  console.log(`[HomePage] DEBUG: Value of BIN_ID variable used for fetch: "${currentBinId}"`);
-  console.log(`[HomePage] DEBUG: Value of ACCESS_KEY variable used for fetch (first 5 chars): "${currentAccessKey ? currentAccessKey.substring(0,5) + '...' : 'UNDEFINED'}"`);
+
+  console.log(`[HomePage] DEBUG getEvents: Using BIN_ID: "${currentBinId}"`);
+  console.log(`[HomePage] DEBUG getEvents: Using ACCESS_KEY (first 5 chars): "${currentAccessKey ? (typeof currentAccessKey === 'string' ? currentAccessKey.substring(0,5) : 'NOT_A_STRING') + '...' : 'UNDEFINED'}"`);
 
 
   try {
@@ -49,7 +63,7 @@ async function getEvents(): Promise<EventType[]> {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (from .env), Body: ${errorBody}`);
+      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (from env), Body: ${errorBody}`);
       return [];
     }
     const data = await response.json();

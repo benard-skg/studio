@@ -46,8 +46,8 @@ import Footer from '@/components/layout/footer';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
-const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
+const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
+const BIN_ID = "YOUR_JSONBIN_EVENTS_BIN_ID"; // Placeholder for events bin
 
 const PageContentSkeleton = () => (
   <>
@@ -110,8 +110,8 @@ export default function AdminEventsPage() {
   });
 
   const fetchEvents = useCallback(async () => {
-    if (!ACCESS_KEY || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || !BIN_ID || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
-      setError("JSONBin.io Access Key or Events Bin ID is not configured. Please set them in .env and restart the server.");
+    if (!ACCESS_KEY || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG' || !BIN_ID || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
+      setError("JSONBin.io Access Key or Events Bin ID is not configured. Please set them appropriately.");
       setIsConfigured(false);
       setIsLoading(false);
       console.warn("Admin Events page: JSONBin.io Access Key or Events Bin ID is not configured or is using placeholder values.");
@@ -124,7 +124,7 @@ export default function AdminEventsPage() {
     try {
       const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
         method: 'GET',
-        headers: { 'X-Access-Key': ACCESS_KEY! },
+        headers: { 'X-Access-Key': ACCESS_KEY },
       });
 
       if (!response.ok) {
@@ -142,7 +142,7 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [ACCESS_KEY, BIN_ID]);
+  }, [BIN_ID]);
 
   useEffect(() => {
     fetchEvents();
@@ -208,7 +208,7 @@ export default function AdminEventsPage() {
 
     try {
       const currentEventsResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-        headers: { 'X-Access-Key': ACCESS_KEY! },
+        headers: { 'X-Access-Key': ACCESS_KEY },
       });
       let currentEventsList: EventType[] = [];
       if (currentEventsResponse.ok) {
@@ -231,7 +231,7 @@ export default function AdminEventsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': ACCESS_KEY!,
+          'X-Access-Key': ACCESS_KEY,
           'X-Bin-Versioning': 'false',
         },
         body: JSON.stringify(updatedEventsList),
@@ -258,7 +258,7 @@ export default function AdminEventsPage() {
     setIsLoading(true);
     try {
        const currentEventsResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-        headers: { 'X-Access-Key': ACCESS_KEY! },
+        headers: { 'X-Access-Key': ACCESS_KEY },
       });
       let currentEventsList: EventType[] = [];
       if (currentEventsResponse.ok) {
@@ -274,7 +274,7 @@ export default function AdminEventsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Access-Key': ACCESS_KEY!,
+          'X-Access-Key': ACCESS_KEY,
           'X-Bin-Versioning': 'false',
         },
         body: JSON.stringify(updatedEvents),
@@ -314,7 +314,7 @@ export default function AdminEventsPage() {
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
             <p className="font-headline text-2xl mb-2">Configuration Error</p>
-            <p className="font-body text-center">{error || "JSONBin.io keys are missing. Please set them in .env and restart."}</p>
+            <p className="font-body text-center">{error || "JSONBin.io keys are missing. Please set them appropriately."}</p>
           </div>
         </main>
         <Footer />
