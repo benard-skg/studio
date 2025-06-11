@@ -9,26 +9,40 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
-const BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
-const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+const ENV_EVENTS_BIN_ID = process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID;
+const ENV_ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
+
+// Log raw environment variable values at module load time
+console.log(`[HomePage] INIT - Raw ENV_EVENTS_BIN_ID: "${ENV_EVENTS_BIN_ID}" (type: ${typeof ENV_EVENTS_BIN_ID})`);
+console.log(`[HomePage] INIT - Raw ENV_ACCESS_KEY: "${ENV_ACCESS_KEY ? ENV_ACCESS_KEY.substring(0,5) + '...' : ENV_ACCESS_KEY}" (type: ${typeof ENV_ACCESS_KEY})`);
+
 
 async function getEvents(): Promise<EventType[]> {
-  if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
-    console.error("[HomePage] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values. Ensure they are set and the server is restarted.");
+  const currentBinId = ENV_EVENTS_BIN_ID;
+  const currentAccessKey = ENV_ACCESS_KEY;
+
+  if (currentBinId === undefined || currentAccessKey === undefined) {
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID or Access Key is UNDEFINED in environment. Check .env file, ensure variable names (NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID, NEXT_PUBLIC_JSONBIN_ACCESS_KEY) are correct, and that the server was restarted.");
+    return [];
+  }
+  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID' || currentAccessKey === 'YOUR_JSONBIN_ACCESS_KEY') {
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID or Access Key is using PLACEHOLDER values (e.g., 'YOUR_JSONBIN_EVENTS_BIN_ID'). Please replace them in your .env file with your actual credentials and restart the server.");
+    return [];
+  }
+   if (!currentBinId || !currentAccessKey) { // Catches empty strings if they somehow pass the above
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID or Access Key is an EMPTY STRING. Check .env file values and ensure server was restarted.");
     return [];
   }
 
-  console.log(`[HomePage] DEBUG: Raw Bin ID from env: "${process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID}"`);
-  console.log(`[HomePage] DEBUG: Raw Access Key from env: "${process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY}"`);
-  console.log(`[HomePage] DEBUG: Value of BIN_ID variable used for fetch: "${BIN_ID}"`);
-  console.log(`[HomePage] DEBUG: Value of ACCESS_KEY variable used for fetch (first 5 chars): "${ACCESS_KEY ? ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'}"`);
+  console.log(`[HomePage] DEBUG: Value of BIN_ID variable used for fetch: "${currentBinId}"`);
+  console.log(`[HomePage] DEBUG: Value of ACCESS_KEY variable used for fetch (first 5 chars): "${currentAccessKey ? currentAccessKey.substring(0,5) + '...' : 'UNDEFINED'}"`);
 
 
   try {
-    const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${currentBinId}/latest`, {
       method: 'GET',
       headers: {
-        'X-Access-Key': ACCESS_KEY, // No need for ACCESS_KEY! if validated above
+        'X-Access-Key': currentAccessKey,
       },
       next: { revalidate: 3600 } 
     });
