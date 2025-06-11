@@ -23,7 +23,7 @@ const lichessLightSquareStyle: React.CSSProperties = { backgroundColor: '#F0D9B5
 const lichessDarkSquareStyle: React.CSSProperties = { backgroundColor: '#B58863' };
 
 const boardBaseStyle: React.CSSProperties = {
-  borderRadius: '0.125rem',
+  borderRadius: '0.125rem', // Corresponds to rounded-sm
   boxShadow: 'none',
 };
 
@@ -86,7 +86,7 @@ export default function InteractiveChessboardSection() {
 
   const updateMoveHistoryDisplay = useCallback(() => {
     let fullHistoryString = "";
-    const activeSanMoves = sanMoveHistory; // Always use the full SAN history for display
+    const activeSanMoves = sanMoveHistory; 
 
     for (let i = 0; i < activeSanMoves.length; i += 2) {
       const moveNumber = Math.floor(i / 2) + 1;
@@ -103,13 +103,12 @@ export default function InteractiveChessboardSection() {
 
   useEffect(() => {
     updateMoveHistoryDisplay();
-  }, [updateMoveHistoryDisplay]);
+  }, [sanMoveHistory, currentSanMoveIndex, updateMoveHistoryDisplay]);
 
 
   const updateGameAndHistoryStates = useCallback((newGameInstance: Chess, moveResult: Move | null) => {
     const newFen = newGameInstance.fen();
     
-    // Truncate future FEN history if making a new move after undoing
     const newFenHistory = fenHistory.slice(0, currentFenIndex + 1);
     newFenHistory.push(newFen);
     setFenHistory(newFenHistory);
@@ -117,11 +116,11 @@ export default function InteractiveChessboardSection() {
     setCurrentFenIndex(newCurrentFenIndex);
 
     if (moveResult) {
-      // Truncate future SAN history
       const newSanMoves = sanMoveHistory.slice(0, currentSanMoveIndex + 1);
       newSanMoves.push(moveResult.san);
       setSanMoveHistory(newSanMoves);
-      setCurrentSanMoveIndex(newSanMoves.length - 1);
+      const newCurrentSanMoveIndex = newSanMoves.length - 1;
+      setCurrentSanMoveIndex(newCurrentSanMoveIndex);
       setLastMoveSquares({ from: moveResult.from, to: moveResult.to });
     } else {
       setLastMoveSquares(null);
@@ -143,7 +142,6 @@ export default function InteractiveChessboardSection() {
 
   const getSquareOptionsToDisplay = useCallback(() => {
     const newOptions: Record<string, React.CSSProperties> = {};
-    // Apply last move highlight first, so selection/legal moves can override if needed on those squares
     if (lastMoveSquares) {
       newOptions[lastMoveSquares.from] = { ...lastMoveHighlightStyle };
       newOptions[lastMoveSquares.to] = { ...lastMoveHighlightStyle };
@@ -155,12 +153,11 @@ export default function InteractiveChessboardSection() {
     const currentMoves = tempGame.moves({ square: selectedSquare, verbose: true }) as Move[];
     
     currentMoves.forEach((move) => {
-      newOptions[move.to] = { ...newOptions[move.to], ...legalMoveSquareStyle }; // Merge, don't overwrite lastMove
+      newOptions[move.to] = { ...newOptions[move.to], ...legalMoveSquareStyle };
     });
 
-    // Highlight selected square last to ensure it's on top if it was part of the last move
     if (currentMoves.length > 0 || tempGame.get(selectedSquare)) {
-       newOptions[selectedSquare] = { ...newOptions[selectedSquare], ...selectedSquareStyle }; // Merge
+       newOptions[selectedSquare] = { ...newOptions[selectedSquare], ...selectedSquareStyle };
     }
     return newOptions;
   }, [selectedSquare, lastMoveSquares, position]);
@@ -208,7 +205,7 @@ export default function InteractiveChessboardSection() {
     }
   }
 
-  function resetGame() {
+  const resetGame = useCallback(() => {
     const newGame = new Chess(initialFen);
     setGame(newGame);
     setPosition(initialFen);
@@ -221,7 +218,9 @@ export default function InteractiveChessboardSection() {
     
     setSelectedSquare(null);
     setLastMoveSquares(null);
-  }
+    updateMoveHistoryDisplay(); // Ensure display is cleared
+  }, [updateMoveHistoryDisplay]);
+
 
   const navigateHistory = (newFenIdx: number) => {
     if (newFenIdx >= 0 && newFenIdx < fenHistory.length) {
@@ -229,7 +228,7 @@ export default function InteractiveChessboardSection() {
       const targetFen = fenHistory[newFenIdx];
       setPosition(targetFen);
       
-      const newSanIdx = newFenIdx - 1;
+      const newSanIdx = newFenIdx - 1; // SAN index is one less than FEN index (since FEN 0 has no preceding SAN)
       setCurrentSanMoveIndex(newSanIdx);
 
       const newGameInstance = new Chess(targetFen);
@@ -237,23 +236,21 @@ export default function InteractiveChessboardSection() {
       
       setSelectedSquare(null);
       
+      // Determine last move for highlight based on the move *leading to* this FEN state
       if (newFenIdx > 0 && sanMoveHistory.length > newSanIdx && newSanIdx >=0 ) {
          const gameBeforeThisState = new Chess(fenHistory[newFenIdx - 1]);
-         // Ensure the SAN move exists before trying to parse it
          if (sanMoveHistory[newSanIdx]) {
-            const moveObject = gameBeforeThisState.move(sanMoveHistory[newSanIdx]);
+            const moveObject = gameBeforeThisState.move(sanMoveHistory[newSanIdx]); // This parses SAN to a move object
             if(moveObject) {
                 setLastMoveSquares({from: moveObject.from, to: moveObject.to});
             } else {
-                // This can happen if SAN history and FEN history are desynced or move is invalid for prev state
-                // For robustnes, might need to re-parse all SAN moves up to newSanIdx on gameBeforeThisState
                 setLastMoveSquares(null);
             }
          } else {
              setLastMoveSquares(null);
          }
       } else {
-        setLastMoveSquares(null);
+        setLastMoveSquares(null); // No previous move if at the start
       }
     }
   };
@@ -287,7 +284,7 @@ export default function InteractiveChessboardSection() {
     const headers = [
       { key: "Event", value: pgnFormValues.Event },
       { key: "Site", value: pgnFormValues.Site },
-      { key: "Date", value: pgnFormValues.Date ? format(new Date(pgnFormValues.Date.replace(/-/g, '/')), 'yyyy.MM.dd') : "????.??.??" }, // Ensure YYYY.MM.DD
+      { key: "Date", value: pgnFormValues.Date ? format(new Date(pgnFormValues.Date.replace(/-/g, '/')), 'yyyy.MM.dd') : "????.??.??" },
       { key: "Round", value: pgnFormValues.Round },
       { key: "White", value: pgnFormValues.White },
       { key: "Black", value: pgnFormValues.Black },
@@ -301,9 +298,10 @@ export default function InteractiveChessboardSection() {
         pgn += `[${header.key} "${header.value}"]\n`;
       }
     });
-    pgn += "\n"; // Separator between headers and moves
+    pgn += "\n";
 
     let moveText = "";
+    // Use the full sanMoveHistory for PGN generation
     for (let i = 0; i < sanMoveHistory.length; i += 2) {
       const moveNumber = Math.floor(i / 2) + 1;
       moveText += `${moveNumber}. ${sanMoveHistory[i]}`;
@@ -314,7 +312,7 @@ export default function InteractiveChessboardSection() {
         moveText += " ";
       }
     }
-    pgn += moveText.trim() + (pgnFormValues.Result !== "*" ? " " + pgnFormValues.Result : "");
+    pgn += moveText.trim() + (pgnFormValues.Result && pgnFormValues.Result !== "*" ? " " + pgnFormValues.Result : "");
     
     console.log("Generated PGN string:", pgn);
 
@@ -328,6 +326,7 @@ export default function InteractiveChessboardSection() {
     element.click();
     document.body.removeChild(element);
     setIsPgnDialogOpen(false);
+    resetGame(); // Reset the board after download
   };
 
 
@@ -399,7 +398,6 @@ export default function InteractiveChessboardSection() {
         </Card>
       )}
 
-      {/* PGN Download Dialog */}
       <Dialog open={isPgnDialogOpen} onOpenChange={setIsPgnDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -457,3 +455,4 @@ export default function InteractiveChessboardSection() {
     </div>
   );
 }
+

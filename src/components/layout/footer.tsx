@@ -1,9 +1,9 @@
 
 "use client";
 import { useEffect, useState } from 'react';
-import { Wind } from 'lucide-react'; // Import Wind icon for TailwindCSS
+import { Wind } from 'lucide-react'; 
+import Link from 'next/link';
 
-// Define NextJsLogo as a local component
 const NextJsLogo = (props: React.SVGProps<SVGSVGElement>) => (
   <svg 
     width="1em" 
@@ -32,7 +32,13 @@ export default function Footer() {
           &copy; {currentYear} LCA. All rights reserved.
         </p>
         <div className="font-body text-xs text-muted-foreground mt-4 space-y-1">
-          <p>Designed by KG 👨🏾‍💻</p>
+          <p>
+            Designed by{' '}
+            <Link href="/tech-stack" className="font-bold hover:text-accent transition-colors">
+              KG
+            </Link>
+            {' '}👨🏾‍💻
+          </p>
           <p className="flex items-center justify-center space-x-1.5">
             <span>Powered by</span>
             <NextJsLogo className="h-3.5 w-3.5 inline-block align-middle" />
