@@ -9,13 +9,13 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
-// Using constants for environment variables
-const ENV_EVENTS_BIN_ID = "YOUR_JSONBIN_EVENTS_BIN_ID";
-const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
+// Hardcoded Bin ID and Access Key. Replace 'YOUR_JSONBIN_EVENTS_BIN_ID' with your actual Events Bin ID.
+const ENV_EVENTS_BIN_ID = 'YOUR_JSONBIN_EVENTS_BIN_ID'; // Placeholder - User MUST replace this with their actual Bin ID
+const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // User provided key
 
-// Log raw environment variable values at module load time
-console.log(`[HomePage] INIT - Raw ENV_EVENTS_BIN_ID: "${ENV_EVENTS_BIN_ID}" (type: ${typeof ENV_EVENTS_BIN_ID})`);
-console.log(`[HomePage] INIT - Raw ENV_ACCESS_KEY: "${ENV_ACCESS_KEY ? (typeof ENV_ACCESS_KEY === 'string' ? ENV_ACCESS_KEY.substring(0,5) : 'NOT_A_STRING') + '...' : ENV_ACCESS_KEY}" (type: ${typeof ENV_ACCESS_KEY})`);
+// Log raw values at module load time for debugging
+console.log(`[HomePage] INIT - ENV_EVENTS_BIN_ID being used: "${ENV_EVENTS_BIN_ID}"`);
+console.log(`[HomePage] INIT - ENV_ACCESS_KEY (first 5 chars): "${ENV_ACCESS_KEY ? (typeof ENV_ACCESS_KEY === 'string' ? ENV_ACCESS_KEY.substring(0,5) : 'NOT_A_STRING') + '...' : 'UNDEFINED'}"`);
 
 
 async function getEvents(): Promise<EventType[]> {
@@ -24,26 +24,22 @@ async function getEvents(): Promise<EventType[]> {
 
   // Detailed checks
   if (currentAccessKey === undefined) {
-    console.error("[HomePage] CRITICAL: JSONBin.io Access Key is UNDEFINED. Check if it's set in this file.");
+    console.error("[HomePage] ERROR: JSONBin.io Access Key is UNDEFINED in the code. This is a critical configuration issue.");
     return [];
   }
   if (currentBinId === undefined) {
-    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is UNDEFINED. Check if it's set in this file.");
+    console.error("[HomePage] ERROR: JSONBin.io Events Bin ID is UNDEFINED in the code. This is a critical configuration issue.");
     return [];
   }
-  if (currentAccessKey === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG') { // Check against actual key if used as placeholder
-    console.warn("[HomePage] NOTICE: JSONBin.io Access Key is using a placeholder value. Ensure this is intended for your setup.");
-  }
-  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
-    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is using a PLACEHOLDER value ('YOUR_JSONBIN_EVENTS_BIN_ID'). Please replace it with your actual Bin ID.");
-    return [];
-  }
-   if (!currentBinId || currentBinId.trim() === "") {
-    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is an EMPTY STRING or not set. Check its value in this file.");
-    return [];
+  // Removed the specific check for currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID'
+  // The user still needs to replace the placeholder value at the top of the file.
+
+   if (!currentBinId || currentBinId.trim() === "" || currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
+    console.error(`[HomePage] WARNING: JSONBin.io Events Bin ID is either not set, an empty string, or still the default placeholder ('${currentBinId}'). Fetching events will likely fail. Please set a valid Bin ID.`);
+    // Allow to proceed to fetch to see actual API error if placeholder is used.
   }
   if (!currentAccessKey || currentAccessKey.trim() === "") {
-    console.error("[HomePage] CRITICAL: JSONBin.io Access Key is an EMPTY STRING or not set. Check its value in this file.");
+    console.error("[HomePage] ERROR: JSONBin.io Access Key is an EMPTY STRING or not set in the code. Fetching events will fail.");
     return [];
   }
 
@@ -63,7 +59,7 @@ async function getEvents(): Promise<EventType[]> {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used (from env), Body: ${errorBody}`);
+      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Key Used: (hardcoded), Body: ${errorBody}`);
       return [];
     }
     const data = await response.json();
