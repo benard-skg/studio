@@ -2,28 +2,39 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2 } from 'lucide-react';
+import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2, Trash2, FilePlus2, Loader2 } from 'lucide-react';
 import { allCoachesData } from '@/components/sections/coach-profile-section';
 import type { Coach as CoachDataType, LessonReportData } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
-// Define StoredLessonReport based on actual fields being saved and displayed
+
 interface StoredLessonReport extends Omit<LessonReportData, 'pgnFile'> {
   id: string;
-  submittedAt: string; // Expect ISO string
+  submittedAt: string; 
   pgnFilename?: string;
   studentName: string;
-  lessonDateTime: string; // Expect ISO string or datetime-local string
-  coachName: string; // This is the field we'll be matching against
+  lessonDateTime: string; 
+  coachName: string; 
   ratingBefore?: number;
   ratingAfter?: number;
   topicCovered: string;
@@ -46,12 +57,18 @@ const JSONBIN_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const coachSlug = typeof params.coachSlug === 'string' ? params.coachSlug : undefined;
 
   const [coach, setCoach] = useState<CoachDataType | null>(null);
   const [lessonReports, setLessonReports] = useState<StoredLessonReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<StoredLessonReport | null>(null);
+  const { toast } = useToast();
+
 
   const fetchLessonReports = useCallback(async (currentCoach: CoachDataType) => {
     console.log(`[CoachAdminProfilePage] fetchLessonReports called for coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
@@ -76,10 +93,10 @@ export default function CoachAdminProfilePage() {
         .filter((report: any): report is StoredLessonReport =>
             report &&
             typeof report.id === 'string' &&
-            typeof report.coachName === 'string' && // coachName is crucial
+            typeof report.coachName === 'string' && 
             typeof report.studentName === 'string' &&
             typeof report.lessonDateTime === 'string' &&
-            typeof report.submittedAt === 'string'
+            typeof report.submittedAt === 'string' 
         );
       
       console.log(`[CoachAdminProfilePage] Fetched ${allReports.length} total reports. Sample coachName from first report (if any): "${allReports[0]?.coachName}"`);
@@ -90,20 +107,16 @@ export default function CoachAdminProfilePage() {
       const coachReports = allReports.filter(report => {
         const reportCoachNameLower = report.coachName.toLowerCase();
         
-        // Exact match full name
         if (reportCoachNameLower === coachFullNameLower) return true;
-        // Exact match nickname (if nickname exists and is not empty)
         if (coachNicknameLower && coachNicknameLower.length > 0 && reportCoachNameLower === coachNicknameLower) return true;
-        // Contains full name
         if (reportCoachNameLower.includes(coachFullNameLower)) return true;
-        // Contains nickname (if nickname exists and is not empty)
         if (coachNicknameLower && coachNicknameLower.length > 0 && reportCoachNameLower.includes(coachNicknameLower)) return true;
         
         return false;
       }).sort((a, b) => {
             const dateA = parseISO(a.submittedAt);
             const dateB = parseISO(b.submittedAt);
-            if (!isValid(dateA) && isValid(dateB)) return 1; // put invalid dates last
+            if (!isValid(dateA) && isValid(dateB)) return 1; 
             if (isValid(dateA) && !isValid(dateB)) return -1;
             if (!isValid(dateA) && !isValid(dateB)) return 0;
             return dateB.getTime() - dateA.getTime();
@@ -130,7 +143,7 @@ export default function CoachAdminProfilePage() {
         setCoach(currentCoach);
         setIsLoading(true);
         setError(null);
-        fetchLessonReports(currentCoach) // Pass the full coach object
+        fetchLessonReports(currentCoach) 
           .then(reports => {
             setLessonReports(reports);
           })
@@ -155,10 +168,59 @@ export default function CoachAdminProfilePage() {
       setLessonReports([]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coachSlug, fetchLessonReports]); // Removed `error` from dep array as per standard exhaustive-deps advice. fetchLessonReports itself doesn't change.
+  }, [coachSlug, fetchLessonReports]);
+
+  const handleDeleteReport = async () => {
+    if (!reportToDelete || !coach) return;
+    setIsDeleting(true);
+    try {
+      const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
+        method: 'GET',
+        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
+      });
+
+      let allReports: StoredLessonReport[] = [];
+      if (getResponse.ok) {
+        const data = await getResponse.json();
+        allReports = Array.isArray(data.record) ? data.record : [];
+      } else {
+        const errorText = await getResponse.text();
+        throw new Error(`Failed to fetch current reports before deleting. Status: ${getResponse.status}. ${errorText}`);
+      }
+
+      const updatedReports = allReports.filter(report => report.id !== reportToDelete.id);
+
+      const putResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Access-Key': JSONBIN_ACCESS_KEY,
+          'X-Bin-Versioning': 'false',
+        },
+        body: JSON.stringify(updatedReports),
+      });
+
+      if (!putResponse.ok) {
+        const errorText = await putResponse.text();
+        throw new Error(`Failed to delete report. Status: ${putResponse.status}. ${errorText}`);
+      }
+
+      toast({ title: "Report Deleted!", description: `Report for ${reportToDelete.studentName} has been removed.` });
+      // Refresh reports for the current coach
+      fetchLessonReports(coach).then(reports => setLessonReports(reports));
+    } catch (e: any) {
+      console.error("[CoachAdminProfilePage] Error deleting report:", e);
+      toast({ variant: "destructive", title: "Delete Error", description: e.message });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setReportToDelete(null);
+    }
+  };
+
 
   if (isLoading && !coach) {
-    return null;
+    return null; 
   }
 
   if (!coach && !isLoading) {
@@ -212,26 +274,46 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="lesson-reports" className="mb-12">
-          <h2 className="font-headline text-3xl font-bold mb-6 flex items-center">
-            <FileText className="mr-3 h-7 w-7 text-accent" />
-            Lesson Reports
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-headline text-3xl font-bold flex items-center">
+              <FileText className="mr-3 h-7 w-7 text-accent" />
+              Lesson Reports
+            </h2>
+            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Link href="/admin/lesson-reports/create">
+                <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report
+              </Link>
+            </Button>
+          </div>
+
           {isLoading && <p className="font-body text-muted-foreground">Loading reports...</p>}
           {!isLoading && error && <p className="text-destructive font-body mb-4">Error loading reports: {error}</p>}
           {!isLoading && !error && lessonReports.length > 0 && (
             <div className="space-y-4">
               {lessonReports.map(report => (
                 <Card key={report.id} className="shadow-md hover:shadow-lg transition-shadow border-border">
-                  <CardHeader>
-                    <CardTitle className="font-headline text-xl">
-                      Report for: {report.studentName || "N/A"}
-                    </CardTitle>
-                    <CardDescription className="font-body text-sm">
-                      Lesson on: {report.lessonDateTime && isValid(parseISO(report.lessonDateTime)) ? format(parseISO(report.lessonDateTime), 'MMMM dd, yyyy @ HH:mm') : "Date N/A"}
-                      <br />
-                      Topic: {report.topicCovered || "N/A"}
-                      {report.customTopic ? ` (${report.customTopic})` : ''}
-                    </CardDescription>
+                  <CardHeader className="flex flex-row justify-between items-start">
+                    <div>
+                      <CardTitle className="font-headline text-xl">
+                        Report for: {report.studentName || "N/A"}
+                      </CardTitle>
+                      <CardDescription className="font-body text-sm">
+                        Lesson on: {report.lessonDateTime && isValid(parseISO(report.lessonDateTime)) ? format(parseISO(report.lessonDateTime), 'MMMM dd, yyyy @ HH:mm') : "Date N/A"}
+                        <br />
+                        Topic: {report.topicCovered || "N/A"}
+                        {report.customTopic ? ` (${report.customTopic})` : ''}
+                      </CardDescription>
+                    </div>
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-destructive hover:text-destructive/80"
+                        onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true);}}
+                        disabled={isDeleting}
+                        aria-label="Delete report"
+                      >
+                        {isDeleting && reportToDelete?.id === report.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      </Button>
                   </CardHeader>
                   <CardContent className="font-body text-sm space-y-2">
                     <p><strong>Key Concepts:</strong> {report.keyConcepts || "N/A"}</p>
@@ -273,7 +355,33 @@ export default function CoachAdminProfilePage() {
 
       </main>
       <Footer />
+
+      {reportToDelete && (
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-headline">Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the lesson report for <strong className="font-medium">{reportToDelete.studentName}</strong> submitted on {reportToDelete.submittedAt && isValid(parseISO(reportToDelete.submittedAt)) ? format(parseISO(reportToDelete.submittedAt), 'MMM dd, yyyy') : 'N/A'}.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => { setIsDeleteDialogOpen(false); setReportToDelete(null); }} disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteReport}
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Delete Report
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
     
+
+      
