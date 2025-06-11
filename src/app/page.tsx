@@ -14,17 +14,21 @@ const ACCESS_KEY = process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY;
 
 async function getEvents(): Promise<EventType[]> {
   if (!BIN_ID || !ACCESS_KEY || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID' || ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY') {
-    console.error("[HomePage] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values.");
+    console.error("[HomePage] JSONBin.io Events Bin ID or Access Key is not configured in .env or is using placeholder values. Ensure they are set and the server is restarted.");
     return [];
   }
 
-  console.log(`[HomePage] Fetching events from Bin ID: ${BIN_ID} using Access Key (from .env).`);
+  console.log(`[HomePage] DEBUG: Raw Bin ID from env: "${process.env.NEXT_PUBLIC_JSONBIN_EVENTS_BIN_ID}"`);
+  console.log(`[HomePage] DEBUG: Raw Access Key from env: "${process.env.NEXT_PUBLIC_JSONBIN_ACCESS_KEY}"`);
+  console.log(`[HomePage] DEBUG: Value of BIN_ID variable used for fetch: "${BIN_ID}"`);
+  console.log(`[HomePage] DEBUG: Value of ACCESS_KEY variable used for fetch (first 5 chars): "${ACCESS_KEY ? ACCESS_KEY.substring(0,5) + '...' : 'UNDEFINED'}"`);
+
 
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
       method: 'GET',
       headers: {
-        'X-Access-Key': ACCESS_KEY,
+        'X-Access-Key': ACCESS_KEY, // No need for ACCESS_KEY! if validated above
       },
       next: { revalidate: 3600 } 
     });
