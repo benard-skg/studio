@@ -380,8 +380,8 @@ export default function InteractiveChessboardSection() {
          <Card className="mt-3 p-2 bg-card rounded-lg shadow-md w-full max-w-lg">
             <CardContent className="p-0">
                 <h3 className="font-headline text-md font-semibold mb-1 text-center text-card-foreground">Move History</h3>
-                <ScrollArea className="h-auto max-h-[60px] w-full rounded-md border border-border p-2 text-sm bg-background">
-                    <div className="font-mono whitespace-nowrap text-xs sm:text-sm text-foreground">
+                <ScrollArea className="w-full rounded-md border border-border bg-background text-sm max-h-32"> {/* Max height for vertical scroll */}
+                    <div className="font-mono text-xs sm:text-sm text-foreground p-2" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}> {/* Allow wrapping */}
                         {moveHistoryForDisplay || "No moves yet."}
                     </div>
                 </ScrollArea>
@@ -446,4 +446,3 @@ export default function InteractiveChessboardSection() {
     </div>
   );
 }
-
