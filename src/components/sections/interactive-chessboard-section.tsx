@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from 'react'; // Added this import
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import type { Square, Piece } from 'react-chessboard/dist/chessboard/types';
@@ -23,8 +24,8 @@ const boardBaseStyle: React.CSSProperties = {
 };
 
 // Highlight styles
-const selectedSquareStyle: React.CSSProperties = { background: "rgba(255, 255, 0, 0.4)" };
-const legalMoveSquareStyle: React.CSSProperties = { background: "rgba(144, 238, 144, 0.5)" }; // Light green, semi-transparent
+const selectedSquareStyle: React.CSSProperties = { background: "rgba(255, 255, 0, 0.4)" }; // Translucent yellow
+const legalMoveSquareStyle: React.CSSProperties = { background: "rgba(144, 238, 144, 0.5)" }; // Translucent light green/jade
 const lastMoveHighlightStyle: React.CSSProperties = { background: "rgba(205, 133, 63, 0.5)" }; // Peru, slightly transparent
 
 export default function InteractiveChessboardSection() {
@@ -79,7 +80,7 @@ export default function InteractiveChessboardSection() {
 
   const updateGameAndHistory = useCallback((updatedGame: Chess, moveResult: Move | null) => {
     const newFen = updatedGame.fen();
-    const newFenHistory = fenHistory.slice(0, currentFenIndex + 1);
+    const newFenHistory = fenHistory.slice(0, currentFenIndex + 1); // Truncate history if we made a move after going back
     newFenHistory.push(newFen);
     setFenHistory(newFenHistory);
     setCurrentFenIndex(newFenHistory.length - 1);
@@ -127,7 +128,7 @@ export default function InteractiveChessboardSection() {
 
   useEffect(() => {
     setMoveOptions(getSquareOptions(selectedSquare));
-  }, [selectedSquare, lastMove, game]);
+  }, [selectedSquare, lastMove, game]); // Added game dependency
 
 
   function makeMove(move: string | { from: Square; to: Square; promotion?: Piece[1] }) {
@@ -135,34 +136,44 @@ export default function InteractiveChessboardSection() {
       try {
         return g.move(move);
       } catch (e) {
+        // Invalid move, chess.js might throw an error or return null
         return null;
       }
     });
-    setSelectedSquare(null);
-    return !!moveResult;
+    setSelectedSquare(null); // Clear selection after attempting a move
+    // setMoveOptions({}); // Clear visual hints immediately
+    return !!moveResult; // Return true if move was successful, false otherwise
   }
 
   function onPieceDrop(sourceSquare: Square, targetSquare: Square) {
     return makeMove({
       from: sourceSquare,
       to: targetSquare,
-      promotion: 'q',
+      promotion: 'q', // Always promote to queen for simplicity in this example
     });
   }
 
   function onSquareClick(square: Square) {
+    // If a square is already selected
     if (selectedSquare) {
+      // If the clicked square is the same as the selected one, deselect it
       if (selectedSquare === square) {
         setSelectedSquare(null);
+        // setMoveOptions({});
         return;
       }
+      // Otherwise, attempt to make a move from selectedSquare to the clicked square
       makeMove({ from: selectedSquare, to: square, promotion: 'q' });
+      // setSelectedSquare(null); // Already handled in makeMove
+      // setMoveOptions({});
     } else {
+      // If no square is selected, check if the clicked square has a piece of the current turn's color
       const piece = game.get(square);
       if (piece && piece.color === game.turn()) {
-        setSelectedSquare(square);
+        setSelectedSquare(square); // Select the square
       } else {
-        setSelectedSquare(null);
+        setSelectedSquare(null); // Clicked on empty square or opponent's piece
+        // setMoveOptions({});
       }
     }
   }
@@ -175,6 +186,7 @@ export default function InteractiveChessboardSection() {
     setCurrentFenIndex(0);
     setSelectedSquare(null);
     setLastMove(null);
+    // setMoveOptions({});
     updateMoveHistoryDisplay(newGame);
   }
 
@@ -183,11 +195,15 @@ export default function InteractiveChessboardSection() {
       setCurrentFenIndex(newIndex);
       const targetFen = fenHistory[newIndex];
       setPosition(targetFen);
+      
+      // Create a new game instance reflecting the FEN from history
       const newGameInstance = new Chess(targetFen);
       setGame(newGameInstance);
+      
       setSelectedSquare(null);
+      // setMoveOptions({});
       setLastMove(null); // Clear last move highlight when navigating history
-      updateMoveHistoryDisplay(newGameInstance);
+      updateMoveHistoryDisplay(newGameInstance); // Update move display
     }
   };
 
@@ -202,6 +218,7 @@ export default function InteractiveChessboardSection() {
     alert("PGN Download functionality to be implemented. Check console for PGN.");
   };
 
+
   return (
     <div className="w-full flex flex-col items-center">
       <Card className="shadow-xl border-border overflow-hidden bg-card w-full max-w-lg rounded-lg">
@@ -209,19 +226,19 @@ export default function InteractiveChessboardSection() {
           {isMounted && boardWidth > 0 ? (
             <Chessboard
               id="InteractiveChessboard"
-              key="static-interactive-board"
+              key="static-interactive-board" // Stable key
               position={position}
               onSquareClick={onSquareClick}
               onPieceDrop={onPieceDrop}
               arePiecesDraggable={true}
               boardWidth={boardWidth}
-              animationDuration={150}
+              animationDuration={150} // Slightly faster animation
               boardOrientation={boardOrientation}
               customBoardStyle={boardBaseStyle}
               customDarkSquareStyle={lichessDarkSquareStyle}
               customLightSquareStyle={lichessLightSquareStyle}
               customSquareStyles={moveOptions}
-              dropOffBoard="snapback"
+              dropOffBoard="snapback" // Pieces return to original square if move is invalid
             />
           ) : (
             <Skeleton className="aspect-square w-full h-auto min-h-[300px] mx-auto rounded-sm" style={{maxWidth: '560px'}}/>
@@ -229,7 +246,7 @@ export default function InteractiveChessboardSection() {
         </CardContent>
       </Card>
 
-      <div className="mt-3 p-2 bg-card rounded-lg shadow-md flex flex-wrap justify-center items-center gap-1 sm:gap-2 w-full max-w-lg">
+      <div className="mt-3 p-3 bg-card rounded-lg shadow-md flex flex-wrap justify-center items-center gap-1 sm:gap-2 w-full max-w-lg">
         <Button variant="outline" size="default" onClick={handleGoToStart} disabled={currentFenIndex === 0} aria-label="Go to Start">
           <SkipBack className="h-5 w-5" />
         </Button>
