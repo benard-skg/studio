@@ -30,9 +30,13 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   }, []);
 
   const eventDays = useMemo(() => {
+    if (!Array.isArray(events)) return [];
     return events.map(event => {
-      const parsedDate = parseISO(event.date);
-      return isValid(parsedDate) ? parsedDate : null;
+      if (event && typeof event.date === 'string') {
+        const parsedDate = parseISO(event.date);
+        return isValid(parsedDate) ? parsedDate : null;
+      }
+      return null;
     }).filter(date => date !== null) as Date[];
   }, [events]);
 
@@ -41,13 +45,16 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   };
 
   const eventsForSelectedDate = useMemo(() => {
-    if (!selectedDate) return [];
+    if (!selectedDate || !Array.isArray(events)) return [];
     return events
       .filter(event => {
-        const parsedEventDate = parseISO(event.date);
-        return isValid(parsedEventDate) && isSameDay(parsedEventDate, selectedDate);
+        if (event && typeof event.date === 'string') {
+          const parsedEventDate = parseISO(event.date);
+          return isValid(parsedEventDate) && isSameDay(parsedEventDate, selectedDate);
+        }
+        return false;
       })
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+      .sort((a, b) => (a.startTime && b.startTime ? a.startTime.localeCompare(b.startTime) : 0));
   }, [selectedDate, events]);
 
   const handleDayClick = (day: Date) => {
@@ -174,17 +181,17 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
               <div className="space-y-3 p-4">
                 {eventsForSelectedDate.map(event => (
                   <Card 
-                    key={event.id} 
+                    key={event.id || event.title} 
                     className={cn("shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5", linkClasses)}
-                    onClick={() => router.push(`/events/${event.detailsPageSlug}`)}
+                    onClick={() => event.detailsPageSlug && router.push(`/events/${event.detailsPageSlug}`)}
                     tabIndex={0} 
-                    onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/events/${event.detailsPageSlug}`); }}
+                    onKeyPress={(e) => { if ((e.key === 'Enter' || e.key === ' ') && event.detailsPageSlug) router.push(`/events/${event.detailsPageSlug}`); }}
                   >
                     <CardContent className="p-4">
-                      <h4 className="font-headline text-lg text-accent mb-1">{event.title}</h4>
+                      <h4 className="font-headline text-lg text-accent mb-1">{event.title || "Untitled Event"}</h4>
                       <div className="flex items-center text-sm text-muted-foreground mb-1">
                          <CalendarIconLucide className="h-4 w-4 mr-1.5" />
-                         {event.startTime} {event.endTime ? `- ${event.endTime}` : ''}
+                         {event.startTime || "Time TBD"} {event.endTime ? `- ${event.endTime}` : ''}
                       </div>
                       {event.type && (
                         <div className="flex items-center text-xs text-muted-foreground mb-2">
@@ -194,6 +201,9 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
                       )}
                       {event.description && (
                         <p className="font-body text-sm text-card-foreground/80 line-clamp-2">{event.description}</p>
+                      )}
+                       {!event.detailsPageSlug && (
+                        <p className="font-body text-xs text-destructive mt-1">Details page link missing.</p>
                       )}
                     </CardContent>
                   </Card>
