@@ -9,10 +9,9 @@ import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
 
-// Hardcoded Bin ID and Access Key. User MUST replace 'YOUR_JSONBIN_EVENTS_BIN_ID' with their actual Events Bin ID.
-// The ACCESS_KEY has been set by the user.
-const ENV_EVENTS_BIN_ID = "6847dd9e8a456b7966aba67c";
-const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG";
+// Hardcoded Bin ID and Access Key. User MUST replace 'YOUR_JSONBIN_EVENTS_BIN_ID' with their actual Events Bin ID if different.
+const ENV_EVENTS_BIN_ID = "6847dd9e8a456b7966aba67c"; // Set by user
+const ENV_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Set by user
 
 // Log raw values at module load time for debugging
 console.log(`[HomePage] INIT - ENV_EVENTS_BIN_ID being used: "${ENV_EVENTS_BIN_ID}"`);
@@ -25,32 +24,32 @@ async function getEvents(): Promise<EventType[]> {
 
   // Detailed checks
   if (currentAccessKey === undefined) {
-    console.error("[HomePage] ERROR: JSONBin.io Access Key is UNDEFINED in the code. This is a critical configuration issue.");
+    console.error("[HomePage] CRITICAL: JSONBin.io Access Key is UNDEFINED in the code. This is a critical configuration issue.");
     return [];
   }
    if (currentBinId === undefined) {
-    console.error("[HomePage] ERROR: JSONBin.io Events Bin ID is UNDEFINED in the code. This is a critical configuration issue.");
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is UNDEFINED in the code. This is a critical configuration issue.");
     return [];
   }
 
-  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') { // Keep this check as a general safeguard
-    console.warn("[HomePage] WARNING: JSONBin.io Events Bin ID is still the default placeholder string 'YOUR_JSONBIN_EVENTS_BIN_ID'. This will likely fail. Please ensure it is replaced with a valid Bin ID if you haven't set one yet.");
+  if (currentBinId === 'YOUR_JSONBIN_EVENTS_BIN_ID') { 
+    console.warn("[HomePage] WARNING: JSONBin.io Events Bin ID is still the default placeholder string 'YOUR_JSONBIN_EVENTS_BIN_ID'. This will likely fail. Please ensure it is replaced with a valid Bin ID.");
     // Allow to proceed to see actual API error if placeholder is somehow still used.
   }
 
    if (!currentBinId || currentBinId.trim() === "") {
-    console.error("[HomePage] ERROR: JSONBin.io Events Bin ID is an EMPTY STRING or not set in the code. Fetching events will fail.");
+    console.error("[HomePage] CRITICAL: JSONBin.io Events Bin ID is an EMPTY STRING or not set in the code. Fetching events will fail.");
     return [];
   }
   if (!currentAccessKey || currentAccessKey.trim() === "") {
-    console.error("[HomePage] ERROR: JSONBin.io Access Key is an EMPTY STRING or not set in the code. Fetching events will fail.");
+    console.error("[HomePage] CRITICAL: JSONBin.io Access Key is an EMPTY STRING or not set in the code. Fetching events will fail.");
     return [];
   }
 
-
-  console.log(`[HomePage] DEBUG getEvents: Using BIN_ID: "${currentBinId}"`);
-  console.log(`[HomePage] DEBUG getEvents: Using ACCESS_KEY (first 5 chars): "${currentAccessKey ? (typeof currentAccessKey === 'string' ? currentAccessKey.substring(0,5) : 'NOT_A_STRING') + '...' : 'UNDEFINED'}"`);
-
+  const accessKeySnippet = currentAccessKey.length > 10 
+    ? `${currentAccessKey.substring(0, 5)}...${currentAccessKey.substring(currentAccessKey.length - 5)}` 
+    : currentAccessKey;
+  console.log(`[HomePage] getEvents: Attempting to fetch from Bin ID: "${currentBinId}" with Access Key (snippet): "${accessKeySnippet}"`);
 
   try {
     const response = await fetch(`https://api.jsonbin.io/v3/b/${currentBinId}/latest`, {
@@ -82,6 +81,7 @@ async function getEvents(): Promise<EventType[]> {
     if (rawEvents.length > 0 && validEvents.length !== rawEvents.length) {
       console.warn(`[HomePage] Filtered out ${rawEvents.length - validEvents.length} malformed event entries.`);
     }
+    console.log(`[HomePage] Successfully fetched and parsed ${validEvents.length} valid events.`);
     return validEvents;
 
   } catch (error) {
