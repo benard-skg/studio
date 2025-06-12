@@ -19,6 +19,7 @@ interface EventCalendarSectionProps {
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default function EventCalendarSection({ events }: EventCalendarSectionProps) {
+  console.log('[EventCalendarSection] Received events prop:', JSON.stringify(events, null, 2));
   const router = useRouter();
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -30,14 +31,20 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   }, []);
 
   const eventDays = useMemo(() => {
-    if (!Array.isArray(events)) return [];
-    return events.map(event => {
+    if (!Array.isArray(events)) {
+        console.warn('[EventCalendarSection] events prop is not an array:', events);
+        return [];
+    }
+    const calculatedDays = events.map(event => {
       if (event && typeof event.date === 'string') {
         const parsedDate = parseISO(event.date);
         return isValid(parsedDate) ? parsedDate : null;
       }
+      console.warn('[EventCalendarSection] Invalid event or event.date:', event);
       return null;
     }).filter(date => date !== null) as Date[];
+    console.log('[EventCalendarSection] Calculated eventDays:', calculatedDays);
+    return calculatedDays;
   }, [events]);
 
   const dayHasEvent = (day: Date): boolean => {
@@ -45,8 +52,11 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   };
 
   const eventsForSelectedDate = useMemo(() => {
-    if (!selectedDate || !Array.isArray(events)) return [];
-    return events
+    if (!selectedDate || !Array.isArray(events)) {
+        console.log('[EventCalendarSection] eventsForSelectedDate: No selected date or events is not an array.');
+        return [];
+    }
+    const filteredEvents = events
       .filter(event => {
         if (event && typeof event.date === 'string') {
           const parsedEventDate = parseISO(event.date);
@@ -55,6 +65,8 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
         return false;
       })
       .sort((a, b) => (a.startTime && b.startTime ? a.startTime.localeCompare(b.startTime) : 0));
+    console.log('[EventCalendarSection] Calculated eventsForSelectedDate (for ' + (selectedDate ? selectedDate.toISOString().substring(0,10) : 'null') + '):', filteredEvents);
+    return filteredEvents;
   }, [selectedDate, events]);
 
   const handleDayClick = (day: Date) => {
@@ -181,7 +193,7 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
               <div className="space-y-3 p-4">
                 {eventsForSelectedDate.map(event => (
                   <Card 
-                    key={event.id || event.title} 
+                    key={event.id || event.title || Math.random().toString()} // Added fallback key
                     className={cn("shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5", linkClasses)}
                     onClick={() => event.detailsPageSlug && router.push(`/events/${event.detailsPageSlug}`)}
                     tabIndex={0} 
