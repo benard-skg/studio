@@ -45,9 +45,7 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG";
-const BIN_ID = "6847dd9e8a456b7966aba67c";
+// JSONBin.io configuration removed
 
 const PageContentSkeleton = () => (
   <>
@@ -84,17 +82,16 @@ const PageContentSkeleton = () => (
 
 export default function AdminEventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isConfigured, setIsConfigured] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Default to false as no initial fetch
+  const [error, setError] = useState<string | null>("Event management is currently disabled. JSONBin.io integration removed.");
 
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const [currentEvent, setCurrentEvent] = useState<EventType | null>(null);
-  const [eventToEdit, setEventToEdit] = useState<Partial<EventType> | null>(null);
-  const [eventToDelete, setEventToDelete] = useState<EventType | null>(null);
+  // const [eventToEdit, setEventToEdit] = useState<Partial<EventType> | null>(null); // Logic removed
+  // const [eventToDelete, setEventToDelete] = useState<EventType | null>(null); // Logic removed
 
   const { toast } = useToast();
   const router = useRouter();
@@ -109,43 +106,15 @@ export default function AdminEventsPage() {
     detailsPageSlug: '',
   });
 
+  // fetchEvents removed as JSONBin.io integration is removed
   const fetchEvents = useCallback(async () => {
-    if (ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') {
-      setError("JSONBin.io Access Key or Events Bin ID is not configured. Please replace placeholders.");
-      setIsConfigured(false);
-      setIsLoading(false);
-      console.warn("Admin Events page: JSONBin.io Access Key or Events Bin ID is using placeholder values.");
-      return;
-    }
-    setIsConfigured(true);
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-        method: 'GET',
-        headers: { 'X-Access-Key': ACCESS_KEY },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Failed to fetch events. Status: ${response.status}. ${errorData}`);
-      }
-      const data = await response.json();
-      const fetchedEvents = (Array.isArray(data.record) ? data.record : [])
-        .filter((event: any) => event && event.id && event.title && event.date && event.startTime && event.type && event.detailsPageSlug)
-        .sort((a: EventType, b: EventType) => new Date(b.date).getTime() - new Date(a.date).getTime() || a.startTime.localeCompare(b.startTime));
-      setEvents(fetchedEvents);
-    } catch (e: any) {
-      setError(e.message || "An unknown error occurred while fetching events.");
-      setEvents([]);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
+    setEvents([]); // No events to fetch
+    // setError("Event fetching is disabled."); // Already set initially
   }, []);
 
   useEffect(() => {
-    fetchEvents();
+    fetchEvents(); // Call it to set initial state, though it does nothing now
   }, [fetchEvents]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -161,7 +130,7 @@ export default function AdminEventsPage() {
   };
   
   const openAddDialog = () => {
-    setEventToEdit(null);
+    // setEventToEdit(null); // Editing logic removed
     setFormValues({
       title: '', date: '', startTime: '', endTime: '', type: 'class', description: '', detailsPageSlug: ''
     });
@@ -169,127 +138,27 @@ export default function AdminEventsPage() {
   };
 
   const openEditDialog = (event: EventType) => {
-    setEventToEdit(event);
-    setFormValues({
-      id: event.id,
-      title: event.title,
-      date: event.date, 
-      startTime: event.startTime,
-      endTime: event.endTime || '',
-      type: event.type,
-      description: event.description || '',
-      detailsPageSlug: event.detailsPageSlug,
-    });
-    setIsAddEditDialogOpen(true);
+    // Editing logic tied to JSONBin, so this will effectively just show details
+    toast({ variant: "default", title: "Info", description: "Event editing is currently disabled." });
+    setCurrentEvent(event); // Can still view
+    setIsViewDialogOpen(true); 
+    // setEventToEdit(event);
+    // setFormValues({ /* ... */ });
+    // setIsAddEditDialogOpen(true);
   };
 
 
   const handleSaveEvent = async () => {
-    if (!formValues.title || !formValues.date || !formValues.startTime || !formValues.type || !formValues.detailsPageSlug) {
-      toast({ variant: "destructive", title: "Validation Error", description: "Please fill in all required fields." });
-      return;
-    }
-    if (!isValid(parseISO(formValues.date))) {
-        toast({ variant: "destructive", title: "Invalid Date", description: "Please enter a valid date in YYYY-MM-DD format." });
-        return;
-    }
-
-    setIsLoading(true);
-    const newEventData: EventType = {
-      id: eventToEdit?.id || `event-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      title: formValues.title!,
-      date: formValues.date!,
-      startTime: formValues.startTime!,
-      endTime: formValues.endTime || undefined,
-      type: formValues.type! as EventType['type'],
-      description: formValues.description || undefined,
-      detailsPageSlug: formValues.detailsPageSlug!,
-    };
-
-    try {
-      const currentEventsResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-        headers: { 'X-Access-Key': ACCESS_KEY },
-      });
-      let currentEventsList: EventType[] = [];
-      if (currentEventsResponse.ok) {
-        const data = await currentEventsResponse.json();
-        currentEventsList = (Array.isArray(data.record) ? data.record : [])
-          .filter((event: any) => event && event.id && event.title && event.date);
-      } else if (currentEventsResponse.status !== 404) { 
-        const errorText = await currentEventsResponse.text();
-        throw new Error(`Failed to fetch current events before saving. Status: ${currentEventsResponse.status}. Response: ${errorText}`);
-      }
-      
-      let updatedEventsList: EventType[];
-      if (eventToEdit) { 
-        updatedEventsList = currentEventsList.map(ev => ev.id === newEventData.id ? newEventData : ev);
-      } else { 
-        updatedEventsList = [...currentEventsList, newEventData];
-      }
-      
-      const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Access-Key': ACCESS_KEY,
-          'X-Bin-Versioning': 'false',
-        },
-        body: JSON.stringify(updatedEventsList),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Failed to save event. Status: ${response.status}. ${errorData}`);
-      }
-      toast({ title: eventToEdit ? "Event Updated!" : "Event Added!", description: `Event "${newEventData.title}" has been saved.` });
-      setIsAddEditDialogOpen(false);
-      setEventToEdit(null);
-      fetchEvents(); 
-    } catch (e: any) {
-      setError(e.message || "An error occurred while saving the event.");
-      toast({ variant: "destructive", title: "Save Error", description: e.message });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({ variant: "destructive", title: "Disabled", description: "Saving events is currently disabled." });
+    setIsLoading(false);
+    setIsAddEditDialogOpen(false);
   };
 
   const handleDeleteEvent = async () => {
-    if (!eventToDelete) return;
-    setIsLoading(true);
-    try {
-       const currentEventsResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-        headers: { 'X-Access-Key': ACCESS_KEY },
-      });
-      let currentEventsList: EventType[] = [];
-      if (currentEventsResponse.ok) {
-        const data = await currentEventsResponse.json();
-        currentEventsList = (Array.isArray(data.record) ? data.record : [])
-         .filter((event: any) => event && event.id && event.title && event.date);
-      } else if (currentEventsResponse.status !== 404) {
-        throw new Error('Failed to fetch current events before deleting.');
-      }
-
-      const updatedEvents = currentEventsList.filter(event => event.id !== eventToDelete.id);
-      const response = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Access-Key': ACCESS_KEY,
-          'X-Bin-Versioning': 'false',
-        },
-        body: JSON.stringify(updatedEvents),
-      });
-      if (!response.ok) throw new Error('Failed to delete event.');
-      toast({ title: "Event Deleted!", description: `Event "${eventToDelete.title}" has been removed.` });
-      fetchEvents();
-    } catch (e: any) {
-      setError(e.message || "An error occurred while deleting the event.");
-      toast({ variant: "destructive", title: "Delete Error", description: e.message });
-    } finally {
-      setIsLoading(false);
-      setIsDeleteDialogOpen(false);
-      setEventToDelete(null);
-    }
+    toast({ variant: "destructive", title: "Disabled", description: "Deleting events is currently disabled." });
+    setIsLoading(false);
+    setIsDeleteDialogOpen(false);
+    // setEventToDelete(null);
   };
   
   const formatDateForDisplay = (dateString: string) => {
@@ -303,173 +172,58 @@ export default function AdminEventsPage() {
     }
   };
 
-  if (!isConfigured && (ACCESS_KEY === 'YOUR_JSONBIN_ACCESS_KEY' || BIN_ID === 'YOUR_JSONBIN_EVENTS_BIN_ID') ) {
-     return (
-      <div className="flex flex-col min-h-screen bg-background text-foreground">
-        <Navbar />
-        <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-           <header className="mb-6 text-center">
-            <h1 className="font-headline text-4xl md:text-5xl font-extrabold">Admin - Manage Events</h1>
-          </header>
-          <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
-            <AlertCircle className="h-10 w-10 mb-3" />
-            <p className="font-headline text-2xl mb-2">Configuration Error</p>
-            <p className="font-body text-center">{error || "JSONBin.io keys are missing. Please set them appropriately."}</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading && events.length === 0 ? ( 
-          <PageContentSkeleton />
-        ) : !isLoading && error ? (
-          <>
-            <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
-              <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
-                Manage Events
-              </h1>
-               <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <CalendarPlus className="mr-2 h-5 w-5" /> Add New Event
-              </Button>
-            </header>
-            <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
-              <AlertCircle className="h-10 w-10 mb-3" />
-              <p className="font-headline text-2xl mb-2">Error Loading Events</p>
-              <p className="font-body text-center">{error}</p>
-              <Button onClick={fetchEvents} className="mt-4">Try Again</Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
-              <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
-                Manage Events
-              </h1>
-              <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <CalendarPlus className="mr-2 h-5 w-5" /> Add New Event
-              </Button>
-            </header>
+        <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
+          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
+            Manage Events
+          </h1>
+          <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90" disabled>
+            <CalendarPlus className="mr-2 h-5 w-5" /> Add New Event (Disabled)
+          </Button>
+        </header>
 
-            {!isLoading && !error && events.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
-                <CalendarPlus className="h-10 w-10 mb-3 text-muted-foreground" />
-                <p className="font-headline text-2xl mb-2">No Events Found</p>
-                <p className="font-body text-center text-muted-foreground">
-                  Click "Add New Event" to create your first calendar event.
-                </p>
-              </div>
-            )}
+        <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
+            <AlertCircle className="h-10 w-10 mb-3 text-muted-foreground" />
+            <p className="font-headline text-2xl mb-2">Event Management Disabled</p>
+            <p className="font-body text-center text-muted-foreground">
+              {error || "This feature is currently not available."}
+            </p>
+        </div>
 
-            {events.length > 0 && (
-              <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-headline">Date</TableHead>
-                      <TableHead className="font-headline">Time</TableHead>
-                      <TableHead className="font-headline">Title</TableHead>
-                      <TableHead className="font-headline hidden md:table-cell">Type</TableHead>
-                      <TableHead className="font-headline text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {events.map((event) => (
-                      <TableRow key={event.id}>
-                        <TableCell className="font-body text-sm">
-                          {formatDateForDisplay(event.date)}
-                        </TableCell>
-                        <TableCell className="font-body text-sm">{event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}</TableCell>
-                        <TableCell className="font-body font-medium">{event.title}</TableCell>
-                        <TableCell className="font-body hidden md:table-cell capitalize">{event.type}</TableCell>
-                        <TableCell className="text-right space-x-1">
-                          <Button variant="ghost" size="icon" onClick={() => { setCurrentEvent(event); setIsViewDialogOpen(true); }}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(event)}>
-                            <Edit3 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setEventToDelete(event); setIsDeleteDialogOpen(true); }}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-             {isLoading && events.length > 0 && ( 
-                <div className="flex justify-center items-center py-6">
-                    <Loader2 className="h-6 w-6 animate-spin text-accent" />
-                    <p className="ml-2 font-body text-sm">Updating events...</p>
-                </div>
-            )}
-          </>
-        )}
+        {/* Table display logic removed as there will be no events from JSONBin */}
+        
       </main>
       <Footer />
 
       <Dialog open={isAddEditDialogOpen} onOpenChange={setIsAddEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-headline">{eventToEdit ? 'Edit Event' : 'Add New Event'}</DialogTitle>
+            <DialogTitle className="font-headline">Add/Edit Event (Disabled)</DialogTitle>
             <DialogDescription>
-              {eventToEdit ? 'Update the details for this event.' : 'Fill in the details to create a new calendar event.'}
+              Event creation and editing are currently disabled.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {/* Form fields can remain for UI structure but submit is disabled */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="title" className="text-right font-body">Title</Label>
-              <Input id="title" name="title" value={formValues.title || ''} onChange={handleInputChange} className="col-span-3 font-body" />
+              <Input id="title" name="title" value={formValues.title || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="date" className="text-right font-body">Date</Label>
-              <Input id="date" name="date" type="date" value={formValues.date || ''} onChange={handleInputChange} className="col-span-3 font-body" />
+              <Input id="date" name="date" type="date" value={formValues.date || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="startTime" className="text-right font-body">Start Time</Label>
-              <Input id="startTime" name="startTime" type="time" value={formValues.startTime || ''} onChange={handleInputChange} className="col-span-3 font-body" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="endTime" className="text-right font-body">End Time (Opt)</Label>
-              <Input id="endTime" name="endTime" type="time" value={formValues.endTime || ''} onChange={handleInputChange} className="col-span-3 font-body" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right font-body">Type</Label>
-              <Select name="type" value={formValues.type || 'class'} onValueChange={handleSelectChange}>
-                <SelectTrigger className="col-span-3 font-body">
-                  <SelectValue placeholder="Select event type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="class">Class</SelectItem>
-                  <SelectItem value="stream">Stream</SelectItem>
-                  <SelectItem value="tournament">Tournament</SelectItem>
-                  <SelectItem value="special">Special</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right font-body">Description (Opt)</Label>
-              <Textarea id="description" name="description" value={formValues.description || ''} onChange={handleInputChange} className="col-span-3 font-body" />
-            </div>
-             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="detailsPageSlug" className="text-right font-body">Slug</Label>
-              <Input id="detailsPageSlug" name="detailsPageSlug" value={formValues.detailsPageSlug || ''} onChange={handleInputChange} className="col-span-3 font-body" />
-            </div>
+             {/* ... other form fields, also disabled ... */}
           </div>
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="button" onClick={handleSaveEvent} disabled={isLoading && !events.length} className="bg-accent hover:bg-accent/90">
-              {isLoading  && !events.length ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {eventToEdit ? 'Save Changes' : 'Create Event'}
+            <Button type="button" onClick={handleSaveEvent} disabled className="bg-accent hover:bg-accent/90">
+              <Save className="mr-2 h-4 w-4" /> Save (Disabled)
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -480,7 +234,7 @@ export default function AdminEventsPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="font-headline">{currentEvent.title}</DialogTitle>
-              <DialogDescription>Details of the selected event.</DialogDescription>
+              <DialogDescription>Details of the selected event (Viewing only).</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 py-4 font-body text-sm">
               <p><strong>Date:</strong> {formatDateForDisplay(currentEvent.date)}</p>
@@ -506,29 +260,7 @@ export default function AdminEventsPage() {
         </Dialog>
       )}
 
-      {eventToDelete && (
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline">Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the event: <strong className="font-medium">{eventToDelete.title}</strong>.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setEventToDelete(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteEvent}
-                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                disabled={isLoading && !events.length}
-              >
-                {isLoading  && !events.length ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Delete Event
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+      {/* AlertDialog for delete removed as delete functionality is disabled */}
     </div>
   );
 }

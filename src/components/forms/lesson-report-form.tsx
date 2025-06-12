@@ -53,25 +53,19 @@ type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & 
 
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
-const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const LESSON_REPORTS_BIN_ID = "YOUR_JSONBIN_LESSON_REPORTS_BIN_ID"; // Placeholder
-const JSONBIN_ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
-
+// JSONBin.io configuration removed
+const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653"; // This will be unused but kept for reference if re-enabled
 
 export default function LessonReportForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedTopic, setSelectedTopic] = React.useState<string>("");
-  const [isConfigured, setIsConfigured] = React.useState(true);
+  const [isConfigured, setIsConfigured] = React.useState(false); // Default to false
 
   React.useEffect(() => {
-    if (!LESSON_REPORTS_BIN_ID || LESSON_REPORTS_BIN_ID === 'YOUR_JSONBIN_LESSON_REPORTS_BIN_ID' ||
-        !JSONBIN_ACCESS_KEY || JSONBIN_ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG') { // Check against actual key if needed for "not configured" logic
-      setIsConfigured(false);
-      console.warn("Lesson Report Form: JSONBin.io Access Key or Lesson Reports Bin ID is not configured or is using placeholder values.");
-    } else {
-      setIsConfigured(true);
-    }
+    // JSONBin.io configuration check removed
+    setIsConfigured(false); // Explicitly set to false as JSONBin is removed
+    console.warn("Lesson Report Form: JSONBin.io integration removed. Saving is disabled.");
   }, []);
 
   const form = useForm<z.infer<typeof lessonReportSchema>>({
@@ -121,115 +115,25 @@ export default function LessonReportForm() {
   }, [form]);
 
   async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
-    if (!isConfigured) {
-      toast({
-        variant: "destructive",
-        title: "Configuration Error",
-        description: "Cannot save report. JSONBin.io is not properly configured. Please check placeholders."
-      });
-      return;
-    }
     setIsSubmitting(true);
-
-    const processedValues = { ...values };
-    (Object.keys(processedValues) as Array<keyof typeof processedValues>).forEach(key => {
-        if (processedValues[key] === undefined && typeof lessonReportSchema.shape[key]?.parse('') === 'string') {
-            (processedValues as any)[key] = '';
-        }
+    console.warn("LessonReportForm onSubmit: Submission to JSONBin.io is disabled.");
+    toast({
+      variant: "destructive",
+      title: "Feature Disabled",
+      description: "Saving lesson reports is currently disabled. JSONBin.io integration removed."
     });
-
-    const newReportData: StoredLessonReport = {
-      id: `report-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      studentName: processedValues.studentName,
-      lessonDateTime: processedValues.lessonDateTime,
-      coachName: processedValues.coachName,
-      ratingBefore: processedValues.ratingBefore,
-      ratingAfter: processedValues.ratingAfter,
-      topicCovered: processedValues.topicCovered,
-      customTopic: processedValues.customTopic,
-      keyConcepts: processedValues.keyConcepts,
-      gameExampleLinks: processedValues.gameExampleLinks,
-      strengths: processedValues.strengths,
-      areasToImprove: processedValues.areasToImprove,
-      mistakesMade: processedValues.mistakesMade,
-      assignedPuzzles: processedValues.assignedPuzzles,
-      practiceGames: processedValues.practiceGames,
-      readingVideos: processedValues.readingVideos,
-      additionalNotes: processedValues.additionalNotes,
-      pgnFilename: processedValues.pgnFile && processedValues.pgnFile.length > 0 ? processedValues.pgnFile[0].name : undefined,
-      submittedAt: new Date().toISOString(),
-    };
-
-    try {
-      const getResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}/latest`, {
-        method: 'GET',
-        headers: { 'X-Access-Key': JSONBIN_ACCESS_KEY },
-      });
-
-      let currentReports: StoredLessonReport[] = [];
-      if (getResponse.ok) {
-        const data = await getResponse.json();
-        currentReports = Array.isArray(data.record) ? data.record : [];
-      } else if (getResponse.status === 404) {
-        console.log("Lesson reports bin not found or empty. Will create/overwrite.");
-      } else {
-        const errorText = await getResponse.text();
-        throw new Error(`Failed to fetch existing reports. Status: ${getResponse.status}. ${errorText}`);
-      }
-
-      const updatedReports = [...currentReports, newReportData];
-
-      const putResponse = await fetch(`${JSONBIN_API_BASE}/${LESSON_REPORTS_BIN_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Access-Key': JSONBIN_ACCESS_KEY,
-          'X-Bin-Versioning': 'false', 
-        },
-        body: JSON.stringify(updatedReports),
-      });
-
-      if (!putResponse.ok) {
-        const errorText = await putResponse.text();
-        throw new Error(`Failed to save lesson report. Status: ${putResponse.status}. ${errorText}`);
-      }
-
-      toast({
-        title: "Report Saved!",
-        description: "Lesson report has been successfully saved to JSONBin.io.",
-      });
+    
+    // Simulate a delay for UX, then reset form
+    setTimeout(() => {
       form.reset({ 
         studentName: "",
         lessonDateTime: new Date().toISOString().substring(0, 16),
-        coachName: "",
-        ratingBefore: undefined,
-        ratingAfter: undefined,
-        topicCovered: "",
-        customTopic: "",
-        keyConcepts: "",
-        pgnFile: undefined,
-        gameExampleLinks: "",
-        strengths: "",
-        areasToImprove: "",
-        mistakesMade: "",
-        assignedPuzzles: "",
-        practiceGames: "",
-        readingVideos: "",
-        additionalNotes: "",
+        // ... reset other fields ...
       });
       localStorage.removeItem(LOCAL_STORAGE_KEY); 
       setSelectedTopic(""); 
-
-    } catch (error: any) {
-      console.error("Error saving lesson report:", error);
-      toast({
-        variant: "destructive",
-        title: "Save Error",
-        description: error.message || "Could not save the report. Check console for details.",
-      });
-    } finally {
       setIsSubmitting(false);
-    }
+    }, 1000);
   }
 
   const handleClearDraft = () => {
@@ -504,12 +408,12 @@ export default function LessonReportForm() {
               </Button>
               <Button type="submit" disabled={isSubmitting || !isConfigured} className="bg-accent hover:bg-accent/90">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Report
+                Save Report { !isConfigured && "(Disabled)"}
               </Button>
             </div>
              {!isConfigured && (
                 <p className="text-xs text-destructive text-center pt-2">
-                    JSONBin.io configuration (Access Key or Bin ID for reports) is missing or using placeholders. Saving is disabled.
+                    Lesson report saving is currently disabled. JSONBin.io integration removed.
                 </p>
             )}
           </form>
