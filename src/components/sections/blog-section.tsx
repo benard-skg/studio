@@ -8,8 +8,8 @@ import type { BlogPost } from '@/lib/types';
 import { Newspaper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Revalidate this component's data periodically (e.g., every hour)
-export const revalidate = 3600;
+// Revalidate this component's data periodically (e.g., every hour) - Removed as it can cause issues when component is used in a Client Component tree.
+// export const revalidate = 3600;
 
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
