@@ -1,4 +1,6 @@
 
+"use client"; // This page needs to be a client component for useState and useEffect
+
 import Navbar from '@/components/layout/navbar';
 import HeroSection from '@/components/sections/hero-section';
 import CoachProfileSection from '@/components/sections/coach-profile-section';
@@ -8,7 +10,7 @@ import Footer from '@/components/layout/footer';
 import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
 import type { EventType } from '@/lib/types';
-import { useState, useEffect } from 'react'; // Added for UI logging
+import { useState, useEffect } from 'react';
 
 // --- JSONBin.io Configuration for Homepage Events ---
 const JSONBIN_EVENTS_BIN_ID = "6849cd828a456b7966ac6d55";
@@ -17,7 +19,7 @@ const JSONBIN_X_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3Yg
 
 async function getEvents(): Promise<EventType[]> {
   const eventsBinUrl = `https://api.jsonbin.io/v3/b/${JSONBIN_EVENTS_BIN_ID}/latest`;
-  console.log(`[HomePage] getEvents: Attempting to fetch events from ${eventsBinUrl}.`);
+  console.log(`[HomePage] getEvents: Attempting to fetch events from ${eventsBinUrl}. Key starts with: ${JSONBIN_X_ACCESS_KEY.substring(0,5)}`);
 
   try {
     const response = await fetch(eventsBinUrl, {
@@ -25,32 +27,31 @@ async function getEvents(): Promise<EventType[]> {
       headers: {
         'X-Access-Key': JSONBIN_X_ACCESS_KEY,
       },
-      next: { revalidate: 300 } // Revalidate every 5 minutes
+      // next: { revalidate: 300 } // Revalidate every 5 minutes - Temporarily disable for easier debugging
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}, Body: ${errorBody}`);
-      return []; // Return empty array on error
+      console.error(`[HomePage] Failed to fetch events. Status: ${response.status}. Body: ${errorBody}`);
+      return []; 
     }
 
     const data = await response.json();
     
-    // JSONBin.io often wraps the actual array in a 'record' property when fetching '/latest'
     if (data && data.record && Array.isArray(data.record)) {
       console.log(`[HomePage] getEvents: Successfully fetched ${data.record.length} events.`);
       return data.record as EventType[];
-    } else if (Array.isArray(data)) { // If the bin stores the array directly
+    } else if (Array.isArray(data)) { 
        console.log(`[HomePage] getEvents: Successfully fetched ${data.length} events (direct array).`);
        return data as EventType[];
     } else {
-      console.warn("[HomePage] getEvents: Fetched data is not in the expected format. Data:", JSON.stringify(data, null, 2));
+      console.warn("[HomePage] getEvents: Fetched data is not in the expected array format (inside 'record' or direct). Data:", JSON.stringify(data, null, 2));
       return [];
     }
 
   } catch (error) {
-    console.error("[HomePage] getEvents: Error fetching events:", error);
-    return []; // Return empty array on error
+    console.error("[HomePage] getEvents: Error during fetch operation:", error);
+    return []; 
   }
 }
 
@@ -61,6 +62,7 @@ export default function Home() {
 
   useEffect(() => {
     async function loadEvents() {
+      setUiLogPage("Attempting to fetch events...");
       const eventsData = await getEvents();
       setFetchedEvents(eventsData);
       setUiLogPage(`[HomePage] Events fetched: ${eventsData.length} items. Data (first 2 shown, see full below):\n${JSON.stringify(eventsData.slice(0,2), null, 2)}`);
@@ -78,7 +80,7 @@ export default function Home() {
             <strong className="font-bold">UI Debug Info (Home Page):</strong>
             <pre className="block sm:inline text-xs whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogPage}</pre>
             <details className="text-xs mt-2">
-                <summary>Full Fetched Events Data</summary>
+                <summary>Full Fetched Events Data ({fetchedEvents.length} items)</summary>
                 <pre className="whitespace-pre-wrap max-h-60 overflow-y-auto">{JSON.stringify(fetchedEvents, null, 2)}</pre>
             </details>
         </div>
@@ -99,3 +101,4 @@ export default function Home() {
     </div>
   );
 }
+
