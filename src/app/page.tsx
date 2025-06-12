@@ -12,7 +12,7 @@ import type { EventType } from '@/lib/types';
 // --- JSONBin.io Configuration for Homepage Events ---
 // IMPORTANT: Replace with your actual Bin ID and Access Key if these are placeholders.
 const JSONBIN_EVENTS_BIN_ID = "6849cd828a456b7966ac6d55";
-const JSONBIN_X_ACCESS_KEY = "6847de318960c979a5a76655"; 
+const JSONBIN_X_ACCESS_KEY = "$2a$10$3Fh5hpLyq/Ou/V/O78u8xurtpTG6XomBJ7CqijLm3YgGX4LC3SFZy"; 
 // --- End JSONBin.io Configuration ---
 
 async function getEvents(): Promise<EventType[]> {
