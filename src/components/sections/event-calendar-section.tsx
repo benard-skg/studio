@@ -25,20 +25,12 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   const [isMounted, setIsMounted] = useState(false);
   const [animatedMonth, setAnimatedMonth] = useState<Date | null>(null);
 
-  // UI Logging State
-  const [uiLogEventsProp, setUiLogEventsProp] = useState<string>("");
-  const [uiLogEventDays, setUiLogEventDays] = useState<string>("");
-  const [uiLogEventsForSelectedDate, setUiLogEventsForSelectedDate] = useState<string>("");
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    const eventsSummary = `[EventCalendarSection] Received events prop: ${events ? events.length : 'null/undefined'} items. Data (first 2 shown):\n${JSON.stringify(events?.slice(0,2), null, 2)}`;
-    setUiLogEventsProp(eventsSummary);
-    console.log('[EventCalendarSection] Received events prop:', JSON.stringify(events, null, 2));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    console.log('[EventCalendarSection] Received events prop:', events ? `${events.length} items` : 'null/undefined');
   }, [events]); 
 
   const eventDays = useMemo(() => {
@@ -55,18 +47,12 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
       return null;
     }).filter(date => date !== null) as Date[];
     
-    console.log('[EventCalendarSection] Calculated eventDays:', calculatedDays);
+    console.log('[EventCalendarSection] Calculated eventDays:', calculatedDays.map(d => d.toISOString().substring(0,10)));
     return calculatedDays;
   }, [events]);
 
-  useEffect(() => {
-    const daysSummary = `[EventCalendarSection] Calculated eventDays: ${eventDays.length} days with events. Dates:\n${JSON.stringify(eventDays.map(d => d.toISOString().substring(0,10)), null, 2)}`;
-    setUiLogEventDays(daysSummary);
-  }, [eventDays]);
-
   const eventsForSelectedDate = useMemo(() => {
     if (!selectedDate || !Array.isArray(events)) {
-      console.log('[EventCalendarSection] eventsForSelectedDate: No selected date or events is not an array.');
       return [];
     }
     const filteredEvents = events
@@ -82,19 +68,6 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
     console.log('[EventCalendarSection] Calculated eventsForSelectedDate (for ' + (selectedDate ? selectedDate.toISOString().substring(0,10) : 'null') + '):', filteredEvents);
     return filteredEvents;
   }, [selectedDate, events]);
-
-  useEffect(() => {
-    if (!selectedDate) {
-      setUiLogEventsForSelectedDate(`[EventCalendarSection] eventsForSelectedDate: No date selected.`);
-      return;
-    }
-    if (!Array.isArray(events)) {
-      setUiLogEventsForSelectedDate(`[EventCalendarSection] eventsForSelectedDate: Events prop is not an array.`);
-      return;
-    }
-    const eventsSummary = `[EventCalendarSection] eventsForSelectedDate (for ${selectedDate.toISOString().substring(0,10)}): ${eventsForSelectedDate.length} events. Data:\n${JSON.stringify(eventsForSelectedDate, null, 2)}`;
-    setUiLogEventsForSelectedDate(eventsSummary);
-  }, [eventsForSelectedDate, selectedDate, events]);
 
 
   const handleDayClick = (day: Date) => {
@@ -147,22 +120,6 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
     <section id="event-calendar" className="py-16 md:py-24 bg-secondary transition-opacity duration-500 ease-in-out opacity-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong className="font-bold">UI Debug Info (Event Calendar Section):</strong>
-            <details className="text-xs mt-1">
-                <summary>Events Prop (Raw, first 2)</summary>
-                <pre className="whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogEventsProp}</pre>
-            </details>
-            <details className="text-xs mt-1">
-                <summary>Processed Event Days</summary>
-                <pre className="whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogEventDays}</pre>
-            </details>
-            <details className="text-xs mt-1">
-                <summary>Events for Selected Date</summary>
-                <pre className="whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogEventsForSelectedDate}</pre>
-            </details>
-        </div>
-
         <div className="text-center mb-12">
           <CalendarIconLucide className="mx-auto h-12 w-12 text-accent mb-4" />
           <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">

@@ -50,7 +50,7 @@ interface StoredLessonReport {
   additionalNotes?: string;
 }
 
-// JSONBin.io configuration for lesson reports removed
+// JSONBin.io integration removed for lesson reports
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
@@ -59,45 +59,41 @@ export default function CoachAdminProfilePage() {
 
   const [coach, setCoach] = useState<CoachDataType | null>(null);
   const [lessonReports, setLessonReports] = useState<StoredLessonReport[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Keep true initially until coach data is resolved
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>("Lesson report functionality is currently disabled. JSONBin.io integration removed.");
+  const [error, setError] = useState<string | null>("Lesson report functionality is currently disabled as JSONBin.io integration is removed.");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<StoredLessonReport | null>(null);
   const { toast } = useToast();
-  const [isConfigured, setIsConfigured] = useState(false); // Default to false
+  const [isConfigured, setIsConfigured] = useState(false); 
 
 
   const fetchLessonReports = useCallback(async (currentCoach: CoachDataType) => {
-    console.warn(`[CoachAdminProfilePage] fetchLessonReports: Lesson report fetching disabled for coach: "${currentCoach.name}"`);
-    setIsConfigured(false); // Ensure this reflects disabled state
-    // setError("Lesson report fetching is disabled."); // Already set
+    console.warn(`[CoachAdminProfilePage] fetchLessonReports: Lesson report fetching disabled for coach: "${currentCoach.name}". JSONBin.io integration removed.`);
+    setIsConfigured(false); 
+    setError("Lesson report fetching is disabled as JSONBin.io integration is removed."); 
     return [];
   }, []);
 
   useEffect(() => {
     if (coachSlug) {
-      console.log(`[CoachAdminProfilePage] useEffect triggered with coachSlug: "${coachSlug}"`);
       const currentCoach = allCoachesData.find(c =>
         c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') === coachSlug
       );
 
       if (currentCoach) {
-        console.log(`[CoachAdminProfilePage] Found coach: "${currentCoach.name}" (Nickname: "${currentCoach.nickname || 'N/A'}")`);
         setCoach(currentCoach);
-        setIsLoading(true); // Still loading coach info
-        // setError(null); // Error is now for JSONBin feature
+        setIsLoading(true); 
         fetchLessonReports(currentCoach) 
           .then(reports => {
             setLessonReports(reports); // Will be empty
           })
           .finally(() => {
-            setIsLoading(false); // Finished "fetching" (which does nothing now)
+            setIsLoading(false); 
           });
       } else {
         console.warn(`[CoachAdminProfilePage] Coach profile not found for slug: "${coachSlug}".`);
         setIsLoading(false);
-        // Keep the generic error or set a specific one for coach not found
         setError(prevError => prevError || `Coach profile not found for slug: "${coachSlug}".`);
         setCoach(null);
         setLessonReports([]);
@@ -113,7 +109,7 @@ export default function CoachAdminProfilePage() {
 
   const handleDeleteReport = async () => {
     if (!reportToDelete || !coach) return;
-    toast({ variant: "destructive", title: "Disabled", description: "Deleting lesson reports is currently disabled."});
+    toast({ variant: "destructive", title: "Disabled", description: "Deleting lesson reports is currently disabled. JSONBin.io integration removed."});
     setIsDeleting(false);
     setIsDeleteDialogOpen(false);
     setReportToDelete(null);
@@ -124,7 +120,6 @@ export default function CoachAdminProfilePage() {
     return null; 
   }
   
-  // Show main error if coach not found OR if JSONBin is "misconfigured" (i.e., disabled)
   if ((!coach && !isLoading) || (!isConfigured && error)) { 
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -185,14 +180,12 @@ export default function CoachAdminProfilePage() {
             </h2>
             <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={!isConfigured}>
               <Link href="/admin/lesson-reports/create">
-                <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report
+                <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report (Disabled)
               </Link>
             </Button>
           </div>
           
           <p className="text-muted-foreground font-body mb-4">{error}</p>
-
-          {/* Lesson reports display logic removed as data fetching is disabled */}
           <p className="font-body text-muted-foreground">No lesson reports to display as the feature is disabled.</p>
         </section>
 
@@ -218,8 +211,6 @@ export default function CoachAdminProfilePage() {
 
       </main>
       <Footer />
-
-      {/* AlertDialog for delete removed as delete functionality is disabled */}
     </div>
   );
 }

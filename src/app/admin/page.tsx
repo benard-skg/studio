@@ -32,29 +32,25 @@ import {
 // Interface Submission removed as it's no longer fetched or displayed
 
 // JSONBin.io configuration removed
-// const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-// const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG";
-// const BIN_ID = "YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE"; 
 
 export default function AdminPage() {
   // const [submissions, setSubmissions] = useState<Submission[]>([]); // State removed
-  const [isLoading, setIsLoading] = useState(false); // Default to false
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>("Contact submissions viewing is currently disabled. JSONBin.io integration removed.");
-  const [isConfigured, setIsConfigured] = useState(false); // Default to false
+  const [isConfigured, setIsConfigured] = useState(false); 
   // const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null); // State removed
   // const [isViewDialogOpen, setIsViewDialogOpen] = useState(false); // State removed
   // const { toast } = useToast(); // Not needed
 
-  // fetchSubmissions removed
   const fetchSubmissions = useCallback(async () => {
     setIsConfigured(false);
     setIsLoading(false);
-    // setError("Contact submissions viewing is disabled."); // Already set
+    setError("Contact submissions viewing is disabled as JSONBin.io integration is removed.");
     console.warn("Admin page: Contact submission fetching disabled.");
   }, []);
 
   useEffect(() => {
-    fetchSubmissions(); // Call to set initial states
+    fetchSubmissions(); 
   }, [fetchSubmissions]);
   
 
@@ -71,30 +67,23 @@ export default function AdminPage() {
           </p>
         </header>
 
-        {isLoading && ( // This will likely not show as isLoading is set to false quickly
+        {isLoading && ( 
           <div className="flex justify-center items-center py-10">
             <Loader2 className="h-10 w-10 animate-spin text-accent" />
             <p className="ml-3 font-body">Loading...</p>
           </div>
         )}
 
-        {/* Always show the disabled/error message */}
         <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
           <Mail className="h-10 w-10 mb-3 text-muted-foreground" />
           <p className="font-headline text-2xl mb-2">Submissions Unavailable</p>
           <p className="font-body text-center text-muted-foreground">
             {error || "Viewing contact submissions is currently disabled."}
           </p>
-          {/* Optional: A button to retry or refresh, though it won't do anything now */}
-          {/* <Button onClick={fetchSubmissions} className="mt-4" disabled>Try Again</Button> */}
         </div>
         
-        {/* Table and submission display logic removed */}
-
       </main>
       <Footer />
-
-      {/* Dialog for viewing submission removed */}
     </div>
   );
 }

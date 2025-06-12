@@ -53,18 +53,16 @@ type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & 
 
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
-// JSONBin.io configuration removed
-const LESSON_REPORTS_BIN_ID = "684952e58a456b7966ac3653"; // This will be unused but kept for reference if re-enabled
+// JSONBin.io integration removed
 
 export default function LessonReportForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedTopic, setSelectedTopic] = React.useState<string>("");
-  const [isConfigured, setIsConfigured] = React.useState(false); // Default to false
+  const [isConfigured, setIsConfigured] = React.useState(false);
 
   React.useEffect(() => {
-    // JSONBin.io configuration check removed
-    setIsConfigured(false); // Explicitly set to false as JSONBin is removed
+    setIsConfigured(false);
     console.warn("Lesson Report Form: JSONBin.io integration removed. Saving is disabled.");
   }, []);
 
@@ -96,7 +94,9 @@ export default function LessonReportForm() {
     if (draft) {
       try {
         const parsedDraft = JSON.parse(draft);
-        form.reset(parsedDraft);
+        // Don't load pgnFile from localStorage as it's a FileList
+        const { pgnFile, ...restOfDraft } = parsedDraft;
+        form.reset(restOfDraft); 
         if (parsedDraft.topicCovered) {
           setSelectedTopic(parsedDraft.topicCovered);
         }
@@ -109,7 +109,9 @@ export default function LessonReportForm() {
 
   React.useEffect(() => {
     const subscription = form.watch((values) => {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(values));
+      // Don't save pgnFile to localStorage
+      const { pgnFile, ...valuesToStore } = values;
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(valuesToStore));
     });
     return () => subscription.unsubscribe();
   }, [form]);
@@ -123,12 +125,25 @@ export default function LessonReportForm() {
       description: "Saving lesson reports is currently disabled. JSONBin.io integration removed."
     });
     
-    // Simulate a delay for UX, then reset form
     setTimeout(() => {
       form.reset({ 
         studentName: "",
         lessonDateTime: new Date().toISOString().substring(0, 16),
-        // ... reset other fields ...
+        coachName: "",
+        ratingBefore: undefined,
+        ratingAfter: undefined,
+        topicCovered: "",
+        customTopic: "",
+        keyConcepts: "",
+        pgnFile: undefined,
+        gameExampleLinks: "",
+        strengths: "",
+        areasToImprove: "",
+        mistakesMade: "",
+        assignedPuzzles: "",
+        practiceGames: "",
+        readingVideos: "",
+        additionalNotes: "",
       });
       localStorage.removeItem(LOCAL_STORAGE_KEY); 
       setSelectedTopic(""); 

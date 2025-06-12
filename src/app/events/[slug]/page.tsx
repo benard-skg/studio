@@ -13,12 +13,11 @@ interface EventPageProps {
   };
 }
 
-// JSONBin.io configuration and fetch logic removed
+// JSONBin.io integration removed
 
 async function getEventBySlug(slug: string): Promise<EventType | null> {
-  console.log(`[EventSlugPage] getEventBySlug: Event fetching disabled. Slug: '${slug}'`);
-  // Simulate no event found as JSONBin is disabled
-  return null;
+  console.warn(`[EventSlugPage] getEventBySlug: Event fetching disabled. Slug: '${slug}'`);
+  return null; // Simulate no event found as JSONBin is disabled
 }
 
 export async function generateMetadata(
@@ -48,9 +47,8 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-  // No events to fetch from JSONBin, so return empty array for static generation
-  console.log(`[EventSlugPage] generateStaticParams: Event fetching disabled. Returning empty params.`);
-  return [];
+  console.warn(`[EventSlugPage] generateStaticParams: Event fetching disabled. Returning empty params.`);
+  return []; // No events to fetch, so return empty array for static generation
 }
 
 
@@ -58,14 +56,25 @@ export default async function EventPage({ params }: EventPageProps) {
   const event = await getEventBySlug(params.slug);
 
   if (!event) {
-    // As fetching is disabled, all event slugs will result in notFound
-    // Or, display a message that event details are unavailable.
-    // For now, we'll lean towards notFound as per original logic if event is null.
-    // If you want to show a page saying "details unavailable", this would change.
-    notFound(); 
+    // Display a specific message for disabled feature
+    return (
+      <div className="flex flex-col min-h-screen bg-background text-foreground">
+        <Navbar />
+        <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+            <h1 className="font-headline text-3xl mb-2">Event Details Unavailable</h1>
+            <p className="font-body text-muted-foreground">
+              Detailed event information is currently unavailable as this feature is disabled.
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
-  // The following code will not be reached due to notFound() above
+  // This part of the code will not be reached if event is null (which it always will be now)
   // It's kept for structure if JSONBin is re-enabled later.
   const parsedDate = isValid(parseISO(event.date)) ? parseISO(event.date) : null;
 
@@ -73,11 +82,48 @@ export default async function EventPage({ params }: EventPageProps) {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <h1 className="font-headline text-3xl mb-2">Event Details Unavailable</h1>
-          <p className="font-body text-muted-foreground">Event fetching is currently disabled.</p>
-        </div>
+        <header className="mb-8 border-b border-border pb-6">
+          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight mb-4">
+            {event.title || "Event Title"}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
+            {parsedDate && (
+              <div className="flex items-center">
+                <Calendar className="h-5 w-5 mr-2 text-accent" />
+                <span className="font-body">{format(parsedDate, 'MMMM dd, yyyy')}</span>
+              </div>
+            )}
+            {(event.startTime || event.endTime) && (
+              <div className="flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-accent" />
+                <span className="font-body">
+                  {event.startTime || "Time TBD"}
+                  {event.endTime ? ` - ${event.endTime}` : ''}
+                </span>
+              </div>
+            )}
+            {event.type && (
+              <div className="flex items-center">
+                <Tag className="h-5 w-5 mr-2 text-accent" />
+                <span className="font-body capitalize bg-secondary px-2 py-0.5 rounded-md text-secondary-foreground text-xs">
+                  {event.type}
+                </span>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {event.description && (
+          <section className="mb-8 prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg mx-auto">
+            <h2 className="font-headline text-2xl font-bold mb-3">About this Event</h2>
+            {event.description.split('\n').map((paragraph, index) => (
+              <p key={index} className="font-body">{paragraph}</p>
+            ))}
+          </section>
+        )}
+        
+        <p className="font-body text-xs text-muted-foreground text-center mt-12">Event ID: {event.id || "N/A"}</p>
+
       </main>
       <Footer />
     </div>

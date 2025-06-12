@@ -45,7 +45,8 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// JSONBin.io configuration removed
+// JSONBin.io integration removed
+
 
 const PageContentSkeleton = () => (
   <>
@@ -82,16 +83,15 @@ const PageContentSkeleton = () => (
 
 export default function AdminEventsPage() {
   const [events, setEvents] = useState<EventType[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // Default to false as no initial fetch
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>("Event management is currently disabled. JSONBin.io integration removed.");
+  const [isConfigured, setIsConfigured] = useState(false);
 
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const [currentEvent, setCurrentEvent] = useState<EventType | null>(null);
-  // const [eventToEdit, setEventToEdit] = useState<Partial<EventType> | null>(null); // Logic removed
-  // const [eventToDelete, setEventToDelete] = useState<EventType | null>(null); // Logic removed
 
   const { toast } = useToast();
   const router = useRouter();
@@ -106,15 +106,16 @@ export default function AdminEventsPage() {
     detailsPageSlug: '',
   });
 
-  // fetchEvents removed as JSONBin.io integration is removed
   const fetchEvents = useCallback(async () => {
     setIsLoading(false);
-    setEvents([]); // No events to fetch
-    // setError("Event fetching is disabled."); // Already set initially
+    setEvents([]); 
+    setError("Event fetching is disabled as JSONBin.io integration is removed.");
+    setIsConfigured(false);
+    console.warn("AdminEventsPage: Event fetching disabled.");
   }, []);
 
   useEffect(() => {
-    fetchEvents(); // Call it to set initial state, though it does nothing now
+    fetchEvents();
   }, [fetchEvents]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -130,7 +131,6 @@ export default function AdminEventsPage() {
   };
   
   const openAddDialog = () => {
-    // setEventToEdit(null); // Editing logic removed
     setFormValues({
       title: '', date: '', startTime: '', endTime: '', type: 'class', description: '', detailsPageSlug: ''
     });
@@ -138,13 +138,9 @@ export default function AdminEventsPage() {
   };
 
   const openEditDialog = (event: EventType) => {
-    // Editing logic tied to JSONBin, so this will effectively just show details
     toast({ variant: "default", title: "Info", description: "Event editing is currently disabled." });
-    setCurrentEvent(event); // Can still view
+    setCurrentEvent(event); 
     setIsViewDialogOpen(true); 
-    // setEventToEdit(event);
-    // setFormValues({ /* ... */ });
-    // setIsAddEditDialogOpen(true);
   };
 
 
@@ -158,7 +154,6 @@ export default function AdminEventsPage() {
     toast({ variant: "destructive", title: "Disabled", description: "Deleting events is currently disabled." });
     setIsLoading(false);
     setIsDeleteDialogOpen(false);
-    // setEventToDelete(null);
   };
   
   const formatDateForDisplay = (dateString: string) => {
@@ -192,8 +187,6 @@ export default function AdminEventsPage() {
               {error || "This feature is currently not available."}
             </p>
         </div>
-
-        {/* Table display logic removed as there will be no events from JSONBin */}
         
       </main>
       <Footer />
@@ -207,7 +200,6 @@ export default function AdminEventsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* Form fields can remain for UI structure but submit is disabled */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="title" className="text-right font-body">Title</Label>
               <Input id="title" name="title" value={formValues.title || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
@@ -216,7 +208,37 @@ export default function AdminEventsPage() {
               <Label htmlFor="date" className="text-right font-body">Date</Label>
               <Input id="date" name="date" type="date" value={formValues.date || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
             </div>
-             {/* ... other form fields, also disabled ... */}
+             {/* other form fields, also disabled */}
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="startTime" className="text-right font-body">Start Time</Label>
+                <Input id="startTime" name="startTime" type="time" value={formValues.startTime || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="endTime" className="text-right font-body">End Time</Label>
+                <Input id="endTime" name="endTime" type="time" value={formValues.endTime || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right font-body">Type</Label>
+                <Select name="type" onValueChange={handleSelectChange} value={formValues.type || 'class'} disabled>
+                  <SelectTrigger className="col-span-3 font-body">
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="class">Class</SelectItem>
+                    <SelectItem value="stream">Stream</SelectItem>
+                    <SelectItem value="tournament">Tournament</SelectItem>
+                    <SelectItem value="special">Special Event</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right font-body">Description</Label>
+                <Textarea id="description" name="description" value={formValues.description || ''} onChange={handleInputChange} className="col-span-3 font-body" disabled />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="detailsPageSlug" className="text-right font-body">Slug</Label>
+                <Input id="detailsPageSlug" name="detailsPageSlug" value={formValues.detailsPageSlug || ''} readOnly className="col-span-3 font-body bg-muted" disabled />
+              </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
@@ -259,8 +281,6 @@ export default function AdminEventsPage() {
           </DialogContent>
         </Dialog>
       )}
-
-      {/* AlertDialog for delete removed as delete functionality is disabled */}
     </div>
   );
 }
