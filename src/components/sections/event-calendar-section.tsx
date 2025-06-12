@@ -19,21 +19,29 @@ interface EventCalendarSectionProps {
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default function EventCalendarSection({ events }: EventCalendarSectionProps) {
-  console.log('[EventCalendarSection] Received events prop:', JSON.stringify(events, null, 2));
   const router = useRouter();
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isMounted, setIsMounted] = useState(false);
   const [animatedMonth, setAnimatedMonth] = useState<Date | null>(null);
 
+  // UI Logging State
+  const [uiLogEventsProp, setUiLogEventsProp] = useState<string>("");
+  const [uiLogEventDays, setUiLogEventDays] = useState<string>("");
+  const [uiLogEventsForSelectedDate, setUiLogEventsForSelectedDate] = useState<string>("");
+
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    setUiLogEventsProp(`[EventCalendarSection] Received events prop: ${events ? events.length : 'null/undefined'} items. Data (first 2 shown):\n${JSON.stringify(events?.slice(0,2), null, 2)}`);
+    console.log('[EventCalendarSection] Received events prop:', JSON.stringify(events, null, 2));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]); // Only re-run if events prop changes
 
   const eventDays = useMemo(() => {
     if (!Array.isArray(events)) {
-        console.warn('[EventCalendarSection] events prop is not an array:', events);
-        return [];
+      console.warn('[EventCalendarSection] events prop is not an array:', events);
+      setUiLogEventDays(`[EventCalendarSection] Calculated eventDays: events prop is not an array. Received: ${JSON.stringify(events)}`);
+      return [];
     }
     const calculatedDays = events.map(event => {
       if (event && typeof event.date === 'string') {
@@ -43,6 +51,8 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
       console.warn('[EventCalendarSection] Invalid event or event.date:', event);
       return null;
     }).filter(date => date !== null) as Date[];
+    
+    setUiLogEventDays(`[EventCalendarSection] Calculated eventDays: ${calculatedDays.length} days with events. Dates:\n${JSON.stringify(calculatedDays.map(d => d.toISOString().substring(0,10)), null, 2)}`);
     console.log('[EventCalendarSection] Calculated eventDays:', calculatedDays);
     return calculatedDays;
   }, [events]);
@@ -53,8 +63,9 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
 
   const eventsForSelectedDate = useMemo(() => {
     if (!selectedDate || !Array.isArray(events)) {
-        console.log('[EventCalendarSection] eventsForSelectedDate: No selected date or events is not an array.');
-        return [];
+      setUiLogEventsForSelectedDate(`[EventCalendarSection] eventsForSelectedDate: No selected date or events is not an array. Selected: ${selectedDate}, Events: ${JSON.stringify(events?.length)}`);
+      console.log('[EventCalendarSection] eventsForSelectedDate: No selected date or events is not an array.');
+      return [];
     }
     const filteredEvents = events
       .filter(event => {
@@ -65,6 +76,8 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
         return false;
       })
       .sort((a, b) => (a.startTime && b.startTime ? a.startTime.localeCompare(b.startTime) : 0));
+    
+    setUiLogEventsForSelectedDate(`[EventCalendarSection] eventsForSelectedDate (for ${selectedDate.toISOString().substring(0,10)}): ${filteredEvents.length} events. Data:\n${JSON.stringify(filteredEvents, null, 2)}`);
     console.log('[EventCalendarSection] Calculated eventsForSelectedDate (for ' + (selectedDate ? selectedDate.toISOString().substring(0,10) : 'null') + '):', filteredEvents);
     return filteredEvents;
   }, [selectedDate, events]);
@@ -118,6 +131,23 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
   return (
     <section id="event-calendar" className="py-16 md:py-24 bg-secondary transition-opacity duration-500 ease-in-out opacity-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong className="font-bold">UI Debug Info (Event Calendar Section):</strong>
+            <details className="text-xs mt-1">
+                <summary>Events Prop (Raw, first 2)</summary>
+                <pre className="whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogEventsProp}</pre>
+            </details>
+            <details className="text-xs mt-1">
+                <summary>Processed Event Days</summary>
+                <pre className="whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogEventDays}</pre>
+            </details>
+            <details className="text-xs mt-1">
+                <summary>Events for Selected Date</summary>
+                <pre className="whitespace-pre-wrap max-h-32 overflow-y-auto">{uiLogEventsForSelectedDate}</pre>
+            </details>
+        </div>
+
         <div className="text-center mb-12">
           <CalendarIconLucide className="mx-auto h-12 w-12 text-accent mb-4" />
           <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
