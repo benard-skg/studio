@@ -3,23 +3,24 @@ import { createClient, type EntryCollection, type Entry } from 'contentful';
 import type { BlogPost, ContentfulAsset } from './types';
 import type { Document } from '@contentful/rich-text-types';
 
-// --- Configuration (Embedded as requested) ---
-const CONTENTFUL_SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
-const CONTENTFUL_ACCESS_TOKEN = process.env.CONTENTFUL_ACCESS_TOKEN;
+// --- Configuration (Hardcoded as requested) ---
+const CONTENTFUL_SPACE_ID = "htjrh4mjuk93";
+const CONTENTFUL_ACCESS_TOKEN = "OOGdUgBWVYfhwdmQDxQoJHR6OkdAbZ8BwOJKjUDWPAk";
 const CONTENTFUL_CONTENT_TYPE_ID = 'blog'; // User confirmed this ID
 // --- End Configuration ---
 
+// Basic check for hardcoded values to prevent client initialization with empty strings
 if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
   console.error(
-    '[Contentful] CRITICAL ERROR: Contentful Space ID or Access Token is not defined in environment variables.'
+    '[Contentful] CRITICAL ERROR: Hardcoded Contentful Space ID or Access Token is empty. Please provide valid credentials.'
   );
-  // Potentially throw an error or return empty data to prevent app from crashing partially
-  // For now, it will proceed and Contentful client will likely fail or return no data.
+  // For a production app, you might throw an error here or handle it more gracefully.
+  // For now, the client will likely fail to initialize or fetch data.
 }
 
 const client = createClient({
-  space: CONTENTFUL_SPACE_ID || '', // Provide a fallback empty string if undefined
-  accessToken: CONTENTFUL_ACCESS_TOKEN || '', // Provide a fallback
+  space: CONTENTFUL_SPACE_ID,
+  accessToken: CONTENTFUL_ACCESS_TOKEN,
 });
 
 // Define the expected Field IDs from Contentful
@@ -110,7 +111,10 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 };
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return [];
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) { // Keep this check for the hardcoded values
+     console.warn('[Contentful] getBlogPosts: Hardcoded Space ID or Access Token is missing/empty.');
+     return [];
+  }
   console.log(`[Contentful] getBlogPosts: Fetching entries with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -140,7 +144,10 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return null;
+ if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) { // Keep this check for the hardcoded values
+     console.warn('[Contentful] getBlogPostBySlug: Hardcoded Space ID or Access Token is missing/empty.');
+     return null;
+  }
   console.log(`[Contentful] getBlogPostBySlug: Fetching entry with slug '${slug}' and Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -172,7 +179,10 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 }
 
 export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
-  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return [];
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) { // Keep this check for the hardcoded values
+     console.warn('[Contentful] getAllBlogPostSlugs: Hardcoded Space ID or Access Token is missing/empty.');
+     return [];
+  }
   console.log(`[Contentful] getAllBlogPostSlugs: Fetching slugs with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
@@ -194,7 +204,10 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
 }
 
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
-  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) return null;
+  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) { // Keep this check for the hardcoded values
+    console.warn('[Contentful] getLatestBlogPost: Hardcoded Space ID or Access Token is missing/empty.');
+    return null;
+  }
   console.log(`[Contentful] getLatestBlogPost: Fetching latest entry with Content Type ID: '${CONTENTFUL_CONTENT_TYPE_ID}'`);
   try {
     const entries: EntryCollection<any> = await client.getEntries({
