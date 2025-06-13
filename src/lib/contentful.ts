@@ -3,22 +3,23 @@ import { createClient, type EntryCollection, type Entry } from 'contentful';
 import type { BlogPost, ContentfulAsset } from './types';
 import type { Document } from '@contentful/rich-text-types';
 
-// --- Configuration (Hardcoded as requested) ---
-const CONTENTFUL_SPACE_ID = "htjrh4mjuk93";
-const CONTENTFUL_ACCESS_TOKEN = "OOGdUgBWVYfhwdmQDxQoJHR6OkdAbZ8BwOJKjUDWPAk";
-const CONTENTFUL_CONTENT_TYPE_ID = 'blog';
+// --- Configuration ---
+const CONTENTFUL_SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
+const CONTENTFUL_ACCESS_TOKEN = process.env.CONTENTFUL_ACCESS_TOKEN;
+const CONTENTFUL_CONTENT_TYPE_ID = 'blog'; // This can remain hardcoded or moved to env var if needed
 // --- End Configuration ---
 
 if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
-  // This console.error is intentional for critical setup issues.
   console.error(
-    '[Contentful] CRITICAL ERROR: Hardcoded Contentful Space ID or Access Token is empty. Please provide valid credentials.'
+    '[Contentful] CRITICAL ERROR: Contentful Space ID or Access Token is missing from environment variables (CONTENTFUL_SPACE_ID, CONTENTFUL_ACCESS_TOKEN).'
   );
+  // Consider throwing an error or returning empty data to prevent app from breaking further down
+  // if these are critical for rendering.
 }
 
 const client = createClient({
-  space: CONTENTFUL_SPACE_ID,
-  accessToken: CONTENTFUL_ACCESS_TOKEN,
+  space: CONTENTFUL_SPACE_ID || "dummy_space_id", // Provide dummy if env var is missing to prevent client creation error
+  accessToken: CONTENTFUL_ACCESS_TOKEN || "dummy_access_token", // Provide dummy
 });
 
 const EXPECTED_FIELD_IDS = {
@@ -89,6 +90,7 @@ const parseContentfulBlogPost = (blogPostEntry: Entry<any>): BlogPost | null => 
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
+     console.warn("[Contentful] getBlogPosts: Missing Space ID or Access Token. Returning empty array.");
      return [];
   }
   try {
@@ -109,7 +111,6 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     
     return parsedPosts;
   } catch (error) {
-    // Intentionally kept for debugging Contentful setup
     console.error(
       '[Contentful] getBlogPosts: Error fetching or parsing blog posts:', error
     );
@@ -119,6 +120,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
  if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
+     console.warn(`[Contentful] getBlogPostBySlug: Missing Space ID or Access Token for slug ${slug}. Returning null.`);
      return null;
   }
   try {
@@ -135,7 +137,6 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
     }
     return null;
   } catch (error) {
-    // Intentionally kept for debugging Contentful setup
     console.error(
       `[Contentful] getBlogPostBySlug: Error fetching blog post with slug ${slug}:`, error
     );
@@ -145,6 +146,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 
 export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
   if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
+     console.warn("[Contentful] getAllBlogPostSlugs: Missing Space ID or Access Token. Returning empty array.");
      return [];
   }
   try {
@@ -160,7 +162,6 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
     return slugs;
   } catch (error)
 {
-    // Intentionally kept for debugging Contentful setup
     console.error('[Contentful] getAllBlogPostSlugs: Error fetching slugs:', error);
     return [];
   }
@@ -168,6 +169,7 @@ export async function getAllBlogPostSlugs(): Promise<{ slug: string }[]> {
 
 export async function getLatestBlogPost(): Promise<BlogPost | null> {
   if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
+    console.warn("[Contentful] getLatestBlogPost: Missing Space ID or Access Token. Returning null.");
     return null;
   }
   try {
@@ -184,7 +186,6 @@ export async function getLatestBlogPost(): Promise<BlogPost | null> {
     }
     return null;
   } catch (error) {
-     // Intentionally kept for debugging Contentful setup
     console.error('[Contentful] getLatestBlogPost: Error fetching latest blog post:', error);
     return null;
   }
