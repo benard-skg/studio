@@ -1,0 +1,38 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allow public read for events
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update, delete: if false; // To be admin only later
+    }
+
+    // Allow public read for settings (e.g., lichessTvUsername)
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if false; // To be admin only later
+    }
+
+    // Allow anyone to create contact submissions
+    // Disallow public read, update, delete for submissions
+    match /contactSubmissions/{submissionId} {
+      allow create: if true;
+      allow read, update, delete: if false; // To be admin only later
+    }
+
+    // Lesson reports: deny all by default for now
+    // Will be restricted to authenticated coaches/admins later
+    match /lessonReports/{reportId} {
+      allow read, create, update, delete: if false;
+    }
+
+    // Default deny for any other collections/paths not explicitly matched.
+    // It's important to have a catch-all rule for security.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

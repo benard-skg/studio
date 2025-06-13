@@ -1,0 +1,22 @@
+
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // PGN files for lesson reports
+    // Allow public read: Anyone with the URL can access the file.
+    // This is common if you intend for these PGN links to be shareable.
+    // Write access will be restricted to authenticated coaches/admins later.
+    match /lesson_reports_pgn/{pgnFileId} {
+      allow read: if true;
+      allow write: if false; // To be coach/admin only later
+    }
+
+    // Default deny for any other paths in storage.
+    // This ensures that only explicitly allowed paths are accessible.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
