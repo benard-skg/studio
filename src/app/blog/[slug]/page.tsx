@@ -8,12 +8,9 @@ import type { BlogPost } from '@/lib/types';
 import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
 import { BLOCKS } from '@contentful/rich-text-types';
 import type { Metadata, ResolvingMetadata } from 'next';
-// import { Button } from '@/components/ui/button'; // Button no longer needed
-// import Link from 'next/link'; // Link no longer needed for back button
-// import { ArrowLeft } from 'lucide-react'; // ArrowLeft no longer needed
 
 // Revalidate this page (e.g., every 10 seconds)
-export const revalidate = 10; 
+export const revalidate = 10;
 
 interface BlogPostPageProps {
   params: {
@@ -35,7 +32,7 @@ export async function generateMetadata(
   }
 
   const previousImages = (await parent).openGraph?.images || [];
-  
+
   let openGraphImages = previousImages;
   if (post.featuredImage?.fields?.file?.url) {
     openGraphImages = [`https:${post.featuredImage.fields.file.url}`, ...previousImages];
@@ -62,6 +59,13 @@ export async function generateStaticParams() {
   }));
 }
 
+const processChildrenToString = (childrenInput: any): string => {
+  if (Array.isArray(childrenInput)) {
+    return childrenInput.map(child => String(child)).join('');
+  }
+  return String(childrenInput);
+};
+
 const richTextOptions = {
   renderNode: {
     [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
@@ -71,21 +75,19 @@ const richTextOptions = {
         const altText = asset.fields.description || asset.fields.title || 'Embedded blog image';
         return `<div style="margin: 1.5rem 0; text-align: center;"><img src="${imageUrl}" alt="${altText}" loading="lazy" style="max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" /></div>`;
       }
-      return ''; 
+      return '';
     },
-    [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${children}</p>`,
-    [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${children}</h2>`,
-    [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${children}</h3>`,
-    // Add HEADING_1, HEADING_4, HEADING_5, HEADING_6 if needed, following the pattern
-    [BLOCKS.HEADING_1]: (node: any, children: any) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold mt-10 mb-5">${children}</h1>`,
-    [BLOCKS.HEADING_4]: (node: any, children: any) => `<h4 class="font-headline text-lg sm:text-xl font-semibold mt-5 mb-2">${children}</h4>`,
-    [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${children}</ul>`,
-    [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${children}</ol>`,
-    [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${children}</blockquote>`,
-    // For hyperlinks, ensure they open in a new tab and have appropriate styling
+    [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${processChildrenToString(children)}</p>`,
+    [BLOCKS.HEADING_1]: (node: any, children: any) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold mt-10 mb-5">${processChildrenToString(children)}</h1>`,
+    [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${processChildrenToString(children)}</h2>`,
+    [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${processChildrenToString(children)}</h3>`,
+    [BLOCKS.HEADING_4]: (node: any, children: any) => `<h4 class="font-headline text-lg sm:text-xl font-semibold mt-5 mb-2">${processChildrenToString(children)}</h4>`,
+    [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${processChildrenToString(children)}</ul>`,
+    [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${processChildrenToString(children)}</ol>`,
+    [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${processChildrenToString(children)}</blockquote>`,
     [BLOCKS.HYPERLINK]: (node: any, children: any) => {
         const href = node.data.uri;
-        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-medium">${children}</a>`;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-medium">${processChildrenToString(children)}</a>`;
     }
   },
 };
@@ -98,7 +100,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const htmlContent = post && post.content && typeof post.content === 'object' && post.content.nodeType === 'document'
-    ? documentToHtmlString(post.content, richTextOptions) 
+    ? documentToHtmlString(post.content, richTextOptions)
     : '';
 
   return (
@@ -128,11 +130,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 />
               </div>
             )}
-            
+
             {typeof htmlContent === 'string' ? (
               <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
             ) : (
-              <p>Error: Content could not be rendered.</p> 
+              <p>Error: Content could not be rendered.</p>
             )}
           </article>
         </div>
