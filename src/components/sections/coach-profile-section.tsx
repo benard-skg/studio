@@ -71,7 +71,7 @@ export const allCoachesData: Coach[] = [
     name: "Mahomole T.R",
     nickname: "Tebogo",
     title: "Certified Chess Coach & Strategist",
-    imageSrc: "https://i.ibb.co/fJBTzr1/IMG-20250119-WA0000-41538-e1738142791424-780x470.jpg",
+    imageSrc: "https://i.ibb.co/kV317DXj/IMG-20250613-WA0001.jpg",
     imageAlt: "Portrait of Coach Mahomole T.R.",
     imageAiHint: "chess coach profile",
     chessSaId: "189019610",
@@ -192,5 +192,4 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
     </section>
   );
 }
-
     

@@ -2,7 +2,7 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
-import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route, Server } from 'lucide-react';
+import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route, Server, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -71,9 +71,9 @@ export default function TechStackPage() {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         
-        <section className="max-w-2xl mx-auto mb-10 bg-destructive/20 text-destructive dark:bg-destructive/15 dark:text-destructive-foreground/90 border border-destructive/30 rounded-xl p-6 shadow-lg animate-subtle-pulse-15s">
+        <section className="max-w-2xl mx-auto mb-10 bg-sky-500/15 text-sky-900 dark:text-sky-200 border border-sky-500/30 rounded-xl p-6 shadow-lg">
           <p className="font-body text-base leading-relaxed">
-            This application is a prototype, largely developed using a mobile device. It is intended for demonstration purposes and may not include full security, polish, or feature completeness. Some features are still under development or have been deferred.
+            Beta Version: This application is in early production. Some features are still under development or being refined.
           </p>
         </section>
 
@@ -144,7 +144,7 @@ export default function TechStackPage() {
                     <CardTitle className="font-headline text-xl mb-1 sm:mb-0">Version 0.1.0 - Initial Prototype</CardTitle>
                     <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
-                  <CardDescription className="font-body text-xs">Approx. May 2024</CardDescription>
+                  <CardDescription className="font-body text-xs">Completed: Approx. May 2024</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
@@ -152,7 +152,6 @@ export default function TechStackPage() {
                     <li>Basic Next.js setup with ShadCN UI.</li>
                     <li>Core pages: Home, About, Coaches, Classes.</li>
                     <li>Initial Contentful integration for Blog.</li>
-                    <li>Initial JSONBin.io setup for dynamic data (contact, events, reports - later disabled/replaced).</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -162,10 +161,10 @@ export default function TechStackPage() {
               <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-xl mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration</CardTitle>
-                    <Badge variant="secondary" className="bg-blue-500 text-white">In Progress</Badge>
+                    <CardTitle className="font-headline text-xl mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Early Production</CardTitle>
+                    <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
-                  <CardDescription className="font-body text-xs">Target: June/July 2024</CardDescription>
+                  <CardDescription className="font-body text-xs">Completed: July 2024</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
@@ -173,9 +172,9 @@ export default function TechStackPage() {
                     <li>Firebase project setup and SDK integration.</li>
                     <li>Firestore for contact submissions, lesson reports, and events.</li>
                     <li>Firebase Storage for PGN file uploads.</li>
-                    <li>Admin settings moved to Firestore.</li>
+                    <li>Admin settings & basic admin CRUD operations.</li>
                     <li>Interactive Analysis Board functionality.</li>
-                    <li>Initial setup for Firebase App Hosting.</li>
+                    <li>Deployment to Firebase App Hosting (Beta).</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -185,7 +184,7 @@ export default function TechStackPage() {
                     <CardTitle className="font-headline text-xl mb-1 sm:mb-0">Version 0.3.0 - AI & Polish</CardTitle>
                     <Badge variant="secondary" className="bg-purple-500 text-white">Planned</Badge>
                   </div>
-                  <CardDescription className="font-body text-xs">Target: Q3 2024</CardDescription>
+                  <CardDescription className="font-body text-xs">Target: Q3/Q4 2024</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
@@ -194,6 +193,7 @@ export default function TechStackPage() {
                     <li>Firebase Authentication for user roles.</li>
                     <li>Refined UI/UX and improved error handling.</li>
                     <li>Comprehensive Firestore security rules.</li>
+                    <li>Further feature enhancements from deferred list.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -205,3 +205,4 @@ export default function TechStackPage() {
     </div>
   );
 }
+
