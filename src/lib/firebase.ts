@@ -7,13 +7,13 @@ import { getStorage } from 'firebase/storage';
 // IMPORTANT: Replace these with your actual Firebase project configuration values!
 // You can find these in your Firebase project settings.
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID_HERE",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID_HERE",
-  appId: "YOUR_APP_ID_HERE",
-  measurementId: "YOUR_MEASUREMENT_ID_HERE" // Optional
+  apiKey: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q",
+    authDomain: "kgchess-dc8ac.firebaseapp.com",
+      projectId: "kgchess",
+        storageBucket: "kgchess.firebasestorage.app",
+          messagingSenderId: "43925445120",
+            appId: "1:43925445120:web:f95b9610d09871d2ef16e5"
+            // Optional
 };
 
 // Initialize Firebase
