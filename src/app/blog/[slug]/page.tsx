@@ -6,7 +6,7 @@ import Footer from '@/components/layout/footer';
 import { getBlogPostBySlug, getAllBlogPostSlugs } from '@/lib/contentful';
 import type { BlogPost } from '@/lib/types';
 import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
-import { BLOCKS } from '@contentful/rich-text-types';
+import { BLOCKS, INLINES } from '@contentful/rich-text-types'; // Changed BLOCKS.HYPERLINK to INLINES.HYPERLINK contextually
 import type { Metadata, ResolvingMetadata } from 'next';
 
 // Revalidate this page (e.g., every 10 seconds)
@@ -59,13 +59,6 @@ export async function generateStaticParams() {
   }));
 }
 
-const processChildrenToString = (childrenInput: any): string => {
-  if (Array.isArray(childrenInput)) {
-    return childrenInput.map(child => String(child)).join('');
-  }
-  return String(childrenInput);
-};
-
 const richTextOptions = {
   renderNode: {
     [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
@@ -77,17 +70,17 @@ const richTextOptions = {
       }
       return '';
     },
-    [BLOCKS.PARAGRAPH]: (node: any, children: any) => `<p class="my-4 font-body text-base leading-relaxed">${processChildrenToString(children)}</p>`,
-    [BLOCKS.HEADING_1]: (node: any, children: any) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold mt-10 mb-5">${processChildrenToString(children)}</h1>`,
-    [BLOCKS.HEADING_2]: (node: any, children: any) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${processChildrenToString(children)}</h2>`,
-    [BLOCKS.HEADING_3]: (node: any, children: any) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${processChildrenToString(children)}</h3>`,
-    [BLOCKS.HEADING_4]: (node: any, children: any) => `<h4 class="font-headline text-lg sm:text-xl font-semibold mt-5 mb-2">${processChildrenToString(children)}</h4>`,
-    [BLOCKS.UL_LIST]: (node: any, children: any) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${processChildrenToString(children)}</ul>`,
-    [BLOCKS.OL_LIST]: (node: any, children: any) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${processChildrenToString(children)}</ol>`,
-    [BLOCKS.QUOTE]: (node: any, children: any) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${processChildrenToString(children)}</blockquote>`,
-    [BLOCKS.HYPERLINK]: (node: any, children: any) => {
+    [BLOCKS.PARAGRAPH]: (node: any, next: (nodes: any) => string) => `<p class="my-4 font-body text-base leading-relaxed">${next(node.content)}</p>`,
+    [BLOCKS.HEADING_1]: (node: any, next: (nodes: any) => string) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold mt-10 mb-5">${next(node.content)}</h1>`,
+    [BLOCKS.HEADING_2]: (node: any, next: (nodes: any) => string) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${next(node.content)}</h2>`,
+    [BLOCKS.HEADING_3]: (node: any, next: (nodes: any) => string) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${next(node.content)}</h3>`,
+    [BLOCKS.HEADING_4]: (node: any, next: (nodes: any) => string) => `<h4 class="font-headline text-lg sm:text-xl font-semibold mt-5 mb-2">${next(node.content)}</h4>`,
+    [BLOCKS.UL_LIST]: (node: any, next: (nodes: any) => string) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${next(node.content)}</ul>`,
+    [BLOCKS.OL_LIST]: (node: any, next: (nodes: any) => string) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${next(node.content)}</ol>`,
+    [BLOCKS.QUOTE]: (node: any, next: (nodes: any) => string) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${next(node.content)}</blockquote>`,
+    [INLINES.HYPERLINK]: (node: any, next: (nodes: any) => string) => {
         const href = node.data.uri;
-        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-medium">${processChildrenToString(children)}</a>`;
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline font-medium">${next(node.content)}</a>`;
     }
   },
 };
