@@ -8,54 +8,68 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { EventType } from '@/lib/types';
+import type { EventType as AppEventType } from '@/lib/types'; // Renamed
 import { format, parseISO, startOfMonth, addMonths, subMonths, isSameDay, isValid } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Timestamp } from 'firebase/firestore'; // Import Timestamp
+
+// Type for events received by this component, can be slightly different from stored type
+interface EventTypeForCalendar extends Omit<AppEventType, 'id'> { // Use Omit to redefine id if needed
+  id?: string; // Firestore document ID might be optional here if not always used for navigation
+  title: string;
+  date: string; // Expecting ISO string date "YYYY-MM-DD"
+  startTime: string;
+  endTime?: string;
+  type: string;
+  description?: string;
+  detailsPageSlug: string;
+  // Firestore timestamps are not directly used in rendering here but might be part of the prop
+  createdAt?: Timestamp; 
+  updatedAt?: Timestamp;
+}
 
 interface EventCalendarSectionProps {
-  events: EventType[];
+  events: EventTypeForCalendar[];
 }
+
 
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
-export default function EventCalendarSection({ events }: EventCalendarSectionProps) {
+export default function EventCalendarSection({ events: initialEvents }: EventCalendarSectionProps) {
   const router = useRouter();
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isMounted, setIsMounted] = useState(false);
   const [animatedMonth, setAnimatedMonth] = useState<Date | null>(null);
 
+  // Use initialEvents directly if it's guaranteed to be stable, or manage with useState if it can change
+  const [events, setEvents] = useState<EventTypeForCalendar[]>(initialEvents);
+  
+  useEffect(() => {
+    setEvents(initialEvents); // Update local state if prop changes
+  }, [initialEvents]);
+
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    console.log('[EventCalendarSection] Received events prop:', events ? `${events.length} items` : 'null/undefined');
-  }, [events]); 
-
   const eventDays = useMemo(() => {
-    if (!Array.isArray(events)) {
-      console.warn('[EventCalendarSection] events prop is not an array:', events);
-      return [];
-    }
-    const calculatedDays = events.map(event => {
-      if (event && typeof event.date === 'string') {
-        const parsedDate = parseISO(event.date);
-        return isValid(parsedDate) ? parsedDate : null;
-      }
-      console.warn('[EventCalendarSection] Invalid event or event.date:', event);
-      return null;
-    }).filter(date => date !== null) as Date[];
-    
-    console.log('[EventCalendarSection] Calculated eventDays:', calculatedDays.map(d => d.toISOString().substring(0,10)));
-    return calculatedDays;
+    if (!Array.isArray(events)) return [];
+    return events
+      .map(event => {
+        if (event && typeof event.date === 'string') {
+          const parsedDate = parseISO(event.date); // Assumes date is YYYY-MM-DD
+          return isValid(parsedDate) ? parsedDate : null;
+        }
+        return null;
+      })
+      .filter(date => date !== null) as Date[];
   }, [events]);
 
   const eventsForSelectedDate = useMemo(() => {
-    if (!selectedDate || !Array.isArray(events)) {
-      return [];
-    }
-    const filteredEvents = events
+    if (!selectedDate || !Array.isArray(events)) return [];
+    return events
       .filter(event => {
         if (event && typeof event.date === 'string') {
           const parsedEventDate = parseISO(event.date);
@@ -64,9 +78,6 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
         return false;
       })
       .sort((a, b) => (a.startTime && b.startTime ? a.startTime.localeCompare(b.startTime) : 0));
-    
-    console.log('[EventCalendarSection] Calculated eventsForSelectedDate (for ' + (selectedDate ? selectedDate.toISOString().substring(0,10) : 'null') + '):', filteredEvents);
-    return filteredEvents;
   }, [selectedDate, events]);
 
 
@@ -176,7 +187,8 @@ export default function EventCalendarSection({ events }: EventCalendarSectionPro
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
               }}
               modifiers={{
-                eventDay: eventDays.some(eventDate => selectedDate && isSameDay(eventDate, selectedDate)),
+                // eventDay: eventDays.some(eventDate => selectedDate && isSameDay(eventDate, selectedDate)),
+                eventDay: eventDays // Pass the array of Dates directly
               }}
               modifiersClassNames={{
                 eventDay: 'event-day-modifier', 

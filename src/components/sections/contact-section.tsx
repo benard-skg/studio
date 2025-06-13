@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mail, Send, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { db } from '@/lib/firebase'; // Import Firestore instance
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const ContactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -26,9 +28,7 @@ const ContactFormSchema = z.object({
 });
 type ContactFormData = z.infer<typeof ContactFormSchema>;
 
-interface Submission extends ContactFormData {
-  submittedAt: string;
-}
+// Interface Submission removed as we're writing directly to Firestore
 
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -36,27 +36,13 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const JSONBIN_API_BASE = "https://api.jsonbin.io/v3/b";
-const ACCESS_KEY = "$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG"; // Replaced placeholder
-const BIN_ID = "YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE"; // Placeholder for specific bin
+// JSONBin.io related constants removed
 
 export default function ContactSection() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(true);
+  // isConfigured state can be removed or repurposed for Firebase check if needed, for now assuming Firebase is configured.
   const whatsappNumber = "+27834544862"; 
-
-  useEffect(() => {
-    console.log("ContactSection: ACCESS_KEY set.");
-    console.log("ContactSection: BIN_ID:", BIN_ID || 'UNDEFINED');
-    if (!ACCESS_KEY || ACCESS_KEY === '$2a$10$ruiuDJ8CZrmUGcZ/0T4oxupL/lYNqs2tnITLQ2KNt0NkhEDq.6CQG' || // Check against actual key if needed for "not configured" logic
-        !BIN_ID || BIN_ID === 'YOUR_JSONBIN_CONTACT_SUBMISSIONS_BIN_ID_HERE') {
-      setIsConfigured(false);
-      console.warn("Contact form: JSONBin.io Access Key or Contact Submissions Bin ID is not configured or is using placeholder values.");
-    } else {
-      setIsConfigured(true);
-    }
-  }, [BIN_ID]); // ACCESS_KEY is now a constant
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(ContactFormSchema),
@@ -68,59 +54,12 @@ export default function ContactSection() {
   });
 
   async function onSubmit(values: ContactFormData) {
-    if (!isConfigured) {
-      toast({
-        variant: "destructive",
-        title: "Configuration Error",
-        description: "The contact form is not properly configured to save submissions. Please check API keys.",
-      });
-      return;
-    }
     setIsSubmitting(true);
-
     try {
-      console.log(`ContactSection onSubmit: Attempting to fetch with Bin ID: ${BIN_ID || 'UNDEFINED'}`);
-      const getResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}/latest`, {
-        method: 'GET',
-        headers: {
-          'X-Access-Key': ACCESS_KEY,
-        },
-      });
-
-      let submissions: Submission[] = [];
-      if (getResponse.ok) {
-        const data = await getResponse.json();
-        submissions = Array.isArray(data.record) ? data.record : (typeof data.record === 'object' && Object.keys(data.record).length === 0 ? [] : []);
-      } else if (getResponse.status === 404) {
-        console.warn("JSONBin: Bin not found or empty, will create/overwrite with new data.");
-      } else {
-        const errorText = await getResponse.text();
-        console.error("Failed to fetch existing submissions:", getResponse.status, errorText);
-        throw new Error(`Failed to fetch existing submissions. Status: ${getResponse.status}`);
-      }
-
-      const newSubmission: Submission = {
+      await addDoc(collection(db, "contactSubmissions"), {
         ...values,
-        submittedAt: new Date().toISOString(),
-      };
-      const updatedSubmissions = [...submissions, newSubmission];
-
-      console.log(`ContactSection onSubmit: Attempting to PUT with Bin ID: ${BIN_ID || 'UNDEFINED'}`);
-      const putResponse = await fetch(`${JSONBIN_API_BASE}/${BIN_ID}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Access-Key': ACCESS_KEY,
-          'X-Bin-Versioning': 'false', 
-        },
-        body: JSON.stringify(updatedSubmissions),
+        submittedAt: serverTimestamp(), // Use Firestore server timestamp
       });
-
-      if (!putResponse.ok) {
-        const errorText = await putResponse.text();
-        console.error("Failed to save submission:", putResponse.status, errorText);
-        throw new Error(`Failed to save submission. Status: ${putResponse.status}`);
-      }
 
       toast({
         title: "Message Sent!",
@@ -128,7 +67,7 @@ export default function ContactSection() {
       });
       form.reset();
     } catch (error) {
-      console.error("Error in onSubmit:", error);
+      console.error("Error saving contact submission to Firestore:", error);
       toast({
         variant: "destructive",
         title: "Submission Error",
@@ -166,14 +105,7 @@ export default function ContactSection() {
           </a>
         </div>
 
-        {!isConfigured && (
-          <div className="max-w-2xl mx-auto my-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center">
-            <AlertCircle className="h-5 w-5 mr-3" />
-            <p className="font-body text-sm">
-              The contact form submission is currently not configured. Please contact the administrator or ensure API keys are set and valid.
-            </p>
-          </div>
-        )}
+        {/* Configuration error message for JSONBin removed, can add one for Firebase if firebase.ts is not properly configured by user later */}
 
         <div className="max-w-2xl mx-auto">
           <Form {...form}>
@@ -185,7 +117,7 @@ export default function ContactSection() {
                   <FormItem>
                     <FormLabel className="font-body">Full Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} className="font-body" disabled={isSubmitting || !isConfigured} />
+                      <Input placeholder="Your Name" {...field} className="font-body" disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -198,7 +130,7 @@ export default function ContactSection() {
                   <FormItem>
                     <FormLabel className="font-body">Email Address</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} className="font-body" disabled={isSubmitting || !isConfigured} />
+                      <Input type="email" placeholder="your.email@example.com" {...field} className="font-body" disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -215,7 +147,7 @@ export default function ContactSection() {
                         placeholder="Your questions or booking inquiry..."
                         className="resize-none font-body min-h-[120px]"
                         {...field}
-                        disabled={isSubmitting || !isConfigured}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -226,7 +158,7 @@ export default function ContactSection() {
                 type="submit"
                 size="lg"
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md"
-                disabled={isSubmitting || !isConfigured}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>

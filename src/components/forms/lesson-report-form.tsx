@@ -3,13 +3,12 @@
 
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,50 +20,43 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, Trash2, BookOpen, Users, Target, AlertTriangle, CheckCircle, PlusCircle } from "lucide-react";
-import type { LessonReportData, LessonTopic } from "@/lib/types";
+import { Loader2, Save, Trash2, BookOpen, Users, Target, CheckCircle, PlusCircle } from "lucide-react";
+import type { LessonTopic } from "@/lib/types";
 import { commonLessonTopics } from "@/lib/types";
+import { db, storage } from '@/lib/firebase'; // Import Firestore and Storage
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid'; // For unique filenames
 
 const lessonReportSchema = z.object({
-  studentName: z.string().default(''),
+  studentName: z.string().min(1, "Student name is required").default(''),
   lessonDateTime: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid date/time format."),
-  coachName: z.string().default(''),
+  coachName: z.string().min(1, "Coach name is required").default(''), 
   ratingBefore: z.coerce.number().optional(),
   ratingAfter: z.coerce.number().optional(),
-  topicCovered: z.string().default(''), 
+  topicCovered: z.string().min(1, "Topic covered is required").default(''), 
   customTopic: z.string().default(''),
-  keyConcepts: z.string().default(''),
+  keyConcepts: z.string().min(1, "Key concepts are required").default(''),
   pgnFile: z.custom<FileList>().optional(),
   gameExampleLinks: z.string().url("Must be a valid URL (e.g., Lichess, Chess.com analysis link)").optional().or(z.literal('')),
-  strengths: z.string().default(''),
-  areasToImprove: z.string().default(''),
-  mistakesMade: z.string().default(''),
+  strengths: z.string().min(1, "Strengths observed are required").default(''),
+  areasToImprove: z.string().min(1, "Areas to improve are required").default(''),
+  mistakesMade: z.string().min(1, "Common mistakes made are required").default(''),
   assignedPuzzles: z.string().default(''),
   practiceGames: z.string().default(''),
   readingVideos: z.string().url("Must be a valid URL for reading/video material").optional().or(z.literal('')),
   additionalNotes: z.string().default(''),
 });
 
-type StoredLessonReport = Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & {
-  id: string;
-  submittedAt: string;
-  pgnFilename?: string;
-};
-
+// StoredLessonReport type can be inferred from schema + Firestore fields later if needed on client
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
-// JSONBin.io integration removed
 
 export default function LessonReportForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedTopic, setSelectedTopic] = React.useState<string>("");
-  const [isConfigured, setIsConfigured] = React.useState(false);
-
-  React.useEffect(() => {
-    setIsConfigured(false);
-    console.warn("Lesson Report Form: JSONBin.io integration removed. Saving is disabled.");
-  }, []);
+  // isConfigured removed as Firebase setup is assumed or handled by firebase.ts
 
   const form = useForm<z.infer<typeof lessonReportSchema>>({
     resolver: zodResolver(lessonReportSchema),
@@ -94,8 +86,7 @@ export default function LessonReportForm() {
     if (draft) {
       try {
         const parsedDraft = JSON.parse(draft);
-        // Don't load pgnFile from localStorage as it's a FileList
-        const { pgnFile, ...restOfDraft } = parsedDraft;
+        const { pgnFile, ...restOfDraft } = parsedDraft; // Exclude pgnFile
         form.reset(restOfDraft); 
         if (parsedDraft.topicCovered) {
           setSelectedTopic(parsedDraft.topicCovered);
@@ -109,8 +100,7 @@ export default function LessonReportForm() {
 
   React.useEffect(() => {
     const subscription = form.watch((values) => {
-      // Don't save pgnFile to localStorage
-      const { pgnFile, ...valuesToStore } = values;
+      const { pgnFile, ...valuesToStore } = values; // Exclude pgnFile
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(valuesToStore));
     });
     return () => subscription.unsubscribe();
@@ -118,37 +108,59 @@ export default function LessonReportForm() {
 
   async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
     setIsSubmitting(true);
-    console.warn("LessonReportForm onSubmit: Submission to JSONBin.io is disabled.");
-    toast({
-      variant: "destructive",
-      title: "Feature Disabled",
-      description: "Saving lesson reports is currently disabled. JSONBin.io integration removed."
-    });
     
-    setTimeout(() => {
-      form.reset({ 
-        studentName: "",
-        lessonDateTime: new Date().toISOString().substring(0, 16),
-        coachName: "",
-        ratingBefore: undefined,
-        ratingAfter: undefined,
-        topicCovered: "",
-        customTopic: "",
-        keyConcepts: "",
-        pgnFile: undefined,
-        gameExampleLinks: "",
-        strengths: "",
-        areasToImprove: "",
-        mistakesMade: "",
-        assignedPuzzles: "",
-        practiceGames: "",
-        readingVideos: "",
-        additionalNotes: "",
+    let pgnFileUrl = "";
+    let pgnFilename = "";
+
+    if (values.pgnFile && values.pgnFile.length > 0) {
+      const file = values.pgnFile[0];
+      if (file.size > 1 * 1024 * 1024) { // Max 1MB
+        toast({ variant: "destructive", title: "File too large", description: "PGN file must be less than 1MB." });
+        setIsSubmitting(false);
+        return;
+      }
+      pgnFilename = file.name;
+      const storageRef = ref(storage, `lesson_reports_pgn/${uuidv4()}_${file.name}`);
+      try {
+        const snapshot = await uploadBytes(storageRef, file);
+        pgnFileUrl = await getDownloadURL(snapshot.ref);
+      } catch (error) {
+        console.error("Error uploading PGN file:", error);
+        toast({ variant: "destructive", title: "PGN Upload Failed", description: "Could not upload the PGN file. Please try again." });
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    const reportDataToSave: Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & { submittedAt: any; pgnFileUrl?: string; pgnFilename?: string } = {
+      ...values,
+      submittedAt: serverTimestamp(),
+    };
+    if (pgnFileUrl) reportDataToSave.pgnFileUrl = pgnFileUrl;
+    if (pgnFilename) reportDataToSave.pgnFilename = pgnFilename;
+    // Remove pgnFile property which is FileList
+    delete (reportDataToSave as any).pgnFile;
+
+
+    try {
+      await addDoc(collection(db, "lessonReports"), reportDataToSave);
+      toast({
+        title: "Report Saved!",
+        description: "The lesson report has been successfully saved.",
       });
+      form.reset(); // Reset form to default values
       localStorage.removeItem(LOCAL_STORAGE_KEY); 
       setSelectedTopic(""); 
+    } catch (error) {
+      console.error("Error saving lesson report to Firestore:", error);
+      toast({
+        variant: "destructive",
+        title: "Save Failed",
+        description: "Could not save the lesson report. Please try again.",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   }
 
   const handleClearDraft = () => {
@@ -165,7 +177,6 @@ export default function LessonReportForm() {
       form.setValue("customTopic", "", { shouldValidate: true });
     }
   };
-
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -294,7 +305,7 @@ export default function LessonReportForm() {
                     name="pgnFile"
                     render={({ field: { onChange, value, ...restField } }) => ( 
                       <FormItem>
-                        <FormLabel>Game PGN Upload (Optional)</FormLabel>
+                        <FormLabel>Game PGN Upload (Optional, Max 1MB)</FormLabel>
                         <FormControl>
                             <Input 
                                 type="file" 
@@ -303,7 +314,6 @@ export default function LessonReportForm() {
                                 {...restField} 
                             />
                         </FormControl>
-                        <FormDescription>Upload a PGN file (max 1MB).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -421,16 +431,11 @@ export default function LessonReportForm() {
               <Button type="button" variant="outline" onClick={handleClearDraft} disabled={isSubmitting}>
                 <Trash2 className="mr-2 h-4 w-4" /> Clear Draft
               </Button>
-              <Button type="submit" disabled={isSubmitting || !isConfigured} className="bg-accent hover:bg-accent/90">
+              <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90">
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Report { !isConfigured && "(Disabled)"}
+                {isSubmitting ? 'Saving...' : 'Save Report'}
               </Button>
             </div>
-             {!isConfigured && (
-                <p className="text-xs text-destructive text-center pt-2">
-                    Lesson report saving is currently disabled. JSONBin.io integration removed.
-                </p>
-            )}
           </form>
         </Form>
       </CardContent>

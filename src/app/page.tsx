@@ -1,25 +1,47 @@
 
-// No 'use client' at the top of the file for the main Page component
-
 import Navbar from '@/components/layout/navbar';
 import HeroSection from '@/components/sections/hero-section';
 import CoachProfileSection from '@/components/sections/coach-profile-section';
 import ClassShowcaseSection from '@/components/sections/class-showcase-section';
-import BlogSection from '@/components/sections/blog-section'; // This is an async Server Component
+import BlogSection from '@/components/sections/blog-section'; 
 import Footer from '@/components/layout/footer';
 import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
-import type { EventType } from '@/lib/types';
-import { useState, useEffect } from 'react'; // Will be used in HomePageContent
+import type { EventType as AppEventType } from '@/lib/types'; // Renamed to avoid conflict
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 
-// This function fetches data for the calendar on the server.
-// JSONBin.io fetching for events is removed.
-async function getEventsForCalendar(): Promise<EventType[]> {
-  console.log("[PageServerComponent] getEventsForCalendar: Event fetching is currently disabled. Returning empty array.");
-  return Promise.resolve([]);
+// Extend EventType to include Firestore document ID and potentially serverTimestamp
+interface EventType extends AppEventType {
+  id: string; // Firestore document ID
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp; 
 }
 
-// This is the Client Component part of the page
+async function getEventsForCalendar(): Promise<EventType[]> {
+  try {
+    const eventsCol = collection(db, "events");
+    // Order by date then start time for consistent display
+    const q = query(eventsCol, orderBy("date", "asc"), orderBy("startTime", "asc"));
+    const eventsSnapshot = await getDocs(q);
+    const eventsList = eventsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        // Ensure date is string if needed by EventCalendarSection,
+        // Firestore might store it as Timestamp or string depending on how it was saved
+        date: data.date instanceof Timestamp ? data.date.toDate().toISOString().split('T')[0] : data.date, 
+      } as EventType;
+    });
+    console.log("[PageServerComponent] getEventsForCalendar: Fetched events from Firestore:", eventsList.length);
+    return eventsList;
+  } catch (error) {
+    console.error("[PageServerComponent] getEventsForCalendar: Error fetching events from Firestore:", error);
+    return []; // Return empty array on error
+  }
+}
+
 function HomePageContent({
   fetchedEvents,
   blogSectionContent,
@@ -27,10 +49,7 @@ function HomePageContent({
   fetchedEvents: EventType[];
   blogSectionContent: React.ReactNode;
 }) {
-  "use client"; // This component contains client-side logic
-
-  // Note: The original useState/useEffect for fetchedEvents in the 'Home' component
-  // is no longer needed here as `fetchedEvents` are passed as a prop from the Server Component.
+  "use client"; 
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -46,7 +65,7 @@ function HomePageContent({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-8 items-start">
           <ClassShowcaseSection />
-          {blogSectionContent} {/* Render the BlogSection passed as a prop */}
+          {blogSectionContent}
         </div>
       </main>
       <Footer />
@@ -54,15 +73,13 @@ function HomePageContent({
   );
 }
 
-// This is the new default export for the page - a Server Component
 export default async function Page() {
-  // Fetch data required by client components on the server
   const calendarEvents = await getEventsForCalendar();
 
   return (
     <HomePageContent
       fetchedEvents={calendarEvents}
-      blogSectionContent={<BlogSection />} // Render BlogSection here (server) and pass its output
+      blogSectionContent={<BlogSection />} 
     />
   );
 }

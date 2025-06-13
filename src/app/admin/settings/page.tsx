@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,24 +9,59 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Settings, UserCircle } from 'lucide-react';
+import { Save, Settings, UserCircle, Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
+const SETTINGS_DOC_ID = 'appSettings'; // Fixed ID for the settings document
 const LICHESS_USERNAME_KEY = 'lichessTvUsername';
 
 export default function AdminSettingsPage() {
   const [lichessUsername, setLichessUsername] = useState('');
   const [currentSavedUsername, setCurrentSavedUsername] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem(LICHESS_USERNAME_KEY);
-    if (storedUsername) {
-      setCurrentSavedUsername(storedUsername);
-      setLichessUsername(storedUsername); // Pre-fill input if username exists
+  const fetchSettings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const settingsDocRef = doc(db, "settings", SETTINGS_DOC_ID);
+      const docSnap = await getDoc(settingsDocRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data && data[LICHESS_USERNAME_KEY]) {
+          const username = data[LICHESS_USERNAME_KEY] as string;
+          setCurrentSavedUsername(username);
+          setLichessUsername(username); // Pre-fill input
+        } else {
+           setCurrentSavedUsername(null);
+           setLichessUsername(''); // Clear input if not set
+        }
+      } else {
+        console.log("No such settings document!");
+        setCurrentSavedUsername(null);
+        setLichessUsername('');
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not fetch current settings. Please try again.",
+      });
+       setCurrentSavedUsername(null);
+       setLichessUsername('');
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
-  const handleSaveUsername = () => {
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  const handleSaveUsername = async () => {
     if (!lichessUsername.trim()) {
       toast({
         variant: "destructive",
@@ -35,12 +70,29 @@ export default function AdminSettingsPage() {
       });
       return;
     }
-    localStorage.setItem(LICHESS_USERNAME_KEY, lichessUsername.trim());
-    setCurrentSavedUsername(lichessUsername.trim());
-    toast({
-      title: "Settings Saved",
-      description: `Lichess username "${lichessUsername.trim()}" saved for ChessTV.`,
-    });
+    setIsSaving(true);
+    try {
+      const settingsDocRef = doc(db, "settings", SETTINGS_DOC_ID);
+      await setDoc(settingsDocRef, { 
+        [LICHESS_USERNAME_KEY]: lichessUsername.trim(),
+        updatedAt: serverTimestamp() 
+      }, { merge: true }); // Use merge: true to update or create if not exists
+
+      setCurrentSavedUsername(lichessUsername.trim());
+      toast({
+        title: "Settings Saved",
+        description: `Lichess username "${lichessUsername.trim()}" saved for ChessTV.`,
+      });
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not save settings. Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -68,30 +120,39 @@ export default function AdminSettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="lichessUsername" className="font-body">Lichess Username</Label>
-              <Input
-                id="lichessUsername"
-                type="text"
-                value={lichessUsername}
-                onChange={(e) => setLichessUsername(e.target.value)}
-                placeholder="e.g., DrNykterstein"
-                className="font-body"
-              />
-            </div>
-            <Button onClick={handleSaveUsername} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              <Save className="mr-2 h-4 w-4" />
-              Save Username
-            </Button>
-            {currentSavedUsername && (
-              <p className="font-body text-sm text-muted-foreground text-center pt-2">
-                Currently displaying games for: <strong className="text-accent">{currentSavedUsername}</strong>
-              </p>
-            )}
-            {!currentSavedUsername && (
-                <p className="font-body text-sm text-muted-foreground text-center pt-2">
-                    No Lichess username is currently set for ChessTV.
-                </p>
+            {isLoading ? (
+                <div className="flex justify-center items-center py-6">
+                    <Loader2 className="h-8 w-8 animate-spin text-accent"/>
+                </div>
+            ) : (
+                <>
+                    <div className="space-y-2">
+                    <Label htmlFor="lichessUsername" className="font-body">Lichess Username</Label>
+                    <Input
+                        id="lichessUsername"
+                        type="text"
+                        value={lichessUsername}
+                        onChange={(e) => setLichessUsername(e.target.value)}
+                        placeholder="e.g., DrNykterstein"
+                        className="font-body"
+                        disabled={isSaving}
+                    />
+                    </div>
+                    <Button onClick={handleSaveUsername} className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isSaving ? 'Saving...' : 'Save Username'}
+                    </Button>
+                    {currentSavedUsername && !isSaving && (
+                    <p className="font-body text-sm text-muted-foreground text-center pt-2">
+                        Currently displaying games for: <strong className="text-accent">{currentSavedUsername}</strong>
+                    </p>
+                    )}
+                    {!currentSavedUsername && !isSaving && (
+                        <p className="font-body text-sm text-muted-foreground text-center pt-2">
+                            No Lichess username is currently set for ChessTV.
+                        </p>
+                    )}
+                 </>
             )}
           </CardContent>
         </Card>

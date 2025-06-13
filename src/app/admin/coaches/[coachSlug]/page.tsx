@@ -8,7 +8,7 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2, Trash2, FilePlus2, Loader2 } from 'lucide-react';
+import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2, Trash2, FilePlus2, Loader2, Download } from 'lucide-react';
 import { allCoachesData } from '@/components/sections/coach-profile-section';
 import type { Coach as CoachDataType } from '@/lib/types'; 
 import { format, parseISO, isValid } from 'date-fns';
@@ -26,12 +26,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
 interface StoredLessonReport { 
-  id: string;
-  submittedAt: string; 
+  id: string; // Firestore document ID
+  submittedAt: Timestamp; 
   pgnFilename?: string;
+  pgnFileUrl?: string;
   studentName: string;
   lessonDateTime: string; 
   coachName: string; 
@@ -50,8 +52,6 @@ interface StoredLessonReport {
   additionalNotes?: string;
 }
 
-// JSONBin.io integration removed for lesson reports
-
 export default function CoachAdminProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -61,18 +61,31 @@ export default function CoachAdminProfilePage() {
   const [lessonReports, setLessonReports] = useState<StoredLessonReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>("Lesson report functionality is currently disabled as JSONBin.io integration is removed.");
+  const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<StoredLessonReport | null>(null);
   const { toast } = useToast();
-  const [isConfigured, setIsConfigured] = useState(false); 
 
-
-  const fetchLessonReports = useCallback(async (currentCoach: CoachDataType) => {
-    console.warn(`[CoachAdminProfilePage] fetchLessonReports: Lesson report fetching disabled for coach: "${currentCoach.name}". JSONBin.io integration removed.`);
-    setIsConfigured(false); 
-    setError("Lesson report fetching is disabled as JSONBin.io integration is removed."); 
-    return [];
+  const fetchLessonReports = useCallback(async (currentCoachName: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const reportsCol = collection(db, "lessonReports");
+      // Ensure coachName in Firestore matches the casing/format used when saving
+      const q = query(reportsCol, where("coachName", "==", currentCoachName), orderBy("submittedAt", "desc"));
+      const reportsSnapshot = await getDocs(q);
+      const reportsList = reportsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as StoredLessonReport));
+      setLessonReports(reportsList);
+    } catch (err) {
+      console.error(`Error fetching lesson reports for ${currentCoachName}:`, err);
+      setError(`Failed to fetch lesson reports for ${currentCoachName}.`);
+      setLessonReports([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -83,54 +96,90 @@ export default function CoachAdminProfilePage() {
 
       if (currentCoach) {
         setCoach(currentCoach);
-        setIsLoading(true); 
-        fetchLessonReports(currentCoach) 
-          .then(reports => {
-            setLessonReports(reports); // Will be empty
-          })
-          .finally(() => {
-            setIsLoading(false); 
-          });
+        fetchLessonReports(currentCoach.name); 
       } else {
-        console.warn(`[CoachAdminProfilePage] Coach profile not found for slug: "${coachSlug}".`);
-        setIsLoading(false);
-        setError(prevError => prevError || `Coach profile not found for slug: "${coachSlug}".`);
+        setError(`Coach profile not found for slug: "${coachSlug}".`);
         setCoach(null);
         setLessonReports([]);
+        setIsLoading(false);
       }
     } else {
-      setIsLoading(false);
-      setError(prevError => prevError || "Coach slug is missing from URL.");
+      setError("Coach slug is missing from URL.");
       setCoach(null);
       setLessonReports([]);
+      setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coachSlug, fetchLessonReports]); 
 
   const handleDeleteReport = async () => {
     if (!reportToDelete || !coach) return;
-    toast({ variant: "destructive", title: "Disabled", description: "Deleting lesson reports is currently disabled. JSONBin.io integration removed."});
-    setIsDeleting(false);
-    setIsDeleteDialogOpen(false);
-    setReportToDelete(null);
+    setIsDeleting(true);
+    try {
+      await deleteDoc(doc(db, "lessonReports", reportToDelete.id));
+      toast({
+        title: "Report Deleted",
+        description: `Lesson report for ${reportToDelete.studentName} has been deleted.`,
+      });
+      setLessonReports(prev => prev.filter(r => r.id !== reportToDelete.id));
+      setIsDeleteDialogOpen(false);
+      setReportToDelete(null);
+    } catch (err) {
+      console.error("Error deleting lesson report:", err);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not delete the lesson report. Please try again.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
+  const formatDate = (timestamp: Timestamp | undefined | null) => {
+    if (!timestamp) return 'N/A';
+    try {
+      return format(timestamp.toDate(), "MMM dd, yyyy 'at' hh:mm a");
+    } catch (e) {
+      console.warn("Could not format date: ", timestamp, e);
+      return 'Invalid Date';
+    }
+  };
+  
+  const formatLessonDate = (dateString: string) => {
+    try {
+      if (!dateString) return 'N/A';
+      // Ensure parsing as local time if it was saved as local
+      const lessonDate = parseISO(dateString); 
+      return isValid(lessonDate) ? format(lessonDate, "MMM dd, yyyy, HH:mm") : 'Invalid Date';
+    } catch(e) {
+      return 'Invalid Date';
+    }
+  };
 
   if (isLoading && !coach && !error) { 
-    return null; 
+    // Initial loading state before coach is found or error determined
+    return (
+      <div className="flex flex-col min-h-screen bg-background text-foreground">
+        <Navbar />
+        <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-center items-center py-10">
+                <Loader2 className="h-12 w-12 animate-spin text-accent" />
+            </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
   
-  if ((!coach && !isLoading) || (!isConfigured && error)) { 
+  if (error && !coach) { // If there's an error and coach couldn't be loaded
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
         <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-                <h1 className="font-headline text-3xl mb-2">Error</h1>
-                <p className="font-body text-muted-foreground">
-                  {error || "Coach profile could not be loaded or feature is disabled."}
-                </p>
+                <h1 className="font-headline text-3xl mb-2">Error Loading Profile</h1>
+                <p className="font-body text-muted-foreground">{error}</p>
                  <Button asChild className="mt-6">
                     <Link href="/coaches">Back to Coaches</Link>
                 </Button>
@@ -141,10 +190,9 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (!coach) { 
+  if (!coach) { // If not loading and no error, but coach is still null (e.g. invalid slug)
     notFound();
   }
-
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -178,15 +226,54 @@ export default function CoachAdminProfilePage() {
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90" disabled={!isConfigured}>
+            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
               <Link href="/admin/lesson-reports/create">
-                <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report (Disabled)
+                <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report
               </Link>
             </Button>
           </div>
           
-          <p className="text-muted-foreground font-body mb-4">{error}</p>
-          <p className="font-body text-muted-foreground">No lesson reports to display as the feature is disabled.</p>
+          {isLoading && <div className="flex justify-center py-4"><Loader2 className="h-8 w-8 animate-spin text-accent"/></div>}
+          {!isLoading && error && <p className="text-destructive font-body mb-4">{error}</p>}
+          {!isLoading && !error && lessonReports.length === 0 && (
+            <p className="font-body text-muted-foreground">No lesson reports found for {coach.name}.</p>
+          )}
+          {!isLoading && !error && lessonReports.length > 0 && (
+            <div className="space-y-4">
+              {lessonReports.map(report => (
+                <Card key={report.id} className="shadow-sm border-border bg-card">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="font-headline text-xl">Report for: {report.studentName}</CardTitle>
+                        <CardDescription className="font-body text-xs">
+                          Lesson: {formatLessonDate(report.lessonDateTime)} | Submitted: {formatDate(report.submittedAt)}
+                        </CardDescription>
+                      </div>
+                       <Button variant="ghost" size="icon" onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true); }} title="Delete Report">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="text-sm space-y-1">
+                    <p className="font-body"><strong>Topic:</strong> {report.topicCovered === 'Custom' ? report.customTopic : report.topicCovered}</p>
+                    <p className="font-body"><strong>Key Concepts:</strong> <span className="text-muted-foreground line-clamp-2">{report.keyConcepts}</span></p>
+                    {report.pgnFilename && (
+                        <div className="flex items-center space-x-2">
+                            <p className="font-body"><strong>PGN:</strong> {report.pgnFilename}</p>
+                            {report.pgnFileUrl && (
+                                <a href={report.pgnFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                                    <Download className="h-4 w-4 inline-block"/>
+                                </a>
+                            )}
+                        </div>
+                    )}
+                    {/* Add more details or a button to view full report in a dialog */}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
         <Separator className="my-8" />
@@ -208,9 +295,32 @@ export default function CoachAdminProfilePage() {
           </h2>
           <p className="font-body text-muted-foreground">Coming soon: Calendar events scheduled by {coach.name}.</p>
         </section>
-
       </main>
       <Footer />
+
+      {reportToDelete && (
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-headline">Delete Lesson Report?</AlertDialogTitle>
+              <AlertDialogDescription className="font-body">
+                Are you sure you want to delete the lesson report for <strong>{reportToDelete.studentName}</strong> (Lesson: {formatLessonDate(reportToDelete.lessonDateTime)})? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteReport}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
