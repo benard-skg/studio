@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { AlertCircle, Trash2, Eye, PlusCircle, Loader2, CalendarPlus, Edit3, Save } from 'lucide-react';
+// import { useRouter } from 'next/navigation'; // useRouter seems unused
+import { AlertCircle, Trash2, Eye, Loader2, CalendarPlus, Edit3, Save } from 'lucide-react'; // PlusCircle seems unused
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -38,18 +38,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO, isValid } from 'date-fns';
-import type { EventType as AppEventType } from '@/lib/types'; // Renamed to avoid conflict
+import type { EventType as AppEventType } from '@/lib/types';
 import { slugify } from '@/lib/utils';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp, serverTimestamp } from 'firebase/firestore';
 
-// Extend EventType to include Firestore document ID and potentially serverTimestamp
 interface EventType extends AppEventType {
-  id: string; // Firestore document ID
-  createdAt?: Timestamp; // Optional: Firestore server timestamp
-  updatedAt?: Timestamp; // Optional: Firestore server timestamp
+  id: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
 export default function AdminEventsPage() {
@@ -67,7 +66,7 @@ export default function AdminEventsPage() {
   const [eventToDelete, setEventToDelete] = useState<EventType | null>(null);
 
   const { toast } = useToast();
-  const router = useRouter();
+  // const router = useRouter(); // Not used
 
   const [formValues, setFormValues] = useState<Partial<EventType>>({
     title: '', date: '', startTime: '', endTime: '', type: 'class', description: '', detailsPageSlug: '',
@@ -80,12 +79,13 @@ export default function AdminEventsPage() {
       const eventsCol = collection(db, "events");
       const q = query(eventsCol, orderBy("date", "desc"), orderBy("startTime", "asc"));
       const eventsSnapshot = await getDocs(q);
-      const eventsList = eventsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const eventsList = eventsSnapshot.docs.map(docSnap => ({ // Renamed doc to docSnap to avoid conflict
+        id: docSnap.id,
+        ...docSnap.data()
       } as EventType));
       setEvents(eventsList);
     } catch (err) {
+      // Intentionally kept for debugging data fetching
       console.error("Error fetching events:", err);
       setError("Failed to fetch events. Please try again later.");
       setEvents([]);
@@ -122,7 +122,7 @@ export default function AdminEventsPage() {
     setEventToEdit(event);
     setFormValues({
         ...event,
-        date: event.date ? format(parseISO(event.date), 'yyyy-MM-dd') : '' // Format for date input
+        date: event.date ? format(parseISO(event.date), 'yyyy-MM-dd') : ''
     });
     setIsAddEditDialogOpen(true);
   };
@@ -159,19 +159,20 @@ export default function AdminEventsPage() {
     };
 
     try {
-        if (eventToEdit) { // Editing existing event
+        if (eventToEdit) {
             const eventDocRef = doc(db, "events", eventToEdit.id);
             await updateDoc(eventDocRef, eventData);
             toast({ title: "Event Updated", description: `Event "${eventData.title}" has been updated.` });
-        } else { // Adding new event
+        } else {
             (eventData as any).createdAt = serverTimestamp();
             await addDoc(collection(db, "events"), eventData);
             toast({ title: "Event Added", description: `Event "${eventData.title}" has been added.` });
         }
         setIsAddEditDialogOpen(false);
         setEventToEdit(null);
-        fetchEvents(); // Refresh the list
+        fetchEvents();
     } catch (err) {
+        // Intentionally kept for debugging save operation
         console.error("Error saving event:", err);
         setError("Failed to save event. Please try again.");
         toast({ variant: "destructive", title: "Save Error", description: "Could not save the event." });
@@ -182,15 +183,16 @@ export default function AdminEventsPage() {
 
   const handleDeleteEvent = async () => {
     if (!eventToDelete) return;
-    setIsSubmitting(true); // Use general submitting state for loading indication
+    setIsSubmitting(true);
     setError(null);
     try {
       await deleteDoc(doc(db, "events", eventToDelete.id));
       toast({ title: "Event Deleted", description: `Event "${eventToDelete.title}" has been deleted.` });
-      fetchEvents(); // Refresh the list
+      fetchEvents();
       setIsDeleteDialogOpen(false);
       setEventToDelete(null);
     } catch (err) {
+      // Intentionally kept for debugging delete operation
       console.error("Error deleting event:", err);
       setError("Failed to delete event. Please try again.");
       toast({ variant: "destructive", title: "Delete Error", description: "Could not delete the event." });

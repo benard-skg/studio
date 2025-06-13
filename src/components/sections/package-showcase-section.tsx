@@ -1,4 +1,5 @@
-
+// This component is not currently used in the application.
+// It can be safely removed or kept for future use if package showcases are planned.
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, CheckCircle2 } from 'lucide-react';

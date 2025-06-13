@@ -4,14 +4,13 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { EventType as AppEventType } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
-import { Calendar, Clock, Info, Tag, AlertCircle } from 'lucide-react';
-import type { Metadata, ResolvingMetadata } from 'next';
+import { Calendar, Clock, Tag } from 'lucide-react'; // Removed Info, AlertCircle as they might be unused
+import type { Metadata } from 'next'; // Removed ResolvingMetadata if not used
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, Timestamp, limit } from 'firebase/firestore';
 
-// Extend EventType to include Firestore document ID and potentially serverTimestamp
 interface EventType extends AppEventType {
-  id: string; // Firestore document ID
+  id: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp; 
 }
@@ -29,7 +28,6 @@ async function getEventBySlug(slug: string): Promise<EventType | null> {
     const eventSnapshot = await getDocs(q);
 
     if (eventSnapshot.empty) {
-      console.log(`[EventSlugPage] No event found with slug: ${slug}`);
       return null;
     }
 
@@ -46,8 +44,9 @@ async function getEventBySlug(slug: string): Promise<EventType | null> {
       detailsPageSlug: data.detailsPageSlug || slug,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-    } as EventType; // Type assertion might be needed if fields are optional
+    } as EventType;
   } catch (error) {
+    // Intentionally kept for debugging server-side data fetching
     console.error(`[EventSlugPage] Error fetching event with slug ${slug}:`, error);
     return null;
   }
@@ -55,7 +54,7 @@ async function getEventBySlug(slug: string): Promise<EventType | null> {
 
 export async function generateMetadata(
   { params }: EventPageProps,
-  parent: ResolvingMetadata
+  // parent: ResolvingMetadata // Removed if not used
 ): Promise<Metadata> {
   const event = await getEventBySlug(params.slug);
 
@@ -80,16 +79,15 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-  // Fetch all event slugs from Firestore to generate static pages
   try {
     const eventsCol = collection(db, "events");
-    const eventsSnapshot = await getDocs(query(eventsCol, orderBy("date", "desc"))); // Order to be kind to Firestore reads if many
+    const eventsSnapshot = await getDocs(query(eventsCol, orderBy("date", "desc")));
     const slugs = eventsSnapshot.docs.map(doc => ({
       slug: doc.data().detailsPageSlug as string,
-    })).filter(item => !!item.slug); // Ensure slug exists
-     console.log(`[EventSlugPage] generateStaticParams: Found ${slugs.length} slugs for static generation.`);
+    })).filter(item => !!item.slug);
     return slugs;
   } catch (error) {
+    // Intentionally kept for debugging server-side data fetching
     console.error("[EventSlugPage] generateStaticParams: Error fetching event slugs:", error);
     return [];
   }
@@ -152,7 +150,6 @@ export default async function EventPage({ params }: EventPageProps) {
         <p className="font-body text-xs text-muted-foreground text-center mt-12">Event ID: {event.id}</p>
         {event.createdAt && <p className="font-body text-xs text-muted-foreground text-center mt-1">Created: {format(event.createdAt.toDate(), 'MMM dd, yyyy HH:mm')}</p>}
         {event.updatedAt && <p className="font-body text-xs text-muted-foreground text-center mt-1">Last Updated: {format(event.updatedAt.toDate(), 'MMM dd, yyyy HH:mm')}</p>}
-
 
       </main>
       <Footer />

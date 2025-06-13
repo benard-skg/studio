@@ -7,13 +7,12 @@ import BlogSection from '@/components/sections/blog-section';
 import Footer from '@/components/layout/footer';
 import EventCalendarSection from '@/components/sections/event-calendar-section';
 import LichessTVEmbedSection from '@/components/sections/lichess-tv-embed-section';
-import type { EventType as AppEventType } from '@/lib/types'; // Renamed to avoid conflict
+import type { EventType as AppEventType } from '@/lib/types'; 
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 
-// Extend EventType to include Firestore document ID and potentially serverTimestamp
 interface EventType extends AppEventType {
-  id: string; // Firestore document ID
+  id: string; 
   createdAt?: Timestamp;
   updatedAt?: Timestamp; 
 }
@@ -21,7 +20,6 @@ interface EventType extends AppEventType {
 async function getEventsForCalendar(): Promise<EventType[]> {
   try {
     const eventsCol = collection(db, "events");
-    // Order by date then start time for consistent display
     const q = query(eventsCol, orderBy("date", "asc"), orderBy("startTime", "asc"));
     const eventsSnapshot = await getDocs(q);
     const eventsList = eventsSnapshot.docs.map(doc => {
@@ -29,16 +27,14 @@ async function getEventsForCalendar(): Promise<EventType[]> {
       return {
         id: doc.id,
         ...data,
-        // Ensure date is string if needed by EventCalendarSection,
-        // Firestore might store it as Timestamp or string depending on how it was saved
         date: data.date instanceof Timestamp ? data.date.toDate().toISOString().split('T')[0] : data.date, 
       } as EventType;
     });
-    console.log("[PageServerComponent] getEventsForCalendar: Fetched events from Firestore:", eventsList.length);
     return eventsList;
   } catch (error) {
+    // Intentionally kept for debugging server-side data fetching
     console.error("[PageServerComponent] getEventsForCalendar: Error fetching events from Firestore:", error);
-    return []; // Return empty array on error
+    return []; 
   }
 }
 

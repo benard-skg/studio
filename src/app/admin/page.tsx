@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns'; // parseISO removed as Timestamp is used
 import { db } from '@/lib/firebase';
 import { collection, getDocs, orderBy, query, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
@@ -34,7 +34,7 @@ interface Submission {
   name: string;
   email: string;
   message: string;
-  submittedAt: Timestamp; // Firestore timestamp
+  submittedAt: Timestamp;
 }
 
 export default function AdminPage() {
@@ -56,12 +56,13 @@ export default function AdminPage() {
       const submissionsCol = collection(db, "contactSubmissions");
       const q = query(submissionsCol, orderBy("submittedAt", "desc"));
       const submissionsSnapshot = await getDocs(q);
-      const submissionsList = submissionsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const submissionsList = submissionsSnapshot.docs.map(docSnap => ({ // Renamed doc to docSnap
+        id: docSnap.id,
+        ...docSnap.data()
       } as Submission));
       setSubmissions(submissionsList);
     } catch (err) {
+      // Intentionally kept for debugging submission fetch
       console.error("Error fetching contact submissions:", err);
       setError("Failed to fetch contact submissions. Please try again later.");
       setSubmissions([]);
@@ -86,7 +87,7 @@ export default function AdminPage() {
 
   const handleDeleteSubmission = async () => {
     if (!submissionToDelete) return;
-    setIsLoading(true); // Or a specific deleting state
+    setIsLoading(true);
     try {
       await deleteDoc(doc(db, "contactSubmissions", submissionToDelete.id));
       toast({
@@ -97,6 +98,7 @@ export default function AdminPage() {
       setIsDeleteDialogOpen(false);
       setSubmissionToDelete(null);
     } catch (err) {
+      // Intentionally kept for debugging submission delete
       console.error("Error deleting submission:", err);
       toast({
         variant: "destructive",

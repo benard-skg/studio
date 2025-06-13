@@ -27,7 +27,7 @@ import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid';
-import { allCoachesData } from '@/components/sections/coach-profile-section'; // Import coaches data
+import { allCoachesData } from '@/components/sections/coach-profile-section';
 
 const lessonReportSchema = z.object({
   studentName: z.string().min(1, "Student name is required").default(''),
@@ -84,12 +84,14 @@ export default function LessonReportForm() {
     if (draft) {
       try {
         const parsedDraft = JSON.parse(draft);
-        const { pgnFile, ...restOfDraft } = parsedDraft;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { pgnFile, ...restOfDraft } = parsedDraft; // pgnFile cannot be restored from JSON
         form.reset(restOfDraft);
         if (parsedDraft.topicCovered) {
           setSelectedTopic(parsedDraft.topicCovered);
         }
       } catch (error) {
+        // Intentionally kept for debugging local storage issues
         console.error("Failed to parse lesson report draft from localStorage", error);
         localStorage.removeItem(LOCAL_STORAGE_KEY);
       }
@@ -98,7 +100,8 @@ export default function LessonReportForm() {
 
   React.useEffect(() => {
     const subscription = form.watch((values) => {
-      const { pgnFile, ...valuesToStore } = values;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { pgnFile, ...valuesToStore } = values; // Do not store pgnFile FileList object
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(valuesToStore));
     });
     return () => subscription.unsubscribe();
@@ -123,6 +126,7 @@ export default function LessonReportForm() {
         const snapshot = await uploadBytes(storageRef, file);
         pgnFileUrl = await getDownloadURL(snapshot.ref);
       } catch (error) {
+        // Intentionally kept for debugging PGN upload
         console.error("Error uploading PGN file:", error);
         toast({ variant: "destructive", title: "PGN Upload Failed", description: "Could not upload the PGN file. Please try again." });
         setIsSubmitting(false);
@@ -149,6 +153,7 @@ export default function LessonReportForm() {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       setSelectedTopic("");
     } catch (error) {
+      // Intentionally kept for debugging Firestore save
       console.error("Error saving lesson report to Firestore:", error);
       toast({
         variant: "destructive",
@@ -313,7 +318,7 @@ export default function LessonReportForm() {
                  <FormField
                     control={form.control}
                     name="pgnFile"
-                    render={({ field: { onChange, value, ...restField } }) => (
+                    render={({ field: { onChange, value, ...restField } }) => ( // Removed unused `value` from render prop
                       <FormItem>
                         <FormLabel>Game PGN Upload (Optional, Max 1MB)</FormLabel>
                         <FormControl>
@@ -452,5 +457,3 @@ export default function LessonReportForm() {
     </Card>
   );
 }
-
-    

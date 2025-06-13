@@ -2,13 +2,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, notFound, useRouter } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation'; // useRouter is used for navigation if needed, can keep
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, BookOpen, CalendarDays, FileText, UserCircle2, Trash2, FilePlus2, Loader2, Download } from 'lucide-react';
+// import { Skeleton } from '@/components/ui/skeleton'; // Skeleton not directly used in this file's logic
+import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download } from 'lucide-react'; // UserCircle2 not used
 import { allCoachesData } from '@/components/sections/coach-profile-section';
 import type { Coach as CoachDataType } from '@/lib/types'; 
 import { format, parseISO, isValid } from 'date-fns';
@@ -30,7 +30,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
 interface StoredLessonReport { 
-  id: string; // Firestore document ID
+  id: string;
   submittedAt: Timestamp; 
   pgnFilename?: string;
   pgnFileUrl?: string;
@@ -54,7 +54,7 @@ interface StoredLessonReport {
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
-  const router = useRouter();
+  const router = useRouter(); // Kept for potential future use or explicit navigation
   const coachSlug = typeof params.coachSlug === 'string' ? params.coachSlug : undefined;
 
   const [coach, setCoach] = useState<CoachDataType | null>(null);
@@ -71,15 +71,15 @@ export default function CoachAdminProfilePage() {
     setError(null);
     try {
       const reportsCol = collection(db, "lessonReports");
-      // Ensure coachName in Firestore matches the casing/format used when saving
       const q = query(reportsCol, where("coachName", "==", currentCoachName), orderBy("submittedAt", "desc"));
       const reportsSnapshot = await getDocs(q);
-      const reportsList = reportsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      const reportsList = reportsSnapshot.docs.map(docSnap => ({ // Renamed doc to docSnap
+        id: docSnap.id,
+        ...docSnap.data()
       } as StoredLessonReport));
       setLessonReports(reportsList);
     } catch (err) {
+      // Intentionally kept for debugging data fetching
       console.error(`Error fetching lesson reports for ${currentCoachName}:`, err);
       setError(`Failed to fetch lesson reports for ${currentCoachName}.`);
       setLessonReports([]);
@@ -124,6 +124,7 @@ export default function CoachAdminProfilePage() {
       setIsDeleteDialogOpen(false);
       setReportToDelete(null);
     } catch (err) {
+      // Intentionally kept for debugging delete operation
       console.error("Error deleting lesson report:", err);
       toast({
         variant: "destructive",
@@ -140,6 +141,7 @@ export default function CoachAdminProfilePage() {
     try {
       return format(timestamp.toDate(), "MMM dd, yyyy 'at' hh:mm a");
     } catch (e) {
+      // Intentionally kept for debugging date formatting issues
       console.warn("Could not format date: ", timestamp, e);
       return 'Invalid Date';
     }
@@ -148,7 +150,6 @@ export default function CoachAdminProfilePage() {
   const formatLessonDate = (dateString: string) => {
     try {
       if (!dateString) return 'N/A';
-      // Ensure parsing as local time if it was saved as local
       const lessonDate = parseISO(dateString); 
       return isValid(lessonDate) ? format(lessonDate, "MMM dd, yyyy, HH:mm") : 'Invalid Date';
     } catch(e) {
@@ -157,7 +158,6 @@ export default function CoachAdminProfilePage() {
   };
 
   if (isLoading && !coach && !error) { 
-    // Initial loading state before coach is found or error determined
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -171,7 +171,7 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (error && !coach) { // If there's an error and coach couldn't be loaded
+  if (error && !coach) {
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -190,7 +190,7 @@ export default function CoachAdminProfilePage() {
     );
   }
   
-  if (!coach) { // If not loading and no error, but coach is still null (e.g. invalid slug)
+  if (!coach) {
     notFound();
   }
 
@@ -268,7 +268,6 @@ export default function CoachAdminProfilePage() {
                             )}
                         </div>
                     )}
-                    {/* Add more details or a button to view full report in a dialog */}
                   </CardContent>
                 </Card>
               ))}

@@ -13,7 +13,7 @@ import { Save, Settings, UserCircle, Loader2 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const SETTINGS_DOC_ID = 'appSettings'; // Fixed ID for the settings document
+const SETTINGS_DOC_ID = 'appSettings'; 
 const LICHESS_USERNAME_KEY = 'lichessTvUsername';
 
 export default function AdminSettingsPage() {
@@ -33,17 +33,17 @@ export default function AdminSettingsPage() {
         if (data && data[LICHESS_USERNAME_KEY]) {
           const username = data[LICHESS_USERNAME_KEY] as string;
           setCurrentSavedUsername(username);
-          setLichessUsername(username); // Pre-fill input
+          setLichessUsername(username);
         } else {
            setCurrentSavedUsername(null);
-           setLichessUsername(''); // Clear input if not set
+           setLichessUsername('');
         }
       } else {
-        console.log("No such settings document!");
         setCurrentSavedUsername(null);
         setLichessUsername('');
       }
     } catch (error) {
+      // Intentionally kept for debugging settings fetch
       console.error("Error fetching settings:", error);
       toast({
         variant: "destructive",
@@ -76,7 +76,7 @@ export default function AdminSettingsPage() {
       await setDoc(settingsDocRef, { 
         [LICHESS_USERNAME_KEY]: lichessUsername.trim(),
         updatedAt: serverTimestamp() 
-      }, { merge: true }); // Use merge: true to update or create if not exists
+      }, { merge: true }); 
 
       setCurrentSavedUsername(lichessUsername.trim());
       toast({
@@ -84,6 +84,7 @@ export default function AdminSettingsPage() {
         description: `Lichess username "${lichessUsername.trim()}" saved for ChessTV.`,
       });
     } catch (error) {
+      // Intentionally kept for debugging settings save
       console.error("Error saving settings:", error);
       toast({
         variant: "destructive",
