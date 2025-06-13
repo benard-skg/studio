@@ -23,18 +23,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Trash2, BookOpen, Users, Target, CheckCircle, PlusCircle } from "lucide-react";
 import type { LessonTopic } from "@/lib/types";
 import { commonLessonTopics } from "@/lib/types";
-import { db, storage } from '@/lib/firebase'; // Import Firestore and Storage
+import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { v4 as uuidv4 } from 'uuid'; // For unique filenames
+import { v4 as uuidv4 } from 'uuid';
+import { allCoachesData } from '@/components/sections/coach-profile-section'; // Import coaches data
 
 const lessonReportSchema = z.object({
   studentName: z.string().min(1, "Student name is required").default(''),
   lessonDateTime: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid date/time format."),
-  coachName: z.string().min(1, "Coach name is required").default(''), 
+  coachName: z.string().min(1, "Coach name is required").default(''),
   ratingBefore: z.coerce.number().optional(),
   ratingAfter: z.coerce.number().optional(),
-  topicCovered: z.string().min(1, "Topic covered is required").default(''), 
+  topicCovered: z.string().min(1, "Topic covered is required").default(''),
   customTopic: z.string().default(''),
   keyConcepts: z.string().min(1, "Key concepts are required").default(''),
   pgnFile: z.custom<FileList>().optional(),
@@ -48,22 +49,19 @@ const lessonReportSchema = z.object({
   additionalNotes: z.string().default(''),
 });
 
-// StoredLessonReport type can be inferred from schema + Firestore fields later if needed on client
-
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
 
 export default function LessonReportForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedTopic, setSelectedTopic] = React.useState<string>("");
-  // isConfigured removed as Firebase setup is assumed or handled by firebase.ts
 
   const form = useForm<z.infer<typeof lessonReportSchema>>({
     resolver: zodResolver(lessonReportSchema),
     defaultValues: {
       studentName: "",
-      lessonDateTime: new Date().toISOString().substring(0, 16), 
-      coachName: "", 
+      lessonDateTime: new Date().toISOString().substring(0, 16),
+      coachName: "",
       ratingBefore: undefined,
       ratingAfter: undefined,
       topicCovered: "",
@@ -86,21 +84,21 @@ export default function LessonReportForm() {
     if (draft) {
       try {
         const parsedDraft = JSON.parse(draft);
-        const { pgnFile, ...restOfDraft } = parsedDraft; // Exclude pgnFile
-        form.reset(restOfDraft); 
+        const { pgnFile, ...restOfDraft } = parsedDraft;
+        form.reset(restOfDraft);
         if (parsedDraft.topicCovered) {
           setSelectedTopic(parsedDraft.topicCovered);
         }
       } catch (error) {
         console.error("Failed to parse lesson report draft from localStorage", error);
-        localStorage.removeItem(LOCAL_STORAGE_KEY); 
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
       }
     }
   }, [form]);
 
   React.useEffect(() => {
     const subscription = form.watch((values) => {
-      const { pgnFile, ...valuesToStore } = values; // Exclude pgnFile
+      const { pgnFile, ...valuesToStore } = values;
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(valuesToStore));
     });
     return () => subscription.unsubscribe();
@@ -108,7 +106,7 @@ export default function LessonReportForm() {
 
   async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
     setIsSubmitting(true);
-    
+
     let pgnFileUrl = "";
     let pgnFilename = "";
 
@@ -138,7 +136,6 @@ export default function LessonReportForm() {
     };
     if (pgnFileUrl) reportDataToSave.pgnFileUrl = pgnFileUrl;
     if (pgnFilename) reportDataToSave.pgnFilename = pgnFilename;
-    // Remove pgnFile property which is FileList
     delete (reportDataToSave as any).pgnFile;
 
 
@@ -148,9 +145,9 @@ export default function LessonReportForm() {
         title: "Report Saved!",
         description: "The lesson report has been successfully saved.",
       });
-      form.reset(); // Reset form to default values
-      localStorage.removeItem(LOCAL_STORAGE_KEY); 
-      setSelectedTopic(""); 
+      form.reset();
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      setSelectedTopic("");
     } catch (error) {
       console.error("Error saving lesson report to Firestore:", error);
       toast({
@@ -169,7 +166,7 @@ export default function LessonReportForm() {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     toast({ title: "Draft Cleared", description: "The lesson report draft has been cleared." });
   };
-  
+
   const onTopicChange = (value: string) => {
     setSelectedTopic(value);
     form.setValue("topicCovered", value, { shouldValidate: true });
@@ -219,7 +216,20 @@ export default function LessonReportForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Coach Name</FormLabel>
-                      <FormControl><Input placeholder="Enter coach's name" {...field} /></FormControl>
+                      <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a coach" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {allCoachesData.map(coach => (
+                            <SelectItem key={coach.fideId || coach.name} value={coach.name}>
+                              {coach.name} {coach.nickname && `(${coach.nickname})`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -250,7 +260,7 @@ export default function LessonReportForm() {
                 />
               </div>
             </section>
-            
+
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
@@ -303,15 +313,15 @@ export default function LessonReportForm() {
                  <FormField
                     control={form.control}
                     name="pgnFile"
-                    render={({ field: { onChange, value, ...restField } }) => ( 
+                    render={({ field: { onChange, value, ...restField } }) => (
                       <FormItem>
                         <FormLabel>Game PGN Upload (Optional, Max 1MB)</FormLabel>
                         <FormControl>
-                            <Input 
-                                type="file" 
-                                accept=".pgn" 
-                                onChange={(e) => onChange(e.target.files)} 
-                                {...restField} 
+                            <Input
+                                type="file"
+                                accept=".pgn"
+                                onChange={(e) => onChange(e.target.files)}
+                                {...restField}
                             />
                         </FormControl>
                         <FormMessage />
@@ -370,7 +380,7 @@ export default function LessonReportForm() {
                 )}
               />
             </section>
-            
+
             <Separator />
 
              <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
@@ -442,3 +452,5 @@ export default function LessonReportForm() {
     </Card>
   );
 }
+
+    
