@@ -5,3 +5,45 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  env:
+    - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+      value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
+    - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+      value: "kgchess-dc8ac.firebaseapp.com"
+    - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      value: "kgchess"
+    - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      value: "kgchess.firebasestorage.app" # Note: Usually .appspot.com, but using provided value
+    - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+      value: "43925445120"
+    - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+      value: "1:43925445120:web:f95b9610d09871d2ef16e5"
+    # You can add NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID here if you use it
+    # - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    #   value: "YOUR_MEASUREMENT_ID_VALUE"
+
+    - variable: CONTENTFUL_SPACE_ID
+      value: "htjrh4mjuk93"
+    - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
+      secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest # IMPORTANT: Replace 'contentful-access-token-prod' with your actual secret name in Secret Manager
+
+    # Standard Node.js environment variable for Next.js production mode
+    - variable: NODE_ENV
+      value: "production"
+
+# Optional: Add health check configuration if needed
+# healthChecks:
+#   livenessProbe:
+#     httpGet:
+#       path: "/api/health" # Example health check endpoint
+#     initialDelaySeconds: 30
+#     periodSeconds: 30
+#     timeoutSeconds: 5
+#     failureThreshold: 3
+#   readinessProbe:
+#     httpGet:
+#       path: "/api/ready" # Example readiness endpoint
+#     initialDelaySeconds: 15
+#     periodSeconds: 15
+#     timeoutSeconds: 5
+#     failureThreshold: 2
