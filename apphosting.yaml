@@ -6,11 +6,11 @@ buildEnvironmentVariables:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: "kgchess"
+    value: "kgchess" 
   - variable: CONTENTFUL_SPACE_ID
     value: "htjrh4mjuk93"
   - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Secret must be available at build time
-    secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest
+    secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Corrected Secret Name
   - variable: NODE_ENV # Often useful for builds
     value: "production"
 
@@ -36,7 +36,7 @@ runConfig:
     - variable: CONTENTFUL_SPACE_ID
       value: "htjrh4mjuk93"
     - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
-      secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest
+      secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Corrected Secret Name
 
     - variable: NODE_ENV
       value: "production"
