@@ -5,35 +5,40 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "apphosting": {
-    "backendId": "studio-1",
-    "rootDir": "/",
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log",
-      "functions"
-    ],
-    "alwaysDeployFromSource": true
-  },
+  "apphosting": [
+    {
+      "backendId": "lca-backend",
+      "rootDir": "/",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ],
+      "alwaysDeployFromSource": true
+    },
+    {
+      "backendId": "lca-backend",
+      "rootDir": "/",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
+    }
+  ],
   "hosting": {
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "run":{
-          "serviceId":"studio-1"
-        }
-      }
     ]
   },
   "storage": {
-    "rules": "storage.rules",
-    "bucket": "kgchess.firebasestorage.app"
+    "rules": "storage.rules"
   }
 }
