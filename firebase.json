@@ -23,12 +23,19 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites":[
+    "rewrites": [
       {
-        "source":"**",
-        "apphosting":"studio-1"
+        "source": "**",
+        "run": {
+          "serviceId": "studio-1"
+        }
       }
     ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
   },
   "storage": {
     "rules": "storage.rules"
