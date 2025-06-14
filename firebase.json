@@ -14,7 +14,8 @@
       "firebase-debug.log",
       "firebase-debug.*.log",
       "functions"
-    ]
+    ],
+    "alwaysDeployFromSource": true
   },
   "hosting": {
     "public": "public",
@@ -23,14 +24,17 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites":[
+    "rewrites": [
       {
-        "source":"**",
-        "apphosting":"studio-1"
+        "source": "**",
+        "run": {
+          "serviceId": "studio-1"
+        }
       }
     ]
   },
   "storage": {
-    "rules": "storage.rules"
+    "rules": "storage.rules",
+    "bucket": "kgchess.firebasestorage.app"
   }
 }
