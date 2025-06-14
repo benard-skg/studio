@@ -1,4 +1,3 @@
-
 {
   "firestore": {
     "database": "(default)",
@@ -29,6 +28,7 @@
       "firebase-debug.log",
       "firebase-debug.*.log",
       "functions"
-    ]
+    ],
+    "alwaysDeployFromSource": true
   }
 }
