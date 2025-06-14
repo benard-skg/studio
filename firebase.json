@@ -38,3 +38,8 @@
     "bucket": "kgchess.firebasestorage.app"
   }
 }
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
