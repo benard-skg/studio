@@ -1,10 +1,23 @@
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
+# ADD THIS SECTION (or ensure it's structured like this if it exists)
+# These variables are available during the Next.js build process
+buildEnvironmentVariables:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID # Good to include if Firebase SDK initializes during build
+    value: "kgchess"
+  - variable: CONTENTFUL_SPACE_ID
+    value: "htjrh4mjuk93"
+  - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Also reference the secret for build time
+    secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest
+  - variable: NODE_ENV # Often useful for builds
+    value: "production"
+
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
   maxInstances: 1
+  # These variables are available at runtime for your running application
   env:
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
       value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
@@ -13,7 +26,7 @@ runConfig:
     - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
       value: "kgchess"
     - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      value: "kgchess.firebasestorage.app" # Note: Usually .appspot.com, but using provided value
+      value: "kgchess.firebasestorage.app"
     - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
       value: "43925445120"
     - variable: NEXT_PUBLIC_FIREBASE_APP_ID
@@ -25,9 +38,8 @@ runConfig:
     - variable: CONTENTFUL_SPACE_ID
       value: "htjrh4mjuk93"
     - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
-      secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest # IMPORTANT: Replace 'contentful-access-token-prod' with your actual secret name in Secret Manager
+      secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest
 
-    # Standard Node.js environment variable for Next.js production mode
     - variable: NODE_ENV
       value: "production"
 
@@ -36,14 +48,4 @@ runConfig:
 #   livenessProbe:
 #     httpGet:
 #       path: "/api/health" # Example health check endpoint
-#     initialDelaySeconds: 30
-#     periodSeconds: 30
-#     timeoutSeconds: 5
-#     failureThreshold: 3
-#   readinessProbe:
-#     httpGet:
-#       path: "/api/ready" # Example readiness endpoint
-#     initialDelaySeconds: 15
-#     periodSeconds: 15
-#     timeoutSeconds: 5
-#     failureThreshold: 2
+# ...
