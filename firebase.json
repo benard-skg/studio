@@ -1,3 +1,4 @@
+
 {
   "firestore": {
     "database": "(default)",
@@ -18,7 +19,6 @@
     "alwaysDeployFromSource": true
   },
   "hosting": {
-    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -27,9 +27,7 @@
     "rewrites": [
       {
         "source": "**",
-        "run": {
-          "serviceId": "studio-1"
-        }
+        "apphosting": "studio-1"
       }
     ]
   },
