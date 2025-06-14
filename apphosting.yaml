@@ -1,7 +1,8 @@
+
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
-# THIS SECTION IS CRUCIAL FOR THE BUILD PROCESS
+# buildEnvironmentVariables are specifically for the Next.js build process
 buildEnvironmentVariables:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
@@ -9,14 +10,16 @@ buildEnvironmentVariables:
     value: "kgchess"
   - variable: CONTENTFUL_SPACE_ID
     value: "htjrh4mjuk93"
-  - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Secret must be available at build time
-    secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest
-  - variable: NODE_ENV # Often useful for builds
+  - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - For build time
+    secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Ensure this matches your Secret Manager ID
+  - variable: NODE_ENV
     value: "production"
 
 runConfig:
   maxInstances: 1
-  # These variables are available at runtime for your running application
+  # env variables are for the running application (runtime)
+  # If 'availability' is not specified, they are typically available for build and runtime.
+  # However, buildEnvironmentVariables is more explicit for build-only needs.
   env:
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
       value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
@@ -35,8 +38,8 @@ runConfig:
 
     - variable: CONTENTFUL_SPACE_ID
       value: "htjrh4mjuk93"
-    - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
-      secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest
+    - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - For runtime
+      secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Ensure this matches your Secret Manager ID
 
     - variable: NODE_ENV
       value: "production"
