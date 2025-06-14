@@ -1,14 +1,15 @@
+
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
 # buildEnvironmentVariables are specifically for the Next.js build process
 buildEnvironmentVariables:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
+    value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q" # Make sure this is your actual key
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "kgchess"
   - variable: CONTENTFUL_SPACE_ID
-    value: "htjrh4mjuk93"
+    value: "htjrh4mjuk93" # Make sure this is your actual space ID
   - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
     secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Path to the secret
   - variable: NODE_ENV
@@ -19,7 +20,7 @@ runConfig:
   # env variables are for the running application (runtime)
   env:
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-      value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
+      value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q" # Make sure this is your actual key
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
       value: "kgchess-dc8ac.firebaseapp.com"
     - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
@@ -34,12 +35,15 @@ runConfig:
     #   value: "YOUR_MEASUREMENT_ID_VALUE"
 
     - variable: CONTENTFUL_SPACE_ID
-      value: "htjrh4mjuk93"
+      value: "htjrh4mjuk93" # Make sure this is your actual space ID
     - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
       secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Path to the secret
 
     - variable: NODE_ENV
       value: "production"
+  # Optional: Add CPU and memory configuration if needed
+  # cpu: 1
+  # memoryMiB: 512
 
 # Optional: Add health check configuration if needed
 # healthChecks:

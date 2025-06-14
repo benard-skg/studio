@@ -15,7 +15,7 @@
     "rewrites": [
       {
         "source": "**",
-        "apphosting": "lca-backend"
+        "apphosting": "lca-live"
       }
     ]
   },
@@ -24,14 +24,15 @@
   },
   "apphosting": [
     {
-      "backendId": "lca-backend",
+      "backendId": "lca-live",
       "rootDir": "/",
       "ignore": [
         "node_modules",
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "functions"
+        "functions",
+        ".next"
       ],
       "alwaysDeployFromSource": true
     }
