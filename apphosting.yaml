@@ -1,32 +1,49 @@
+# Settings to manage and configure a Firebase App Hosting backend.
+# https://firebase.google.com/docs/app-hosting/configure
+
+# THIS SECTION IS CRUCIAL FOR THE BUILD PROCESS
 buildEnvironmentVariables:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q
+    value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: kgchess
+    value: "kgchess"
   - variable: CONTENTFUL_SPACE_ID
-    value: htjrh4mjuk93
-  - variable: CONTENTFUL_ACCESS_TOKEN
+    value: "htjrh4mjuk93"
+  - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Secret must be available at build time
     secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest
-  - variable: NODE_ENV
-    value: production
+  - variable: NODE_ENV # Often useful for builds
+    value: "production"
+
 runConfig:
   maxInstances: 1
+  # These variables are available at runtime for your running application
   env:
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-      value: AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q
+      value: "AIzaSyDq6WZ_mKs0CiKvNlIRco2TVHbTu6y6x-Q"
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-      value: kgchess-dc8ac.firebaseapp.com
+      value: "kgchess-dc8ac.firebaseapp.com"
     - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-      value: kgchess
+      value: "kgchess"
     - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      value: kgchess.firebasestorage.app
+      value: "kgchess.firebasestorage.app"
     - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-      value: '43925445120'
+      value: "43925445120"
     - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-      value: '1:43925445120:web:f95b9610d09871d2ef16e5'
+      value: "1:43925445120:web:f95b9610d09871d2ef16e5"
+    # - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID # Optional
+    #   value: "YOUR_MEASUREMENT_ID_VALUE"
+
     - variable: CONTENTFUL_SPACE_ID
-      value: htjrh4mjuk93
-    - variable: CONTENTFUL_ACCESS_TOKEN
+      value: "htjrh4mjuk93"
+    - variable: CONTENTFUL_ACCESS_TOKEN # SENSITIVE - Value fetched from Secret Manager
       secret: projects/kgchess/secrets/contentful-access-token-prod/versions/latest
+
     - variable: NODE_ENV
-      value: production
+      value: "production"
+
+# Optional: Add health check configuration if needed
+# healthChecks:
+#   livenessProbe:
+#     httpGet:
+#       path: "/api/health" # Example health check endpoint
+# ...
