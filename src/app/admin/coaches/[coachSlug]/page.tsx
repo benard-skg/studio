@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { createRoot } from 'react-dom/client';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -29,6 +30,8 @@ import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { slugify, cn } from '@/lib/utils';
+import LessonReportPrintableView from '@/components/reports/lesson-report-printable-view';
+import html2pdf from 'html2pdf.js';
 
 
 export default function CoachAdminProfilePage() {
@@ -43,6 +46,8 @@ export default function CoachAdminProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<StoredLessonReport | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchLessonReports = useCallback(async (currentCoachName: string) => {
@@ -94,7 +99,7 @@ export default function CoachAdminProfilePage() {
   }, [coachSlug, fetchLessonReports]);
 
   const handleDeleteReport = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation(); 
     if (!reportToDelete || !coach) return;
     setIsDeleting(true);
     try {
@@ -137,14 +142,64 @@ export default function CoachAdminProfilePage() {
       return 'Invalid Date';
     }
   };
+  
+  const handleDownloadReportCard = async (e: React.MouseEvent, report: StoredLessonReport) => {
+    e.stopPropagation();
+    if (!report) {
+      toast({ variant: "destructive", title: "Error", description: "Report data not available." });
+      return;
+    }
+    setDownloadingReportId(report.id);
+    setIsDownloadingPdf(true);
+    toast({ title: "Generating PDF...", description: `For report: ${report.studentName}. Please wait.` });
 
-  const handlePlaceholderDownload = (e: React.MouseEvent, reportName: string) => {
-    e.stopPropagation(); // Prevent card click
-    toast({
-        title: "Download Placeholder",
-        description: `Download action for "${reportName}" is not yet implemented.`,
-    });
+    const printElementContainer = document.createElement('div');
+    printElementContainer.style.position = 'absolute';
+    printElementContainer.style.left = '-9999px';
+    printElementContainer.style.top = '-9999px';
+    document.body.appendChild(printElementContainer);
+    
+    const root = createRoot(printElementContainer);
+
+    try {
+      await new Promise<void>(resolve => {
+        root.render(<LessonReportPrintableView report={report} />);
+        setTimeout(resolve, 500); 
+      });
+
+      const lessonDate = report.lessonDateTime ? parseISO(report.lessonDateTime) : new Date();
+      const formattedDate = isValid(lessonDate) ? format(lessonDate, 'yyyy-MM-dd') : 'date-unknown';
+      const filename = `Lesson-Report_${slugify(report.studentName || 'student')}_${formattedDate}.pdf`;
+      
+      const opt = {
+        margin:       0.5,
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, logging: false, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().from(printElementContainer.firstChild).set(opt).save();
+      toast({
+        title: "PDF Downloaded",
+        description: `Report for ${report.studentName} saved as ${filename}`,
+      });
+    } catch (pdfError) {
+      console.error("Error generating PDF:", pdfError);
+      toast({
+        variant: "destructive",
+        title: "PDF Generation Failed",
+        description: "Could not generate the PDF. Please try again.",
+      });
+    } finally {
+      root.unmount();
+      document.body.removeChild(printElementContainer);
+      setIsDownloadingPdf(false);
+      setDownloadingReportId(null);
+    }
   };
+
 
   const handleCardClick = (reportId: string) => {
     router.push(`/admin/lesson-reports/view/${reportId}`);
@@ -274,11 +329,11 @@ export default function CoachAdminProfilePage() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={(e) => handlePlaceholderDownload(e, report.studentName)} title="Download Report">
-                                <Download className="h-4 w-4 text-green-500" />
+                                <Button variant="ghost" size="icon" onClick={(e) => handleDownloadReportCard(e, report)} disabled={isDownloadingPdf && downloadingReportId === report.id} title="Download Report">
+                                {isDownloadingPdf && downloadingReportId === report.id ? <Loader2 className="h-4 w-4 animate-spin text-green-500" /> : <Download className="h-4 w-4 text-green-500" />}
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent><p>Download Report</p></TooltipContent>
+                            <TooltipContent><p>Download Report as PDF</p></TooltipContent>
                           </Tooltip>
                            <Tooltip>
                             <TooltipTrigger asChild>
@@ -358,6 +413,3 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
-    
-
-    

@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
+import { createRoot } from 'react-dom/client';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { StoredLessonReport } from '@/lib/types';
@@ -27,6 +28,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { slugify } from '@/lib/utils';
+import LessonReportPrintableView from '@/components/reports/lesson-report-printable-view';
+import html2pdf from 'html2pdf.js';
+
 
 export default function ViewLessonReportPage() {
   const params = useParams();
@@ -38,6 +42,7 @@ export default function ViewLessonReportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
 
@@ -60,7 +65,7 @@ export default function ViewLessonReportPage() {
           setReport({ 
             id: reportSnap.id, 
             ...data,
-            lessonDateTime: data.lessonDateTime, // Should be ISO string
+            lessonDateTime: data.lessonDateTime, 
             submittedAt: data.submittedAt as Timestamp,
           } as StoredLessonReport);
         } else {
@@ -96,12 +101,67 @@ export default function ViewLessonReportPage() {
      return isValid(dateObj) ? format(dateObj, "MMMM dd, yyyy") : 'Invalid Date';
   };
 
-  const handlePlaceholderDownload = () => {
-    toast({
-        title: "Download Placeholder",
-        description: `Download action for "${report?.studentName}'s report" is not yet implemented.`,
-    });
+  const handleDownloadReport = async () => {
+    if (!report) {
+      toast({ variant: "destructive", title: "Error", description: "Report data not available." });
+      return;
+    }
+    setIsDownloadingPdf(true);
+    toast({ title: "Generating PDF...", description: "Please wait a moment." });
+
+    const printElementContainer = document.createElement('div');
+    // Hide the element from view
+    printElementContainer.style.position = 'absolute';
+    printElementContainer.style.left = '-9999px';
+    printElementContainer.style.top = '-9999px';
+    document.body.appendChild(printElementContainer);
+
+    const root = createRoot(printElementContainer);
+    
+    try {
+      // Ensure rendering is complete before html2pdf tries to capture
+      await new Promise<void>(resolve => {
+        root.render(<LessonReportPrintableView report={report} />);
+        // Use a short timeout to allow React to render
+        setTimeout(resolve, 500); 
+      });
+      
+      const lessonDate = report.lessonDateTime ? parseISO(report.lessonDateTime) : new Date();
+      const formattedDate = isValid(lessonDate) ? format(lessonDate, 'yyyy-MM-dd') : 'date-unknown';
+      const filename = `Lesson-Report_${slugify(report.studentName || 'student')}_${formattedDate}.pdf`;
+
+      const opt = {
+        margin:       0.5, // inches
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, logging: false, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      // html2pdf operates on the first child of the container it's given with .from()
+      // or directly on the element if passed as the first argument.
+      // Since LessonReportPrintableView returns a single root div, printElementContainer.firstChild is correct.
+      await html2pdf().from(printElementContainer.firstChild).set(opt).save();
+
+      toast({
+        title: "PDF Downloaded",
+        description: `Report saved as ${filename}`,
+      });
+    } catch (pdfError) {
+      console.error("Error generating PDF:", pdfError);
+      toast({
+        variant: "destructive",
+        title: "PDF Generation Failed",
+        description: "Could not generate the PDF. Please try again.",
+      });
+    } finally {
+      root.unmount();
+      document.body.removeChild(printElementContainer);
+      setIsDownloadingPdf(false);
+    }
   };
+
 
   const handleDeleteReport = async () => {
     if (!report) return;
@@ -112,7 +172,7 @@ export default function ViewLessonReportPage() {
         title: "Report Deleted",
         description: `Lesson report for ${report.studentName} has been deleted.`,
       });
-      router.push(`/admin/coaches/${slugify(report.coachName)}`); // Redirect to coach page
+      router.push(`/admin/coaches/${slugify(report.coachName)}`); 
     } catch (err) {
       console.error("Error deleting lesson report:", err);
       toast({
@@ -208,15 +268,15 @@ export default function ViewLessonReportPage() {
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={handlePlaceholderDownload}>
-                                <Download className="h-5 w-5 text-green-500"/>
+                            <Button variant="ghost" size="icon" onClick={handleDownloadReport} disabled={isDownloadingPdf}>
+                                {isDownloadingPdf ? <Loader2 className="h-5 w-5 animate-spin text-green-500"/> : <Download className="h-5 w-5 text-green-500"/>}
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent><p>Download Report</p></TooltipContent>
+                        <TooltipContent><p>Download Report as PDF</p></TooltipContent>
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => setIsDeleteDialogOpen(true)}>
+                            <Button variant="ghost" size="icon" onClick={() => setIsDeleteDialogOpen(true)} disabled={isDeleting}>
                                 <Trash2 className="h-5 w-5 text-destructive"/>
                             </Button>
                         </TooltipTrigger>
@@ -314,5 +374,3 @@ export default function ViewLessonReportPage() {
     </div>
   );
 }
-
-    
