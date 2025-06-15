@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
-import { slugify } from '@/lib/utils';
+import { slugify, cn } from '@/lib/utils';
 
 
 export default function CoachAdminProfilePage() {
@@ -93,7 +93,8 @@ export default function CoachAdminProfilePage() {
     }
   }, [coachSlug, fetchLessonReports]);
 
-  const handleDeleteReport = async () => {
+  const handleDeleteReport = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
     if (!reportToDelete || !coach) return;
     setIsDeleting(true);
     try {
@@ -137,12 +138,29 @@ export default function CoachAdminProfilePage() {
     }
   };
 
-  const handlePlaceholderDownload = (reportName: string) => {
+  const handlePlaceholderDownload = (e: React.MouseEvent, reportName: string) => {
+    e.stopPropagation(); // Prevent card click
     toast({
         title: "Download Placeholder",
         description: `Download action for "${reportName}" is not yet implemented.`,
     });
   };
+
+  const handleCardClick = (reportId: string) => {
+    router.push(`/admin/lesson-reports/view/${reportId}`);
+  };
+
+  const handleEditClick = (e: React.MouseEvent, reportId: string) => {
+    e.stopPropagation();
+    router.push(`/admin/lesson-reports/edit/${reportId}`);
+  };
+
+  const openDeleteDialog = (e: React.MouseEvent, report: StoredLessonReport) => {
+    e.stopPropagation();
+    setReportToDelete(report);
+    setIsDeleteDialogOpen(true);
+  };
+
 
   if (isLoading && !coach && !error) {
     return (
@@ -237,12 +255,16 @@ export default function CoachAdminProfilePage() {
           {!isLoading && !error && lessonReports.length > 0 && (
             <div className="space-y-4">
               {lessonReports.map(report => (
-                <Card key={report.id} className="shadow-sm border-border bg-card">
+                <Card 
+                  key={report.id} 
+                  className="shadow-sm border-border bg-card hover:shadow-md transition-shadow duration-150 ease-in-out active:scale-[0.99] cursor-pointer"
+                  onClick={() => handleCardClick(report.id)}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="font-headline text-xl font-black tracking-tighter">
-                          Report for: <Link href={`/admin/students/${slugify(report.studentName)}`} className="text-accent hover:underline">{report.studentName}</Link>
+                          Report for: <span className="text-accent">{report.studentName}</span>
                         </CardTitle>
                         <CardDescription className="font-body text-xs">
                           Lesson: {formatLessonDate(report.lessonDateTime)} | Submitted: {formatDate(report.submittedAt)}
@@ -252,7 +274,7 @@ export default function CoachAdminProfilePage() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => handlePlaceholderDownload(report.studentName)} title="Download Report">
+                                <Button variant="ghost" size="icon" onClick={(e) => handlePlaceholderDownload(e, report.studentName)} title="Download Report">
                                 <Download className="h-4 w-4 text-green-500" />
                                 </Button>
                             </TooltipTrigger>
@@ -260,17 +282,15 @@ export default function CoachAdminProfilePage() {
                           </Tooltip>
                            <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" asChild>
-                                <Link href={`/admin/lesson-reports/edit/${report.id}`}>
+                                <Button variant="ghost" size="icon" onClick={(e) => handleEditClick(e, report.id)} title="Edit Report">
                                     <Edit3 className="h-4 w-4 text-blue-500" />
-                                </Link>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent><p>Edit Report</p></TooltipContent>
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true); }} title="Delete Report">
+                                <Button variant="ghost" size="icon" onClick={(e) => openDeleteDialog(e, report)} title="Delete Report">
                                 <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                             </TooltipTrigger>
@@ -322,7 +342,7 @@ export default function CoachAdminProfilePage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel onClick={(e) => { e.stopPropagation(); setIsDeleteDialogOpen(false); }}>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeleteReport}
                 disabled={isDeleting}
@@ -338,4 +358,6 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
+    
+
     
