@@ -21,6 +21,8 @@ const navItems = [
 const linkClasses = "font-body text-sm font-medium transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
 const mobileLinkClasses = "font-body text-lg transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
 
+// Define base interactive classes for the logo, without the focus ring/border
+const logoBaseInteractiveClasses = "transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none";
 
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
@@ -46,9 +48,8 @@ export default function Navbar() {
           <Link
             href="/"
             className={cn(
-              "flex items-center space-x-2 text-2xl font-headline font-black tracking-tighter leading-tight transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm p-1 -m-1",
-              linkClasses, // This was applying font-medium, which is overridden by font-black
-              "text-2xl"
+              "flex items-center space-x-2 text-2xl font-headline font-bold tracking-tighter leading-tight",
+              logoBaseInteractiveClasses
             )}
           >
             <Crown className="h-7 w-7 text-accent" />
@@ -81,9 +82,8 @@ export default function Navbar() {
                        <Link
                           href="/"
                           className={cn(
-                            "flex items-center space-x-2 text-xl font-headline font-black tracking-tighter leading-tight",
-                            mobileLinkClasses, // This was applying font-medium, which is overridden by font-black
-                            "text-xl p-1 -m-1"
+                            "flex items-center space-x-2 text-xl font-headline font-bold tracking-tighter leading-tight",
+                            logoBaseInteractiveClasses
                           )}
                         >
                         <Crown className="h-6 w-6 text-accent" />
