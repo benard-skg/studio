@@ -20,7 +20,7 @@ buildEnvironmentVariables:
     value: "htjrh4mjuk93"
   - variable: CONTENTFUL_ACCESS_TOKEN
     secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest
-  - variable: NODE_ENV
+  - variable: NODE_ENV # Ensure NODE_ENV is set for build
     value: "production"
 
 runConfig:
@@ -42,8 +42,9 @@ runConfig:
       value: "htjrh4mjuk93"
     - variable: CONTENTFUL_ACCESS_TOKEN
       secret: projects/kgchess/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest
-    - variable: NODE_ENV
+    - variable: NODE_ENV # Ensure NODE_ENV is set for runtime
       value: "production"
+  minInstances: 0 # Default, can be adjusted
   maxInstances: 1 # Default value, can be adjusted
   # Optional: Add CPU and memory configuration if needed
   # cpu: 1
