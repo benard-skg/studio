@@ -67,7 +67,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     resolver: zodResolver(lessonReportSchema),
     defaultValues: {
       studentName: "",
-      lessonDateTime: new Date().toISOString().substring(0, 16),
+      lessonDateTime: new Date().toISOString().substring(0, 16), // For datetime-local
       coachName: "",
       ratingBefore: undefined,
       ratingAfter: undefined,
@@ -87,7 +87,10 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
   React.useEffect(() => {
     if (reportToEdit) {
+      // Destructure to separate Firestore-specific fields or fields not directly in form
       const { id, submittedAt, pgnFileUrl, pgnFilename, ...formDataToReset } = reportToEdit;
+      
+      // Format lessonDateTime for datetime-local input
       const lessonDT = formDataToReset.lessonDateTime 
         ? new Date(formDataToReset.lessonDateTime).toISOString().substring(0, 16) 
         : new Date().toISOString().substring(0, 16);
@@ -95,20 +98,25 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
       form.reset({
         ...formDataToReset,
         lessonDateTime: lessonDT,
+        // Ensure optional number fields are reset to undefined if null/undefined in source, not NaN
         ratingBefore: formDataToReset.ratingBefore ?? undefined,
         ratingAfter: formDataToReset.ratingAfter ?? undefined,
+        // Ensure optional string fields are reset correctly
         gameExampleLinks: formDataToReset.gameExampleLinks ?? "",
         readingVideos: formDataToReset.readingVideos ?? "",
         additionalNotes: formDataToReset.additionalNotes ?? "",
         customTopic: formDataToReset.customTopic ?? "",
         assignedPuzzles: formDataToReset.assignedPuzzles ?? "",
         practiceGames: formDataToReset.practiceGames ?? "",
+
       });
       if (formDataToReset.topicCovered) {
         setSelectedTopic(formDataToReset.topicCovered);
       }
+      // Clear draft from local storage when editing an existing report
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } else {
+      // Load draft from local storage if creating a new report
       const draft = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (draft) {
         try {
@@ -119,14 +127,15 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
           }
         } catch (error) {
           console.error("Failed to parse lesson report draft from localStorage", error);
-          localStorage.removeItem(LOCAL_STORAGE_KEY);
+          localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear corrupted draft
         }
       }
     }
   }, [reportToEdit, form]);
 
+  // Save draft to local storage when creating a new report
   React.useEffect(() => {
-    if (!reportToEdit) {
+    if (!reportToEdit) { // Only save draft if it's a new report
       const subscription = form.watch((values) => {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(values));
       });
@@ -134,36 +143,41 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     }
   }, [form, reportToEdit]);
 
+
   async function onSubmit(values: LessonReportFormValues) {
     setIsSubmitting(true);
-
-    const dataForFirestore: { [key: string]: any } = {};
     
-    (Object.keys(values) as Array<keyof LessonReportFormValues>).forEach((key) => {
+    // Filter out undefined values before sending to Firestore
+    const dataForFirestore: { [key: string]: any } = {};
+    (Object.keys(values) as Array<keyof LessonReportFormValues>).forEach(key => {
       if (values[key] !== undefined) {
         dataForFirestore[key] = values[key];
       } else if (key === 'ratingBefore' || key === 'ratingAfter') {
-        // Do not add undefined numeric fields
+        // Explicitly do not add undefined numeric fields, Firestore handles missing fields.
       } else {
-        // For optional string fields, ensure they are empty strings if undefined
+        // For optional string fields that might be undefined, ensure they are stored as empty strings.
+        // This handles cases where an optional field might have been cleared in the form.
         dataForFirestore[key] = ""; 
       }
     });
-    
-    // Ensure specific optional string fields are handled
+
+    // Re-ensure specific optional string fields are empty strings if not provided
     ['customTopic', 'gameExampleLinks', 'assignedPuzzles', 'practiceGames', 'readingVideos', 'additionalNotes'].forEach(key => {
-      if (dataForFirestore[key] === undefined) {
-        dataForFirestore[key] = "";
-      }
+        if (dataForFirestore[key] === undefined) {
+            dataForFirestore[key] = "";
+        }
     });
+
 
     try {
       if (reportToEdit && reportToEdit.id) {
-        dataForFirestore.updatedAt = serverTimestamp();
+        // Update existing report
+        dataForFirestore.updatedAt = serverTimestamp(); // Add/update the updatedAt timestamp
         const reportDocRef = doc(db, "lessonReports", reportToEdit.id);
         await updateDoc(reportDocRef, dataForFirestore);
         
-        const updatedCoachSlug = slugify(values.coachName); // Use coach name from form values
+        // Use the coachName from the submitted form values for the redirect slug
+        const updatedCoachSlug = slugify(values.coachName);
         toast({
           title: "Report Updated!",
           description: (
@@ -175,18 +189,18 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
             </>
           ),
         });
-        router.push(`/admin/coaches/${updatedCoachSlug}`);
-
+        router.push(`/admin/coaches/${updatedCoachSlug}`); // Redirect to the (potentially new) coach's page
       } else {
+        // Create new report
         dataForFirestore.submittedAt = serverTimestamp();
         await addDoc(collection(db, "lessonReports"), dataForFirestore);
         toast({
           title: "Report Saved!",
           description: `The lesson report for ${values.studentName} has been successfully saved.`,
         });
-        form.reset();
-        setSelectedTopic("");
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        form.reset(); // Reset form after successful new submission
+        setSelectedTopic(""); // Reset selected topic
+        localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear draft after successful submission
       }
     } catch (error) {
       console.error("Error saving lesson report:", error);
@@ -194,7 +208,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
       toast({
         variant: "destructive",
         title: reportToEdit ? "Update Failed" : "Save Failed",
-        description: `Could not ${reportToEdit ? 'update' : 'save'} the lesson report for ${values.studentName}. ${errorMessage}`,
+        description: `Could not ${reportToEdit ? 'update' : 'save'} the lesson report. ${errorMessage}`,
       });
     } finally {
       setIsSubmitting(false);
@@ -205,17 +219,29 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     const errorKeys = Object.keys(errors) as Array<keyof LessonReportFormValues>;
     if (errorKeys.length > 0) {
       const firstErrorKey = errorKeys[0];
-      const fieldError = errors[firstErrorKey];
-      
-      if (fieldError && fieldError.ref && typeof (fieldError.ref as HTMLElement).focus === 'function') {
-        const fieldElement = fieldError.ref as HTMLElement;
-        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => fieldElement.focus({ preventScroll: true }), 100); // Slight delay for scroll
-      } else {
-        // Fallback if ref is not directly focusable or available
-        const formFieldContainer = document.querySelector(`[data-formfield-name="${firstErrorKey}"]`) as HTMLElement;
-        if (formFieldContainer) {
-           formFieldContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const fieldErrorObject = errors[firstErrorKey];
+
+      let scrolled = false;
+      // 1. Attempt to scroll the FormItem container into view.
+      const formItemContainer = document.querySelector(`[data-formfield-name="${firstErrorKey}"]`) as HTMLElement;
+      if (formItemContainer && typeof formItemContainer.scrollIntoView === 'function') {
+        formItemContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        scrolled = true;
+      }
+
+      // 2. Attempt to focus the actual input element.
+      if (fieldErrorObject && fieldErrorObject.ref) {
+        const inputElement = fieldErrorObject.ref as any; 
+        
+        // Fallback: Try scrolling the input element itself if container scrolling didn't happen or wasn't effective
+        if (!scrolled && inputElement instanceof HTMLElement && typeof inputElement.scrollIntoView === 'function') {
+            inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        if (typeof inputElement.focus === 'function') {
+          setTimeout(() => {
+            inputElement.focus({ preventScroll: true }); // preventScroll true if scroll is handled by scrollIntoView
+          }, 150); // Delay to allow scroll animation to potentially finish
         }
       }
     }
@@ -223,7 +249,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
   const handleClearDraft = () => {
     form.reset();
-    setSelectedTopic("");
+    setSelectedTopic(""); // Also reset local state for selectedTopic
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     toast({ title: "Draft Cleared", description: "The lesson report draft has been cleared." });
   };
@@ -232,7 +258,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     setSelectedTopic(value);
     form.setValue("topicCovered", value, { shouldValidate: true });
     if (value !== "Custom") {
-      form.setValue("customTopic", "", { shouldValidate: true });
+      form.setValue("customTopic", "", { shouldValidate: true }); // Clear custom topic if a predefined one is chosen
     }
   };
 
@@ -254,13 +280,13 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-8" noValidate>
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="studentName">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Users className="mr-2 h-5 w-5 text-accent" />Basic Information</h3>
               <FormField
                 control={form.control}
                 name="studentName"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="studentName">
                     <FormLabel>Student Name</FormLabel>
                     <FormControl><Input placeholder="Enter student's full name" {...field} /></FormControl>
                     <FormMessage />
@@ -332,13 +358,13 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="topicCovered">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><BookOpen className="mr-2 h-5 w-5 text-accent" />Lesson Content</h3>
               <FormField
                 control={form.control}
                 name="topicCovered"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="topicCovered">
                     <FormLabel>Topic Covered</FormLabel>
                     <Select onValueChange={(value) => { field.onChange(value); onTopicChange(value);}} value={field.value} >
                       <FormControl>
@@ -393,13 +419,13 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="strengths">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Target className="mr-2 h-5 w-5 text-accent" />Student Performance</h3>
               <FormField
                 control={form.control}
                 name="strengths"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="strengths">
                     <FormLabel>Strengths Observed</FormLabel>
                     <FormControl><Textarea placeholder="What did the student do well?" {...field} rows={3} /></FormControl>
                     <FormMessage />
@@ -432,13 +458,13 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="assignedPuzzles">
+             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-accent" />Homework / Next Steps</h3>
               <FormField
                 control={form.control}
                 name="assignedPuzzles"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="assignedPuzzles">
                     <FormLabel>Assigned Puzzles (Links or Description)</FormLabel>
                     <FormControl><Textarea placeholder="E.g., Chessable course chapter, Lichess puzzle set link, or describe puzzle types." {...field} rows={3} /></FormControl>
                     <FormMessage />
@@ -471,13 +497,13 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="additionalNotes">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><PlusCircle className="mr-2 h-5 w-5 text-accent" />Additional Notes</h3>
               <FormField
                 control={form.control}
                 name="additionalNotes"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="additionalNotes">
                     <FormLabel>General Comments (Optional)</FormLabel>
                     <FormControl><Textarea placeholder="Any other comments or observations." {...field} rows={3} /></FormControl>
                     <FormMessage />
