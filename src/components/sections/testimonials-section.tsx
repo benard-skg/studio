@@ -69,7 +69,7 @@ export default function TestimonialsSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Quote className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-bold">
+          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter">
             What Students Say
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -79,7 +79,7 @@ export default function TestimonialsSection() {
 
         {testimonials.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="md:col-start-2 lg:col-start-2"> {/* Center the single preview card */}
+            <div className="md:col-start-2 lg:col-start-2"> 
                <TestimonialCard testimonial={testimonials[0]} />
             </div>
           </div>

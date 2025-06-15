@@ -8,20 +8,17 @@ import type { BlogPost } from '@/lib/types';
 import { Newspaper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Revalidate this component's data periodically (e.g., every hour) - Removed as it can cause issues when component is used in a Client Component tree.
-
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default async function BlogSection() {
   const latestPost: BlogPost | null = await getLatestBlogPost();
-  // Fetch all posts to determine if "View All Posts" button should be shown
   const allPosts: BlogPost[] = await getBlogPosts(); 
 
   if (!latestPost) {
-    return null; // Don't render the section if there are no posts
+    return null; 
   }
 
-  const postsToDisplay = [latestPost]; // We only want to display the latest one here
+  const postsToDisplay = [latestPost];
 
   return (
     <section id="blog" className="py-16 md:py-24 bg-secondary">
@@ -38,12 +35,11 @@ export default async function BlogSection() {
           </p>
         </div>
 
-        {/* Grid container for a single, centered, larger card */}
         <div className="flex justify-center">
           {postsToDisplay.map((post) => (
             <Card 
               key={post.slug} 
-              className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden w-full max-w-2xl mx-auto" // Increased max-width
+              className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden w-full max-w-2xl mx-auto"
             >
               {post.featuredImage && post.featuredImage.fields.file.url && (
                 <Link href={`/blog/${post.slug}`} className={cn("block", linkClasses)}>
@@ -66,16 +62,15 @@ export default async function BlogSection() {
                 </Link>
                 <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
               </CardHeader>
-              <CardContent className="flex-grow pb-4"> {/* Adjusted padding */}
-                <p className="font-body text-sm text-muted-foreground line-clamp-4"> {/* Increased line-clamp */}
+              <CardContent className="flex-grow pb-4">
+                <p className="font-body text-sm text-muted-foreground line-clamp-4">
                   {post.excerpt}
                 </p>
               </CardContent>
-              {/* CardFooter with "Read More" button removed */}
             </Card>
           ))}
         </div>
-        {allPosts.length > 1 && ( // Show button if there's more than one post in total
+        {allPosts.length > 1 && ( 
            <div className="text-center mt-12">
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
               <Link href="/blog">View All Posts</Link>

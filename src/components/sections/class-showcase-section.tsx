@@ -53,7 +53,7 @@ export default function ClassShowcaseSection() {
               )}
             >
               <CardHeader className="bg-card">
-                <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter leading-tight">{cls.name}</CardTitle>
+                <CardTitle className="font-headline text-2xl md:text-3xl font-extrabold tracking-tighter leading-tight">{cls.name}</CardTitle>
                 <CardDescription className="font-body text-sm">{cls.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow space-y-4 pt-4">

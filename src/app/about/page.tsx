@@ -27,9 +27,9 @@ export default function AboutPage() {
         </header>
 
         <section className="mb-16 grid md:grid-cols-2 gap-8">
-          <Card className="shadow-lg border-border bg-card h-full"> {/* Added h-full for consistent height in grid */}
+          <Card className="shadow-lg border-border bg-card h-full"> 
             <CardHeader>
-              <CardTitle className="font-headline text-3xl flex items-center">
+              <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter flex items-center">
                 <Target className="h-8 w-8 mr-3 text-accent" />
                 Our Mission
               </CardTitle>
@@ -41,9 +41,9 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-border bg-card h-full"> {/* Added h-full for consistent height in grid */}
+          <Card className="shadow-lg border-border bg-card h-full"> 
             <CardHeader>
-              <CardTitle className="font-headline text-3xl flex items-center">
+              <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter flex items-center">
                 <Eye className="h-8 w-8 mr-3 text-accent" />
                 Our Vision
               </CardTitle>
@@ -60,11 +60,11 @@ export default function AboutPage() {
 
         <section className="mb-16 grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-4">Our Philosophy</h2>
+            <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tighter mb-4">Our Philosophy</h2>
             <div className="flex items-start mb-6">
               <Lightbulb className="h-10 w-10 text-accent mr-4 mt-1 shrink-0" />
               <div>
-                <h3 className="font-headline text-xl font-semibold mb-1">Innovative Learning</h3>
+                <h3 className="font-headline text-xl font-extrabold tracking-tighter mb-1">Innovative Learning</h3>
                 <p className="font-body text-muted-foreground">
                   We embrace modern teaching techniques combined with timeless chess wisdom to create effective and engaging learning experiences.
                 </p>
@@ -73,7 +73,7 @@ export default function AboutPage() {
             <div className="flex items-start">
               <Users className="h-10 w-10 text-accent mr-4 mt-1 shrink-0" />
               <div>
-                <h3 className="font-headline text-xl font-semibold mb-1">Community Focused</h3>
+                <h3 className="font-headline text-xl font-extrabold tracking-tighter mb-1">Community Focused</h3>
                 <p className="font-body text-muted-foreground">
                   LCA is more than just classes; it's a community. We encourage collaboration, sportsmanship, and mutual growth among our students.
                 </p>
@@ -93,7 +93,7 @@ export default function AboutPage() {
         </section>
 
         <section>
-            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-6 text-center">Join Our Journey</h2>
+            <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tighter mb-6 text-center">Join Our Journey</h2>
             <p className="font-body text-lg text-muted-foreground text-center max-w-xl mx-auto">
                 Whether you're a beginner taking your first steps or an experienced player aiming for new heights, LCA is here to guide you. Explore our classes and become part of our thriving chess family.
             </p>

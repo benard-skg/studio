@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-// import { Button } from '@/components/ui/button'; // Button no longer needed for "Read More"
 import { getBlogPosts } from '@/lib/contentful';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
   description: 'Read the latest articles, strategy tips, and insights from the LCA team.',
 };
 
-// Revalidate this page (e.g., every 60 seconds)
 export const revalidate = 60; 
 
 export default async function BlogIndexPage() {
@@ -49,7 +47,7 @@ export default async function BlogIndexPage() {
                 key={post.id} 
                 className={cn(
                   "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border",
-                  blogPosts.length === 1 && "w-full max-w-2xl" // Apply max-width if it's the only card
+                  blogPosts.length === 1 && "w-full max-w-2xl" 
                 )}
               >
                 {post.thumbnail && post.thumbnail.fields.file.url && (
@@ -74,13 +72,12 @@ export default async function BlogIndexPage() {
                   <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
                 </CardHeader>
                 {post.excerpt && (
-                   <CardContent className="flex-grow pb-4"> {/* Adjusted padding if CardFooter is removed */}
-                    <p className="font-body text-sm text-muted-foreground line-clamp-4"> {/* Increased line-clamp here too */}
+                   <CardContent className="flex-grow pb-4"> 
+                    <p className="font-body text-sm text-muted-foreground line-clamp-4"> 
                       {post.excerpt}
                     </p>
                   </CardContent>
                 )}
-                {/* CardFooter with "Read More" button removed */}
               </Card>
             ))}
           </div>

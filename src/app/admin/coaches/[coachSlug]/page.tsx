@@ -2,13 +2,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, notFound, useRouter } from 'next/navigation'; // useRouter is used for navigation if needed, can keep
+import { useParams, notFound, useRouter } from 'next/navigation'; 
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-// import { Skeleton } from '@/components/ui/skeleton'; // Skeleton not directly used in this file's logic
-import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download } from 'lucide-react'; // UserCircle2 not used
+import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download } from 'lucide-react'; 
 import { allCoachesData } from '@/components/sections/coach-profile-section';
 import type { Coach as CoachDataType } from '@/lib/types'; 
 import { format, parseISO, isValid } from 'date-fns';
@@ -54,7 +53,7 @@ interface StoredLessonReport {
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
-  const router = useRouter(); // Kept for potential future use or explicit navigation
+  const router = useRouter(); 
   const coachSlug = typeof params.coachSlug === 'string' ? params.coachSlug : undefined;
 
   const [coach, setCoach] = useState<CoachDataType | null>(null);
@@ -73,13 +72,12 @@ export default function CoachAdminProfilePage() {
       const reportsCol = collection(db, "lessonReports");
       const q = query(reportsCol, where("coachName", "==", currentCoachName), orderBy("submittedAt", "desc"));
       const reportsSnapshot = await getDocs(q);
-      const reportsList = reportsSnapshot.docs.map(docSnap => ({ // Renamed doc to docSnap
+      const reportsList = reportsSnapshot.docs.map(docSnap => ({ 
         id: docSnap.id,
         ...docSnap.data()
       } as StoredLessonReport));
       setLessonReports(reportsList);
     } catch (err) {
-      // Intentionally kept for debugging data fetching
       console.error(`Error fetching lesson reports for ${currentCoachName}:`, err);
       setError(`Failed to fetch lesson reports for ${currentCoachName}.`);
       setLessonReports([]);
@@ -124,7 +122,6 @@ export default function CoachAdminProfilePage() {
       setIsDeleteDialogOpen(false);
       setReportToDelete(null);
     } catch (err) {
-      // Intentionally kept for debugging delete operation
       console.error("Error deleting lesson report:", err);
       toast({
         variant: "destructive",
@@ -141,7 +138,6 @@ export default function CoachAdminProfilePage() {
     try {
       return format(timestamp.toDate(), "MMM dd, yyyy 'at' hh:mm a");
     } catch (e) {
-      // Intentionally kept for debugging date formatting issues
       console.warn("Could not format date: ", timestamp, e);
       return 'Invalid Date';
     }
@@ -178,7 +174,7 @@ export default function CoachAdminProfilePage() {
         <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-                <h1 className="font-headline text-3xl mb-2">Error Loading Profile</h1>
+                <h1 className="font-headline text-3xl font-extrabold tracking-tighter mb-2">Error Loading Profile</h1>
                 <p className="font-body text-muted-foreground">{error}</p>
                  <Button asChild className="mt-6">
                     <Link href="/coaches">Back to Coaches</Link>
@@ -222,7 +218,7 @@ export default function CoachAdminProfilePage() {
 
         <section id="lesson-reports" className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="font-headline text-3xl font-bold flex items-center">
+            <h2 className="font-headline text-3xl font-extrabold tracking-tighter flex items-center">
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
@@ -245,7 +241,7 @@ export default function CoachAdminProfilePage() {
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="font-headline text-xl">Report for: {report.studentName}</CardTitle>
+                        <CardTitle className="font-headline text-xl font-extrabold tracking-tighter">Report for: {report.studentName}</CardTitle>
                         <CardDescription className="font-body text-xs">
                           Lesson: {formatLessonDate(report.lessonDateTime)} | Submitted: {formatDate(report.submittedAt)}
                         </CardDescription>
@@ -278,7 +274,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
         
         <section id="coach-articles" className="mb-12">
-          <h2 className="font-headline text-3xl font-bold mb-6 flex items-center">
+          <h2 className="font-headline text-3xl font-extrabold tracking-tighter mb-6 flex items-center">
             <BookOpen className="mr-3 h-7 w-7 text-accent" />
             Articles Authored
           </h2>
@@ -288,7 +284,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="coach-calendar" className="mb-12">
-          <h2 className="font-headline text-3xl font-bold mb-6 flex items-center">
+          <h2 className="font-headline text-3xl font-extrabold tracking-tighter mb-6 flex items-center">
             <CalendarDays className="mr-3 h-7 w-7 text-accent" />
             Scheduled Items
           </h2>
@@ -301,7 +297,7 @@ export default function CoachAdminProfilePage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline">Delete Lesson Report?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline text-xl font-extrabold tracking-tighter">Delete Lesson Report?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the lesson report for <strong>{reportToDelete.studentName}</strong> (Lesson: {formatLessonDate(reportToDelete.lessonDateTime)})? This action cannot be undone.
               </AlertDialogDescription>

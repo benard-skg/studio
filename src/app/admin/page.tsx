@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns'; // parseISO removed as Timestamp is used
+import { format } from 'date-fns'; 
 import { db } from '@/lib/firebase';
 import { collection, getDocs, orderBy, query, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
@@ -56,13 +56,12 @@ export default function AdminPage() {
       const submissionsCol = collection(db, "contactSubmissions");
       const q = query(submissionsCol, orderBy("submittedAt", "desc"));
       const submissionsSnapshot = await getDocs(q);
-      const submissionsList = submissionsSnapshot.docs.map(docSnap => ({ // Renamed doc to docSnap
+      const submissionsList = submissionsSnapshot.docs.map(docSnap => ({ 
         id: docSnap.id,
         ...docSnap.data()
       } as Submission));
       setSubmissions(submissionsList);
     } catch (err) {
-      // Intentionally kept for debugging submission fetch
       console.error("Error fetching contact submissions:", err);
       setError("Failed to fetch contact submissions. Please try again later.");
       setSubmissions([]);
@@ -98,7 +97,6 @@ export default function AdminPage() {
       setIsDeleteDialogOpen(false);
       setSubmissionToDelete(null);
     } catch (err) {
-      // Intentionally kept for debugging submission delete
       console.error("Error deleting submission:", err);
       toast({
         variant: "destructive",
@@ -142,7 +140,7 @@ export default function AdminPage() {
         {!isLoading && error && (
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
-            <p className="font-headline text-2xl mb-2">Error</p>
+            <p className="font-headline text-2xl font-extrabold tracking-tighter mb-2">Error</p>
             <p className="font-body text-center">{error}</p>
           </div>
         )}
@@ -150,7 +148,7 @@ export default function AdminPage() {
         {!isLoading && !error && submissions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
             <Mail className="h-10 w-10 mb-3 text-muted-foreground" />
-            <p className="font-headline text-2xl mb-2">No Submissions Yet</p>
+            <p className="font-headline text-2xl font-extrabold tracking-tighter mb-2">No Submissions Yet</p>
             <p className="font-body text-center text-muted-foreground">
               When users submit messages through the contact form, they will appear here.
             </p>
@@ -198,7 +196,7 @@ export default function AdminPage() {
         <AlertDialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline">Submission from {selectedSubmission.name}</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-extrabold tracking-tighter">Submission from {selectedSubmission.name}</AlertDialogTitle>
               <AlertDialogDescription className="font-body text-xs">
                 Received: {formatDate(selectedSubmission.submittedAt)}
               </AlertDialogDescription>
@@ -226,7 +224,7 @@ export default function AdminPage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline">Delete Submission?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-extrabold tracking-tighter">Delete Submission?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the submission from <strong>{submissionToDelete.name}</strong>? This action cannot be undone.
               </AlertDialogDescription>

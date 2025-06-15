@@ -2,8 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-// import { useRouter } from 'next/navigation'; // useRouter seems unused
-import { AlertCircle, Trash2, Eye, Loader2, CalendarPlus, Edit3, Save } from 'lucide-react'; // PlusCircle seems unused
+import { AlertCircle, Trash2, Eye, Loader2, CalendarPlus, Edit3, Save } from 'lucide-react'; 
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -66,7 +65,6 @@ export default function AdminEventsPage() {
   const [eventToDelete, setEventToDelete] = useState<EventType | null>(null);
 
   const { toast } = useToast();
-  // const router = useRouter(); // Not used
 
   const [formValues, setFormValues] = useState<Partial<EventType>>({
     title: '', date: '', startTime: '', endTime: '', type: 'class', description: '', detailsPageSlug: '',
@@ -79,13 +77,12 @@ export default function AdminEventsPage() {
       const eventsCol = collection(db, "events");
       const q = query(eventsCol, orderBy("date", "desc"), orderBy("startTime", "asc"));
       const eventsSnapshot = await getDocs(q);
-      const eventsList = eventsSnapshot.docs.map(docSnap => ({ // Renamed doc to docSnap to avoid conflict
+      const eventsList = eventsSnapshot.docs.map(docSnap => ({ 
         id: docSnap.id,
         ...docSnap.data()
       } as EventType));
       setEvents(eventsList);
     } catch (err) {
-      // Intentionally kept for debugging data fetching
       console.error("Error fetching events:", err);
       setError("Failed to fetch events. Please try again later.");
       setEvents([]);
@@ -172,7 +169,6 @@ export default function AdminEventsPage() {
         setEventToEdit(null);
         fetchEvents();
     } catch (err) {
-        // Intentionally kept for debugging save operation
         console.error("Error saving event:", err);
         setError("Failed to save event. Please try again.");
         toast({ variant: "destructive", title: "Save Error", description: "Could not save the event." });
@@ -192,7 +188,6 @@ export default function AdminEventsPage() {
       setIsDeleteDialogOpen(false);
       setEventToDelete(null);
     } catch (err) {
-      // Intentionally kept for debugging delete operation
       console.error("Error deleting event:", err);
       setError("Failed to delete event. Please try again.");
       toast({ variant: "destructive", title: "Delete Error", description: "Could not delete the event." });
@@ -235,7 +230,7 @@ export default function AdminEventsPage() {
         {!isLoading && !error && events.length === 0 && (
              <div className="mt-8 flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
                 <CalendarPlus className="h-10 w-10 mb-3 text-muted-foreground" />
-                <p className="font-headline text-2xl mb-2">No Events Found</p>
+                <p className="font-headline text-2xl font-extrabold tracking-tighter mb-2">No Events Found</p>
                 <p className="font-body text-center text-muted-foreground">
                 Click "Add New Event" to get started.
                 </p>
@@ -287,7 +282,7 @@ export default function AdminEventsPage() {
       <Dialog open={isAddEditDialogOpen} onOpenChange={setIsAddEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-headline">{eventToEdit ? "Edit Event" : "Add New Event"}</DialogTitle>
+            <DialogTitle className="font-headline font-extrabold tracking-tighter">{eventToEdit ? "Edit Event" : "Add New Event"}</DialogTitle>
             <DialogDescription>
               {eventToEdit ? "Modify the details of the existing event." : "Fill in the details to create a new event."}
             </DialogDescription>
@@ -348,7 +343,7 @@ export default function AdminEventsPage() {
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="font-headline">{currentEvent.title}</DialogTitle>
+              <DialogTitle className="font-headline font-extrabold tracking-tighter">{currentEvent.title}</DialogTitle>
               <DialogDescription className="font-body text-xs">
                 Event ID: {currentEvent.id}
               </DialogDescription>
@@ -382,7 +377,7 @@ export default function AdminEventsPage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline">Delete Event?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-extrabold tracking-tighter">Delete Event?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the event "<strong>{eventToDelete.title}</strong>"? This action cannot be undone.
               </AlertDialogDescription>

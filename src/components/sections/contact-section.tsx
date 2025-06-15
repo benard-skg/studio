@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Loader2 } from 'lucide-react'; // AlertCircle removed
+import { Mail, Send, Loader2 } from 'lucide-react'; 
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react"; // useEffect removed
+import { useState } from "react"; 
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -62,7 +62,6 @@ export default function ContactSection() {
       });
       form.reset();
     } catch (error) {
-      // Intentionally kept for debugging submission errors
       console.error("Error saving contact submission to Firestore:", error);
       toast({
         variant: "destructive",

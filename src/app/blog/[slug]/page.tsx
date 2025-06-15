@@ -6,10 +6,9 @@ import Footer from '@/components/layout/footer';
 import { getBlogPostBySlug, getAllBlogPostSlugs } from '@/lib/contentful';
 import type { BlogPost } from '@/lib/types';
 import { documentToHtmlString } from '@contentful/rich-text-html-renderer';
-import { BLOCKS, INLINES } from '@contentful/rich-text-types'; // Changed BLOCKS.HYPERLINK to INLINES.HYPERLINK contextually
+import { BLOCKS, INLINES } from '@contentful/rich-text-types'; 
 import type { Metadata, ResolvingMetadata } from 'next';
 
-// Revalidate this page (e.g., every 10 seconds)
 export const revalidate = 10;
 
 interface BlogPostPageProps {
@@ -47,7 +46,7 @@ export async function generateMetadata(
       description: post.excerpt || 'Read this article from LCA.',
       images: openGraphImages,
       type: 'article',
-      publishedTime: new Date(post.date).toISOString(),
+      publishedTime: new Date(post.date).toISOString(), // Ensure date is in ISO format for publishedTime
     },
   };
 }
@@ -71,10 +70,10 @@ const richTextOptions = {
       return '';
     },
     [BLOCKS.PARAGRAPH]: (node: any, next: (nodes: any) => string) => `<p class="my-4 font-body text-base leading-relaxed">${next(node.content)}</p>`,
-    [BLOCKS.HEADING_1]: (node: any, next: (nodes: any) => string) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold mt-10 mb-5">${next(node.content)}</h1>`,
-    [BLOCKS.HEADING_2]: (node: any, next: (nodes: any) => string) => `<h2 class="font-headline text-2xl sm:text-3xl font-bold mt-8 mb-4">${next(node.content)}</h2>`,
-    [BLOCKS.HEADING_3]: (node: any, next: (nodes: any) => string) => `<h3 class="font-headline text-xl sm:text-2xl font-semibold mt-6 mb-3">${next(node.content)}</h3>`,
-    [BLOCKS.HEADING_4]: (node: any, next: (nodes: any) => string) => `<h4 class="font-headline text-lg sm:text-xl font-semibold mt-5 mb-2">${next(node.content)}</h4>`,
+    [BLOCKS.HEADING_1]: (node: any, next: (nodes: any) => string) => `<h1 class="font-headline text-3xl sm:text-4xl font-extrabold tracking-tighter mt-10 mb-5">${next(node.content)}</h1>`,
+    [BLOCKS.HEADING_2]: (node: any, next: (nodes: any) => string) => `<h2 class="font-headline text-2xl sm:text-3xl font-extrabold tracking-tighter mt-8 mb-4">${next(node.content)}</h2>`,
+    [BLOCKS.HEADING_3]: (node: any, next: (nodes: any) => string) => `<h3 class="font-headline text-xl sm:text-2xl font-extrabold tracking-tighter mt-6 mb-3">${next(node.content)}</h3>`,
+    [BLOCKS.HEADING_4]: (node: any, next: (nodes: any) => string) => `<h4 class="font-headline text-lg sm:text-xl font-extrabold tracking-tighter mt-5 mb-2">${next(node.content)}</h4>`,
     [BLOCKS.UL_LIST]: (node: any, next: (nodes: any) => string) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${next(node.content)}</ul>`,
     [BLOCKS.OL_LIST]: (node: any, next: (nodes: any) => string) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${next(node.content)}</ol>`,
     [BLOCKS.QUOTE]: (node: any, next: (nodes: any) => string) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${next(node.content)}</blockquote>`,
@@ -107,7 +106,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 {post.title}
               </h1>
               <p className="font-body text-sm text-muted-foreground">
-                Published on {post.date}
+                Published on {post.date} {/* Ensure date is formatted from Contentful data */}
               </p>
             </header>
 

@@ -13,17 +13,15 @@ import { format, parseISO, startOfMonth, addMonths, subMonths, isSameDay, isVali
 import { cn } from '@/lib/utils';
 import { Timestamp } from 'firebase/firestore'; // Import Timestamp
 
-// Type for events received by this component, can be slightly different from stored type
-interface EventTypeForCalendar extends Omit<AppEventType, 'id'> { // Use Omit to redefine id if needed
-  id?: string; // Firestore document ID might be optional here if not always used for navigation
+interface EventTypeForCalendar extends Omit<AppEventType, 'id'> { 
+  id?: string; 
   title: string;
-  date: string; // Expecting ISO string date "YYYY-MM-DD"
+  date: string; 
   startTime: string;
   endTime?: string;
   type: string;
   description?: string;
   detailsPageSlug: string;
-  // Firestore timestamps are not directly used in rendering here but might be part of the prop
   createdAt?: Timestamp; 
   updatedAt?: Timestamp;
 }
@@ -42,11 +40,10 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
   const [isMounted, setIsMounted] = useState(false);
   const [animatedMonth, setAnimatedMonth] = useState<Date | null>(null);
 
-  // Use initialEvents directly if it's guaranteed to be stable, or manage with useState if it can change
   const [events, setEvents] = useState<EventTypeForCalendar[]>(initialEvents);
   
   useEffect(() => {
-    setEvents(initialEvents); // Update local state if prop changes
+    setEvents(initialEvents); 
   }, [initialEvents]);
 
 
@@ -59,7 +56,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
     return events
       .map(event => {
         if (event && typeof event.date === 'string') {
-          const parsedDate = parseISO(event.date); // Assumes date is YYYY-MM-DD
+          const parsedDate = parseISO(event.date); 
           return isValid(parsedDate) ? parsedDate : null;
         }
         return null;
@@ -146,7 +143,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
             <Button variant="ghost" size="icon" onClick={goToPreviousMonth} aria-label="Previous month" className="hover:bg-accent/20">
               <ChevronLeft className="h-5 w-5 text-accent" />
             </Button>
-            <CardTitle className="font-headline text-xl text-foreground tracking-tight">
+            <CardTitle className="font-headline text-xl font-extrabold tracking-tighter text-foreground">
               {format(currentDisplayMonth, 'MMMM yyyy')}
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="Next month" className="hover:bg-accent/20">
@@ -187,8 +184,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
               }}
               modifiers={{
-                // eventDay: eventDays.some(eventDate => selectedDate && isSameDay(eventDate, selectedDate)),
-                eventDay: eventDays // Pass the array of Dates directly
+                eventDay: eventDays 
               }}
               modifiersClassNames={{
                 eventDay: 'event-day-modifier', 
@@ -200,7 +196,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
 
         {selectedDate && eventsForSelectedDate.length > 0 && (
           <div className="mt-8 max-w-xl mx-auto">
-            <h3 className="font-headline text-2xl mb-4 text-center">
+            <h3 className="font-headline text-2xl font-extrabold tracking-tighter mb-4 text-center">
               Events on {format(selectedDate, 'MMMM dd, yyyy')}
             </h3>
             <ScrollArea className="h-[300px] rounded-md border border-border shadow-sm bg-card">
@@ -214,7 +210,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
                     onKeyPress={(e) => { if ((e.key === 'Enter' || e.key === ' ') && event.detailsPageSlug) router.push(`/events/${event.detailsPageSlug}`); }}
                   >
                     <CardContent className="p-4">
-                      <h4 className="font-headline text-lg text-accent mb-1">{event.title || "Untitled Event"}</h4>
+                      <h4 className="font-headline text-lg font-extrabold tracking-tighter text-accent mb-1">{event.title || "Untitled Event"}</h4>
                       <div className="flex items-center text-sm text-muted-foreground mb-1">
                          <CalendarIconLucide className="h-4 w-4 mr-1.5" />
                          {event.startTime || "Time TBD"} {event.endTime ? `- ${event.endTime}` : ''}

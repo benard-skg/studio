@@ -43,7 +43,6 @@ export default function AdminSettingsPage() {
         setLichessUsername('');
       }
     } catch (error) {
-      // Intentionally kept for debugging settings fetch
       console.error("Error fetching settings:", error);
       toast({
         variant: "destructive",
@@ -84,7 +83,6 @@ export default function AdminSettingsPage() {
         description: `Lichess username "${lichessUsername.trim()}" saved for ChessTV.`,
       });
     } catch (error) {
-      // Intentionally kept for debugging settings save
       console.error("Error saving settings:", error);
       toast({
         variant: "destructive",
@@ -112,7 +110,7 @@ export default function AdminSettingsPage() {
 
         <Card className="max-w-lg mx-auto shadow-lg border-border">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center">
+            <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter flex items-center">
               <UserCircle className="h-6 w-6 mr-2 text-accent"/>
               ChessTV Lichess Username
             </CardTitle>

@@ -3,6 +3,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Playfair Display - Self-hosted */
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('/fonts/PlayfairDisplay-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('/fonts/PlayfairDisplay-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   /* font-family will be set by Tailwind's font-body class */
 }
@@ -19,12 +36,6 @@ body {
     --popover: 0 0% 100%; /* White */
     --popover-foreground: 0 0% 9%; /* Almost Black */
 
-    /* Primary color for PRD is "Black (#000000)" - this is usually for branding elements, not text.
-       Using Vivid Blue as the main interactive/primary element color.
-       If primary is meant to be the theme's dominant color, it would be the blue.
-       The prompt specified primary color:Black(#000000), this seems to relate to the PRD's primary *brand* color,
-       not necessarily the button/interactive primary. I'll keep Vivid Blue for interactive primary.
-    */
     --primary: 212 100% 48%; /* Vivid Blue (#0070F3) */
     --primary-foreground: 0 0% 100%; /* White */
 

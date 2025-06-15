@@ -131,7 +131,7 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
             </h2>
           ) : (
             <Link href="/coaches" className={cn("inline-block p-1 -m-1",linkClasses)}>
-              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent">
                 Meet Our Coaches
               </h2>
             </Link>

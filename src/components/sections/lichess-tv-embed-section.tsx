@@ -20,7 +20,7 @@ export default function LichessTVEmbedSection() {
           <CardHeader className="bg-card p-4 border-b border-border">
             <div className="flex items-center justify-center mb-1">
               <Tv className="h-7 w-7 text-accent mr-2" />
-              <CardTitle className="font-headline text-2xl text-center">Lichess TV</CardTitle>
+              <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter text-center">Lichess TV</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="p-3 bg-card flex justify-center items-center">

@@ -4,10 +4,10 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { EventType as AppEventType } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
-import { Calendar, Clock, Tag } from 'lucide-react'; // Removed Info, AlertCircle as they might be unused
-import type { Metadata } from 'next'; // Removed ResolvingMetadata if not used
+import { Calendar, Clock, Tag } from 'lucide-react'; 
+import type { Metadata } from 'next'; 
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, Timestamp, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, limit, orderBy as firestoreOrderBy } from 'firebase/firestore'; // Renamed orderBy to avoid conflict
 
 interface EventType extends AppEventType {
   id: string;
@@ -46,7 +46,6 @@ async function getEventBySlug(slug: string): Promise<EventType | null> {
       updatedAt: data.updatedAt,
     } as EventType;
   } catch (error) {
-    // Intentionally kept for debugging server-side data fetching
     console.error(`[EventSlugPage] Error fetching event with slug ${slug}:`, error);
     return null;
   }
@@ -54,7 +53,6 @@ async function getEventBySlug(slug: string): Promise<EventType | null> {
 
 export async function generateMetadata(
   { params }: EventPageProps,
-  // parent: ResolvingMetadata // Removed if not used
 ): Promise<Metadata> {
   const event = await getEventBySlug(params.slug);
 
@@ -81,13 +79,12 @@ export async function generateMetadata(
 export async function generateStaticParams() {
   try {
     const eventsCol = collection(db, "events");
-    const eventsSnapshot = await getDocs(query(eventsCol, orderBy("date", "desc")));
+    const eventsSnapshot = await getDocs(query(eventsCol, firestoreOrderBy("date", "desc")));
     const slugs = eventsSnapshot.docs.map(doc => ({
       slug: doc.data().detailsPageSlug as string,
     })).filter(item => !!item.slug);
     return slugs;
   } catch (error) {
-    // Intentionally kept for debugging server-side data fetching
     console.error("[EventSlugPage] generateStaticParams: Error fetching event slugs:", error);
     return [];
   }
@@ -140,7 +137,7 @@ export default async function EventPage({ params }: EventPageProps) {
 
         {event.description && (
           <section className="mb-8 prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg mx-auto">
-            <h2 className="font-headline text-2xl font-bold mb-3">About this Event</h2>
+            <h2 className="font-headline text-2xl font-extrabold tracking-tighter mb-3">About this Event</h2>
             {event.description.split('\n').map((paragraph, index) => (
               <p key={index} className="font-body">{paragraph}</p>
             ))}

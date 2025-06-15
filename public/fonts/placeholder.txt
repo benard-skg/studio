@@ -1,0 +1,6 @@
+Please place your WOFF2 font files for Playfair Display here.
+For example:
+- PlayfairDisplay-Bold.woff2 (font-weight: 700)
+- PlayfairDisplay-Black.woff2 (font-weight: 900)
+
+Ensure the @font-face rules in src/app/globals.css match these filenames and paths.
