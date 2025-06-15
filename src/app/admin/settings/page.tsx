@@ -13,7 +13,7 @@ export default function AdminSettingsPage() {
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-8 text-center">
           <Settings className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
             Admin Settings
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -23,7 +23,7 @@ export default function AdminSettingsPage() {
 
         <Card className="max-w-lg mx-auto shadow-lg border-border">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl font-black tracking-tighter flex items-center">
+            <CardTitle className="font-headline text-xl font-bold tracking-tighter flex items-center">
               <Info className="h-6 w-6 mr-2 text-accent"/>
               Application Configuration
             </CardTitle>

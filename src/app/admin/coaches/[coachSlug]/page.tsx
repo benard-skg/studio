@@ -238,7 +238,7 @@ export default function CoachAdminProfilePage() {
         <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-                <h1 className="font-headline text-3xl font-black tracking-tighter mb-2">Error Loading Profile</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tighter mb-2">Error Loading Profile</h1>
                 <p className="font-body text-muted-foreground">{error}</p>
                  <Button asChild className="mt-6">
                     <Link href="/coaches">Back to Coaches</Link>
@@ -270,7 +270,7 @@ export default function CoachAdminProfilePage() {
               />
             </div>
             <div className="space-y-1 text-center md:text-left pt-2">
-              <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+              <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
                 {coach.name} {coach.nickname && `(${coach.nickname})`}
               </h1>
               <p className="font-body text-xl text-muted-foreground">{coach.title}</p>
@@ -282,16 +282,16 @@ export default function CoachAdminProfilePage() {
 
         <section id="lesson-reports" className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="font-headline text-3xl font-black tracking-tighter flex items-center">
+            <h2 className="font-headline text-2xl font-bold tracking-tighter flex items-center">
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button asChild size="icon" className="bg-accent text-accent-foreground hover:bg-accent/90 active:bg-accent/80">
+                  <Button asChild size="icon" variant="ghost" className="hover:bg-accent/20 active:bg-accent/30">
                     <Link href="/admin/lesson-reports/create">
-                      <FilePlus2 className="h-5 w-5" />
+                      <FilePlus2 className="h-5 w-5 text-accent" />
                     </Link>
                   </Button>
                 </TooltipTrigger>
@@ -318,7 +318,7 @@ export default function CoachAdminProfilePage() {
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="font-headline text-xl font-black tracking-tighter">
+                        <CardTitle className="font-headline text-lg font-bold tracking-tighter">
                           Report for: <span className="text-accent">{report.studentName}</span>
                         </CardTitle>
                         <CardDescription className="font-body text-xs">
@@ -368,7 +368,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="coach-articles" className="mb-12">
-          <h2 className="font-headline text-3xl font-black tracking-tighter mb-6 flex items-center">
+          <h2 className="font-headline text-2xl font-bold tracking-tighter mb-6 flex items-center">
             <BookOpen className="mr-3 h-7 w-7 text-accent" />
             Articles Authored
           </h2>
@@ -378,7 +378,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="coach-calendar" className="mb-12">
-          <h2 className="font-headline text-3xl font-black tracking-tighter mb-6 flex items-center">
+          <h2 className="font-headline text-2xl font-bold tracking-tighter mb-6 flex items-center">
             <CalendarDays className="mr-3 h-7 w-7 text-accent" />
             Scheduled Items
           </h2>
@@ -391,7 +391,7 @@ export default function CoachAdminProfilePage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline text-xl font-black tracking-tighter">Delete Lesson Report?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline text-lg font-bold tracking-tighter">Delete Lesson Report?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the lesson report for <strong>{reportToDelete.studentName}</strong> (Lesson: {formatLessonDate(reportToDelete.lessonDateTime)})? This action cannot be undone.
               </AlertDialogDescription>

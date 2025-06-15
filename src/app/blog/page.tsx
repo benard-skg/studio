@@ -28,7 +28,7 @@ export default async function BlogIndexPage() {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-12 text-center">
-          <h1 className="font-headline text-5xl md:text-6xl font-black tracking-tighter leading-tight">
+          <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tighter leading-tight">
             Articles from LCA Team
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
@@ -62,7 +62,7 @@ export default async function BlogIndexPage() {
                       </div>
                   )}
                   <CardHeader>
-                      <CardTitle className="font-headline text-xl md:text-2xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors">
+                      <CardTitle className="font-headline text-lg md:text-xl font-bold tracking-tighter leading-tight group-hover:text-accent transition-colors">
                         {post.title}
                       </CardTitle>
                     <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>

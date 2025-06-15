@@ -18,7 +18,7 @@ export default function AboutPage() {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-12 text-center">
-          <h1 className="font-headline text-5xl md:text-6xl font-black tracking-tighter leading-tight">
+          <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tighter leading-tight">
             About LCA
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
@@ -27,9 +27,9 @@ export default function AboutPage() {
         </header>
 
         <section className="mb-16 grid md:grid-cols-2 gap-8">
-          <Card className="shadow-lg border-border bg-card h-full">
+          <Card className="shadow-lg border-border h-full">
             <CardHeader>
-              <CardTitle className="font-headline text-3xl font-black tracking-tighter flex items-center">
+              <CardTitle className="font-headline text-2xl font-bold tracking-tighter flex items-center">
                 <Target className="h-8 w-8 mr-3 text-accent" />
                 Our Mission
               </CardTitle>
@@ -41,9 +41,9 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-border bg-card h-full">
+          <Card className="shadow-lg border-border h-full">
             <CardHeader>
-              <CardTitle className="font-headline text-3xl font-black tracking-tighter flex items-center">
+              <CardTitle className="font-headline text-2xl font-bold tracking-tighter flex items-center">
                 <Eye className="h-8 w-8 mr-3 text-accent" />
                 Our Vision
               </CardTitle>
@@ -60,11 +60,11 @@ export default function AboutPage() {
 
         <section className="mb-16 grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h2 className="font-headline text-3xl md:text-4xl font-black tracking-tighter mb-4">Our Philosophy</h2>
+            <h2 className="font-headline text-2xl md:text-3xl font-bold tracking-tighter mb-4">Our Philosophy</h2>
             <div className="flex items-start mb-6">
               <Lightbulb className="h-10 w-10 text-accent mr-4 mt-1 shrink-0" />
               <div>
-                <h3 className="font-headline text-xl font-black tracking-tighter mb-1">Innovative Learning</h3>
+                <h3 className="font-headline text-lg font-bold tracking-tighter mb-1">Innovative Learning</h3>
                 <p className="font-body text-muted-foreground">
                   We embrace modern teaching techniques combined with timeless chess wisdom to create effective and engaging learning experiences.
                 </p>
@@ -73,14 +73,14 @@ export default function AboutPage() {
             <div className="flex items-start">
               <Users className="h-10 w-10 text-accent mr-4 mt-1 shrink-0" />
               <div>
-                <h3 className="font-headline text-xl font-black tracking-tighter mb-1">Community Focused</h3>
+                <h3 className="font-headline text-lg font-bold tracking-tighter mb-1">Community Focused</h3>
                 <p className="font-body text-muted-foreground">
                   LCA is more than just classes; it's a community. We encourage collaboration, sportsmanship, and mutual growth among our students.
                 </p>
               </div>
             </div>
           </div>
-          <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl">
+          <div className="relative aspect-video overflow-hidden shadow-xl">
             <Image
               src="https://placehold.co/600x400.png"
               alt="Chess community event"
@@ -93,12 +93,12 @@ export default function AboutPage() {
         </section>
 
         <section>
-            <h2 className="font-headline text-3xl md:text-4xl font-black tracking-tighter mb-6 text-center">Join Our Journey</h2>
+            <h2 className="font-headline text-2xl md:text-3xl font-bold tracking-tighter mb-6 text-center">Join Our Journey</h2>
             <p className="font-body text-lg text-muted-foreground text-center max-w-xl mx-auto">
                 Whether you're a beginner taking your first steps or an experienced player aiming for new heights, LCA is here to guide you. Explore our classes and become part of our thriving chess family.
             </p>
              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="relative aspect-square rounded-lg overflow-hidden shadow-md">
+                <div className="relative aspect-square overflow-hidden shadow-md">
                     <Image
                         src="https://placehold.co/400x400.png"
                         alt="Students learning chess"
@@ -108,7 +108,7 @@ export default function AboutPage() {
                         sizes="(max-width: 640px) 100vw, 50vw"
                     />
                 </div>
-                <div className="relative aspect-square rounded-lg overflow-hidden shadow-md">
+                <div className="relative aspect-square overflow-hidden shadow-md">
                     <Image
                         src="https://placehold.co/400x400.png"
                         alt="Chess game in progress"

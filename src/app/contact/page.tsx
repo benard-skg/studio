@@ -29,7 +29,7 @@ export default function ContactPage() {
       <main className="flex-grow pt-20 flex flex-col items-center justify-center text-center px-4">
         <div className="py-12 md:py-16 max-w-2xl w-full">
           <MessageSquareText className="mx-auto h-16 w-16 text-accent mb-6" />
-          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-4">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight mb-4">
             Get In Touch
           </h1>
           <p className="font-body text-lg text-muted-foreground mb-8">
@@ -37,12 +37,12 @@ export default function ContactPage() {
           </p>
 
           <div className="mb-8">
-            <h2 className="font-headline text-2xl font-black tracking-tighter mb-3 text-accent">Chat on WhatsApp</h2>
+            <h2 className="font-headline text-xl font-bold tracking-tighter mb-3 text-accent">Chat on WhatsApp</h2>
             <a
               href={`https://wa.me/${whatsappNumberPrimary.replace(/\D/g, '')}?text=Hi%20LCA,%20I'd%20like%20to%20inquire%20about...`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
             >
               <WhatsAppIcon className="h-6 w-6 mr-2" />
               Message Our Coaches
@@ -52,7 +52,7 @@ export default function ContactPage() {
           <Separator className="my-8 bg-border/70" />
 
           <div className="mb-8 space-y-4">
-            <h2 className="font-headline text-2xl font-black tracking-tighter mb-3 text-accent">Direct Contact</h2>
+            <h2 className="font-headline text-xl font-bold tracking-tighter mb-3 text-accent">Direct Contact</h2>
             <div className="flex flex-col sm:flex-row sm:justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6">
               <a href={`tel:${cellNumberPrimary}`} className="font-body text-lg hover:text-accent transition-colors flex items-center">
                 <Phone className="h-5 w-5 mr-2 text-muted-foreground" />
@@ -74,7 +74,7 @@ export default function ContactPage() {
           <Separator className="my-8 bg-border/70" />
 
           <div>
-            <h2 className="font-headline text-2xl font-black tracking-tighter mb-3 text-accent">Join a Class</h2>
+            <h2 className="font-headline text-xl font-bold tracking-tighter mb-3 text-accent">Join a Class</h2>
             <p className="font-body text-lg text-muted-foreground">
               Or join us for a class on Tuesdays, Wednesdays, and Thursdays between 14:00 and 17:30.
             </p>

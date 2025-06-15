@@ -102,7 +102,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <CalendarIconLucide className="mx-auto h-12 w-12 text-accent mb-4" />
-            <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
               Upcoming Events
             </h2>
             <p className="font-body text-lg text-muted-foreground mt-2">
@@ -128,7 +128,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
 
         <div className="text-center mb-12">
           <CalendarIconLucide className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+          <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
             Upcoming Events
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -141,7 +141,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
             <Button variant="ghost" size="icon" onClick={goToPreviousMonth} aria-label="Previous month" className="hover:bg-accent/20 active:bg-accent/30">
               <ChevronLeft className="h-5 w-5 text-accent" />
             </Button>
-            <CardTitle className="font-headline text-xl font-black tracking-tighter text-foreground">
+            <CardTitle className="font-headline text-lg font-bold tracking-tighter text-foreground">
               {format(currentDisplayMonth, 'MMMM yyyy')}
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="Next month" className="hover:bg-accent/20 active:bg-accent/30">
@@ -194,7 +194,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
 
         {selectedDate && eventsForSelectedDate.length > 0 && (
           <div className="mt-8 max-w-xl mx-auto">
-            <h3 className="font-headline text-2xl font-black tracking-tighter mb-4 text-center">
+            <h3 className="font-headline text-xl font-bold tracking-tighter mb-4 text-center">
               Events on {format(selectedDate, 'MMMM dd, yyyy')}
             </h3>
             <ScrollArea className="h-[300px] border border-border shadow-sm bg-card">
@@ -208,7 +208,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
                     onKeyPress={(e) => { if ((e.key === 'Enter' || e.key === ' ') && event.detailsPageSlug) router.push(`/events/${event.detailsPageSlug}`); }}
                   >
                     <CardContent className="p-4">
-                      <h4 className="font-headline text-lg font-black tracking-tighter text-accent mb-1">{event.title || "Untitled Event"}</h4>
+                      <h4 className="font-headline text-base font-bold tracking-tighter text-accent mb-1">{event.title || "Untitled Event"}</h4>
                       <div className="flex items-center text-sm text-muted-foreground mb-1">
                          <CalendarIconLucide className="h-4 w-4 mr-1.5" />
                          {event.startTime || "Time TBD"} {event.endTime ? `- ${event.endTime}` : ''}
@@ -216,7 +216,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
                       {event.type && (
                         <div className="flex items-center text-xs text-muted-foreground mb-2">
                           <TagIcon className="h-3 w-3 mr-1.5" />
-                          <span className="capitalize bg-muted px-1.5 py-0.5 rounded-sm">{event.type}</span>
+                          <span className="capitalize bg-muted px-1.5 py-0.5 text-secondary-foreground">{event.type}</span>
                         </div>
                       )}
                       {event.description && (

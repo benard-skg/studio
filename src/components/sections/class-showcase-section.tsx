@@ -21,7 +21,7 @@ const classesData = [
   },
 ];
 
-const interactiveLinkClasses = "transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+const titleLinkClasses = "transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 p-0.5 -m-0.5";
 
 
 export default function ClassShowcaseSection() {
@@ -34,8 +34,10 @@ export default function ClassShowcaseSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/classes" className={cn(interactiveLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
-              Coaching Classes
+          <Link href="/classes" className={cn(titleLinkClasses, "inline-block")}>
+              <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight text-foreground hover:text-accent">
+                Coaching Classes
+              </h2>
           </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Choose the plan that best suits your chess journey.
@@ -52,7 +54,7 @@ export default function ClassShowcaseSection() {
               )}
             >
               <CardHeader className="bg-card">
-                <CardTitle className="font-headline text-2xl md:text-3xl font-black tracking-tighter leading-tight">{cls.name}</CardTitle>
+                <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tighter leading-tight">{cls.name}</CardTitle>
                 <CardDescription className="font-body text-sm">{cls.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow space-y-4 pt-4">

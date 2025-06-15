@@ -16,18 +16,18 @@ export default function LichessTVEmbedSection() {
   return (
     <section id="lichess-tv" className="py-12 md:py-16 bg-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-md mx-auto shadow-xl border-border overflow-hidden rounded-lg">
+        <Card className="max-w-md mx-auto shadow-xl border-border overflow-hidden">
           <CardHeader className="bg-card p-4 border-b border-border">
             <div className="flex items-center justify-center mb-1">
               <Tv className="h-7 w-7 text-accent mr-2" />
-              <CardTitle className="font-headline text-2xl font-black tracking-tighter text-center">Lichess TV</CardTitle>
+              <CardTitle className="font-headline text-xl font-bold tracking-tighter text-center">Lichess TV</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="p-3 bg-card flex justify-center items-center">
             {isMounted ? (
               <iframe
                 src="https://lichess.org/tv/frame?theme=brown&bg=dark"
-                style={{ width: '100%', maxWidth: '400px', aspectRatio: '10 / 11', border: 'none', borderRadius: '0.25rem' }}
+                style={{ width: '100%', maxWidth: '400px', aspectRatio: '10 / 11', border: 'none' }}
                 title="Lichess TV Embed"
               ></iframe>
             ) : (

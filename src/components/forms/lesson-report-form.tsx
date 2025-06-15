@@ -147,36 +147,32 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
   async function onSubmit(values: LessonReportFormValues) {
     setIsSubmitting(true);
     
-    // Filter out undefined values before sending to Firestore
     const dataForFirestore: { [key: string]: any } = {};
     (Object.keys(values) as Array<keyof LessonReportFormValues>).forEach(key => {
-      if (values[key] !== undefined) {
+      if (values[key] !== undefined && values[key] !== null && (typeof values[key] !== 'number' || !isNaN(values[key])) ) {
         dataForFirestore[key] = values[key];
       } else if (key === 'ratingBefore' || key === 'ratingAfter') {
-        // Explicitly do not add undefined numeric fields, Firestore handles missing fields.
-      } else {
-        // For optional string fields that might be undefined, ensure they are stored as empty strings.
-        // This handles cases where an optional field might have been cleared in the form.
-        dataForFirestore[key] = ""; 
+        // Explicitly do not add undefined/NaN numeric fields
+      } else if (typeof values[key] === 'string') { 
+        // If it's an optional string field that became undefined/null, store as empty string
+        dataForFirestore[key] = "";
       }
     });
-
-    // Re-ensure specific optional string fields are empty strings if not provided
+  
+    // Ensure specific optional string fields that might be empty are set to ""
     ['customTopic', 'gameExampleLinks', 'assignedPuzzles', 'practiceGames', 'readingVideos', 'additionalNotes'].forEach(key => {
-        if (dataForFirestore[key] === undefined) {
-            dataForFirestore[key] = "";
-        }
+      if (dataForFirestore[key] === undefined) {
+        dataForFirestore[key] = "";
+      }
     });
 
 
     try {
       if (reportToEdit && reportToEdit.id) {
-        // Update existing report
-        dataForFirestore.updatedAt = serverTimestamp(); // Add/update the updatedAt timestamp
+        dataForFirestore.updatedAt = serverTimestamp(); 
         const reportDocRef = doc(db, "lessonReports", reportToEdit.id);
         await updateDoc(reportDocRef, dataForFirestore);
         
-        // Use the coachName from the submitted form values for the redirect slug
         const updatedCoachSlug = slugify(values.coachName);
         toast({
           title: "Report Updated!",
@@ -189,22 +185,21 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
             </>
           ),
         });
-        router.push(`/admin/coaches/${updatedCoachSlug}`); // Redirect to the (potentially new) coach's page
+        router.push(`/admin/coaches/${updatedCoachSlug}`);
       } else {
-        // Create new report
         dataForFirestore.submittedAt = serverTimestamp();
         await addDoc(collection(db, "lessonReports"), dataForFirestore);
         toast({
           title: "Report Saved!",
           description: `The lesson report for ${values.studentName} has been successfully saved.`,
         });
-        form.reset(); // Reset form after successful new submission
-        setSelectedTopic(""); // Reset selected topic
-        localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear draft after successful submission
+        form.reset();
+        setSelectedTopic("");
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
       }
     } catch (error) {
       console.error("Error saving lesson report:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : `An unexpected error occurred: ${String(error)}`;
       toast({
         variant: "destructive",
         title: reportToEdit ? "Update Failed" : "Save Failed",
@@ -218,32 +213,30 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
   const onFormError = (errors: FieldErrors<LessonReportFormValues>) => {
     const errorKeys = Object.keys(errors) as Array<keyof LessonReportFormValues>;
     if (errorKeys.length > 0) {
-      const firstErrorKey = errorKeys[0];
-      const fieldErrorObject = errors[firstErrorKey];
+        const firstErrorKey = errorKeys[0];
+        const fieldErrorObject = errors[firstErrorKey];
 
-      let scrolled = false;
-      // 1. Attempt to scroll the FormItem container into view.
-      const formItemContainer = document.querySelector(`[data-formfield-name="${firstErrorKey}"]`) as HTMLElement;
-      if (formItemContainer && typeof formItemContainer.scrollIntoView === 'function') {
-        formItemContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        scrolled = true;
-      }
-
-      // 2. Attempt to focus the actual input element.
-      if (fieldErrorObject && fieldErrorObject.ref) {
-        const inputElement = fieldErrorObject.ref as any; 
+        let scrolled = false;
+        const formItemContainer = document.querySelector(`[data-formfield-name="${firstErrorKey}"]`) as HTMLElement;
         
-        // Fallback: Try scrolling the input element itself if container scrolling didn't happen or wasn't effective
-        if (!scrolled && inputElement instanceof HTMLElement && typeof inputElement.scrollIntoView === 'function') {
-            inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (formItemContainer && typeof formItemContainer.scrollIntoView === 'function') {
+            formItemContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            scrolled = true;
         }
 
-        if (typeof inputElement.focus === 'function') {
-          setTimeout(() => {
-            inputElement.focus({ preventScroll: true }); // preventScroll true if scroll is handled by scrollIntoView
-          }, 150); // Delay to allow scroll animation to potentially finish
+        if (fieldErrorObject && fieldErrorObject.ref) {
+            const inputElement = fieldErrorObject.ref as any;
+            
+            if (!scrolled && inputElement instanceof HTMLElement && typeof inputElement.scrollIntoView === 'function') {
+                inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            if (typeof inputElement.focus === 'function') {
+                setTimeout(() => {
+                    inputElement.focus({ preventScroll: scrolled }); 
+                }, 150); 
+            }
         }
-      }
     }
   };
 
@@ -270,7 +263,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl md:text-3xl font-black tracking-tighter flex items-center">
+        <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tighter flex items-center">
           {reportToEdit ? <Edit3 className="mr-3 h-7 w-7 text-accent" /> : <PlusCircle className="mr-3 h-7 w-7 text-accent" />}
           {pageTitle}
         </CardTitle>
@@ -281,7 +274,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
           <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-8" noValidate>
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Users className="mr-2 h-5 w-5 text-accent" />Basic Information</h3>
+              <h3 className="font-headline text-lg font-bold tracking-tighter flex items-center"><Users className="mr-2 h-5 w-5 text-accent" />Basic Information</h3>
               <FormField
                 control={form.control}
                 name="studentName"
@@ -359,7 +352,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><BookOpen className="mr-2 h-5 w-5 text-accent" />Lesson Content</h3>
+              <h3 className="font-headline text-lg font-bold tracking-tighter flex items-center"><BookOpen className="mr-2 h-5 w-5 text-accent" />Lesson Content</h3>
               <FormField
                 control={form.control}
                 name="topicCovered"
@@ -420,7 +413,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Target className="mr-2 h-5 w-5 text-accent" />Student Performance</h3>
+              <h3 className="font-headline text-lg font-bold tracking-tighter flex items-center"><Target className="mr-2 h-5 w-5 text-accent" />Student Performance</h3>
               <FormField
                 control={form.control}
                 name="strengths"
@@ -459,7 +452,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
             <Separator />
 
              <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-accent" />Homework / Next Steps</h3>
+              <h3 className="font-headline text-lg font-bold tracking-tighter flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-accent" />Homework / Next Steps</h3>
               <FormField
                 control={form.control}
                 name="assignedPuzzles"
@@ -498,7 +491,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><PlusCircle className="mr-2 h-5 w-5 text-accent" />Additional Notes</h3>
+              <h3 className="font-headline text-lg font-bold tracking-tighter flex items-center"><PlusCircle className="mr-2 h-5 w-5 text-accent" />Additional Notes</h3>
               <FormField
                 control={form.control}
                 name="additionalNotes"
@@ -529,5 +522,3 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     </Card>
   );
 }
-
-    

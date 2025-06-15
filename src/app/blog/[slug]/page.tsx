@@ -70,10 +70,10 @@ const richTextOptions = {
       return '';
     },
     [BLOCKS.PARAGRAPH]: (node: any, next: (nodes: any) => string) => `<p class="my-4 font-body text-base leading-relaxed">${next(node.content)}</p>`,
-    [BLOCKS.HEADING_1]: (node: any, next: (nodes: any) => string) => `<h1 class="font-headline text-3xl sm:text-4xl font-black tracking-tighter mt-10 mb-5">${next(node.content)}</h1>`,
-    [BLOCKS.HEADING_2]: (node: any, next: (nodes: any) => string) => `<h2 class="font-headline text-2xl sm:text-3xl font-black tracking-tighter mt-8 mb-4">${next(node.content)}</h2>`,
-    [BLOCKS.HEADING_3]: (node: any, next: (nodes: any) => string) => `<h3 class="font-headline text-xl sm:text-2xl font-black tracking-tighter mt-6 mb-3">${next(node.content)}</h3>`,
-    [BLOCKS.HEADING_4]: (node: any, next: (nodes: any) => string) => `<h4 class="font-headline text-lg sm:text-xl font-black tracking-tighter mt-5 mb-2">${next(node.content)}</h4>`,
+    [BLOCKS.HEADING_1]: (node: any, next: (nodes: any) => string) => `<h1 class="font-headline text-2xl sm:text-3xl font-bold tracking-tighter mt-10 mb-5">${next(node.content)}</h1>`,
+    [BLOCKS.HEADING_2]: (node: any, next: (nodes: any) => string) => `<h2 class="font-headline text-xl sm:text-2xl font-bold tracking-tighter mt-8 mb-4">${next(node.content)}</h2>`,
+    [BLOCKS.HEADING_3]: (node: any, next: (nodes: any) => string) => `<h3 class="font-headline text-lg sm:text-xl font-bold tracking-tighter mt-6 mb-3">${next(node.content)}</h3>`,
+    [BLOCKS.HEADING_4]: (node: any, next: (nodes: any) => string) => `<h4 class="font-headline text-base sm:text-lg font-bold tracking-tighter mt-5 mb-2">${next(node.content)}</h4>`,
     [BLOCKS.UL_LIST]: (node: any, next: (nodes: any) => string) => `<ul class="list-disc list-inside space-y-1 pl-4 my-4 font-body">${next(node.content)}</ul>`,
     [BLOCKS.OL_LIST]: (node: any, next: (nodes: any) => string) => `<ol class="list-decimal list-inside space-y-1 pl-4 my-4 font-body">${next(node.content)}</ol>`,
     [BLOCKS.QUOTE]: (node: any, next: (nodes: any) => string) => `<blockquote class="border-l-4 border-accent pl-4 italic my-4 font-body text-muted-foreground">${next(node.content)}</blockquote>`,
@@ -102,7 +102,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <article className="prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl mx-auto">
             <header className="mb-8">
-              <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-3">
+              <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight mb-3">
                 {post.title}
               </h1>
               <p className="font-body text-sm text-muted-foreground">
@@ -111,7 +111,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </header>
 
             {post.featuredImage && post.featuredImage.fields.file.url && (
-              <div className="relative w-full aspect-[16/9] mb-8 rounded-lg overflow-hidden shadow-lg">
+              <div className="relative w-full aspect-[16/9] mb-8 overflow-hidden shadow-lg">
                 <Image
                   src={`https:${post.featuredImage.fields.file.url}`}
                   alt={post.featuredImage.fields.description || post.title}

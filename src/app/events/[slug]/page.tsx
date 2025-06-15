@@ -105,7 +105,7 @@ export default async function EventPage({ params }: EventPageProps) {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <header className="mb-8 border-b border-border pb-6">
-          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-4">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight mb-4">
             {event.title}
           </h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
@@ -127,7 +127,7 @@ export default async function EventPage({ params }: EventPageProps) {
             {event.type && (
               <div className="flex items-center">
                 <Tag className="h-5 w-5 mr-2 text-accent" />
-                <span className="font-body capitalize bg-secondary px-2 py-0.5 rounded-md text-secondary-foreground text-xs">
+                <span className="font-body capitalize bg-secondary px-2 py-0.5 text-secondary-foreground text-xs">
                   {event.type}
                 </span>
               </div>
@@ -137,7 +137,7 @@ export default async function EventPage({ params }: EventPageProps) {
 
         {event.description && (
           <section className="mb-8 prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg mx-auto">
-            <h2 className="font-headline text-2xl font-black tracking-tighter mb-3">About this Event</h2>
+            <h2 className="font-headline text-xl font-bold tracking-tighter mb-3">About this Event</h2>
             {event.description.split('\n').map((paragraph, index) => (
               <p key={index} className="font-body">{paragraph}</p>
             ))}

@@ -8,7 +8,7 @@ import type { BlogPost } from '@/lib/types';
 import { Newspaper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const interactiveLinkClasses = "transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+const titleLinkClasses = "transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 p-0.5 -m-0.5";
 
 export default async function BlogSection() {
   const latestPost: BlogPost | null = await getLatestBlogPost();
@@ -25,8 +25,10 @@ export default async function BlogSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Newspaper className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/blog" className={cn(interactiveLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
-              Latest From The Blog
+          <Link href="/blog" className={cn(titleLinkClasses, "inline-block")}>
+              <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight text-foreground hover:text-accent">
+                Latest From The Blog
+              </h2>
           </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Our most recent insight, news, or update.
@@ -51,7 +53,7 @@ export default async function BlogSection() {
                       </div>
                   )}
                   <CardHeader>
-                      <CardTitle className="font-headline text-2xl md:text-3xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors">
+                      <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tighter leading-tight group-hover:text-accent transition-colors">
                         {post.title}
                       </CardTitle>
                     <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>

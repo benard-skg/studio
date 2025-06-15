@@ -17,17 +17,17 @@ export default function HeroSection() {
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw" // Example sizes, adjust as needed
       />
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter leading-tight mb-6">
+        <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter leading-tight mb-6">
           Master Your Chess Game
         </h1>
         <p className="font-body text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
           Unlock your potential with personalized chess coaching from LCA. Strategy, tactics, and mindset – all tailored to your success.
         </p>
         <div className="flex flex-col space-y-4 max-w-xs mx-auto sm:max-w-sm">
-          <Button asChild size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
+          <Button asChild size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 px-8 py-3 text-lg">
             <Link href="/classes">Explore Classes</Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="w-full transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
+          <Button asChild variant="outline" size="lg" className="w-full transition-all transform hover:scale-105 px-8 py-3 text-lg">
             <Link href="/contact">Book a Consultation</Link>
           </Button>
         </div>

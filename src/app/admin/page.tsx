@@ -12,7 +12,7 @@ export default function AdminPage() {
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-10 text-center">
           <ShieldCheck className="mx-auto h-16 w-16 text-accent mb-4" />
-          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
             Admin Dashboard
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-3">
@@ -20,7 +20,7 @@ export default function AdminPage() {
           </p>
         </header>
 
-        <div className="bg-card shadow-md rounded-lg p-6 border border-border text-center">
+        <div className="bg-card shadow-md p-6 border border-border text-center">
           <p className="font-body text-muted-foreground">
             Select an option from the navigation to manage site content.
           </p>

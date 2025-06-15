@@ -211,7 +211,7 @@ export default function AdminEventsPage() {
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
-          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
             Manage Events
           </h1>
           <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -223,14 +223,14 @@ export default function AdminEventsPage() {
             <div className="flex justify-center py-10"><Loader2 className="h-10 w-10 animate-spin text-accent"/></div>
         )}
         {!isLoading && error && (
-            <div className="my-6 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center justify-center">
+            <div className="my-6 p-4 bg-destructive/10 border border-destructive text-destructive flex items-center justify-center">
                 <AlertCircle className="h-5 w-5 mr-3" /> {error}
             </div>
         )}
         {!isLoading && !error && events.length === 0 && (
-             <div className="mt-8 flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
+             <div className="mt-8 flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6">
                 <CalendarPlus className="h-10 w-10 mb-3 text-muted-foreground" />
-                <p className="font-headline text-2xl font-black tracking-tighter mb-2">No Events Found</p>
+                <p className="font-headline text-xl font-bold tracking-tighter mb-2">No Events Found</p>
                 <p className="font-body text-center text-muted-foreground">
                 Click "Add New Event" to get started.
                 </p>
@@ -238,7 +238,7 @@ export default function AdminEventsPage() {
         )}
 
         {!isLoading && !error && events.length > 0 && (
-            <div className="bg-card shadow-md rounded-lg overflow-hidden border border-border">
+            <div className="bg-card shadow-md overflow-hidden border border-border">
             <Table>
                 <TableHeader>
                 <TableRow>
@@ -282,7 +282,7 @@ export default function AdminEventsPage() {
       <Dialog open={isAddEditDialogOpen} onOpenChange={setIsAddEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-headline font-black tracking-tighter">{eventToEdit ? "Edit Event" : "Add New Event"}</DialogTitle>
+            <DialogTitle className="font-headline font-bold tracking-tighter">{eventToEdit ? "Edit Event" : "Add New Event"}</DialogTitle>
             <DialogDescription>
               {eventToEdit ? "Modify the details of the existing event." : "Fill in the details to create a new event."}
             </DialogDescription>
@@ -343,7 +343,7 @@ export default function AdminEventsPage() {
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="font-headline font-black tracking-tighter">{currentEvent.title}</DialogTitle>
+              <DialogTitle className="font-headline font-bold tracking-tighter">{currentEvent.title}</DialogTitle>
               <DialogDescription className="font-body text-xs">
                 Event ID: {currentEvent.id}
               </DialogDescription>
@@ -377,7 +377,7 @@ export default function AdminEventsPage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline font-black tracking-tighter">Delete Event?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-bold tracking-tighter">Delete Event?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the event "<strong>{eventToDelete.title}</strong>"? This action cannot be undone.
               </AlertDialogDescription>
