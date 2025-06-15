@@ -51,19 +51,6 @@ const technologies = [
   { name: 'Firebase Studio', icon: MonitorSmartphone, description: "Development environment used for building this application." },
 ];
 
-const deferredFeatures = [
-    "PGN file processing beyond filename/URL (e.g., direct parsing for board replay).",
-    "PDF export for lesson reports.",
-    "Full student dashboard integration (progress tracking, saved lessons).",
-    "Lesson report editing functionality (currently create & view).",
-    "Advanced AI-driven analysis suggestions based on lesson reports using Genkit.",
-    "Real-time collaborative analysis board features.",
-    "Full Firebase Authentication with roles for admin areas and user-specific content.",
-    "Comprehensive security rules for Firestore (currently relies on default/test rules).",
-    "User profile management for coaches and students.",
-    "Notifications (email/in-app) for events or report submissions."
-];
-
 
 export default function TechStackPage() {
   return (
@@ -103,38 +90,15 @@ export default function TechStackPage() {
 
         <Separator className="my-12" />
 
-        <section className="mb-12">
-          <Card className="bg-amber-500/15 border-amber-500/30 text-amber-900 dark:text-amber-200 animate-double-subtle-pulse-5s">
-            <CardHeader>
-              <CardTitle className="font-headline text-xl font-bold tracking-tighter flex items-center">
-                <ListChecks className="mr-3 h-6 w-6 text-amber-600 dark:text-amber-400" />
-                Future Enhancements & Deferred Items
-              </CardTitle>
-              <CardDescription className="font-body text-amber-700 dark:text-amber-300">
-                Features and improvements planned or discussed but not yet fully implemented.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc space-y-1 pl-5 font-body text-sm">
-                {deferredFeatures.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </section>
-
-        <Separator className="my-12" />
-
         <section className="mb-0 pb-0">
           <Card className="mb-0">
             <CardHeader>
               <CardTitle className="font-headline text-xl font-bold tracking-tighter flex items-center">
                 <Rocket className="mr-3 h-6 w-6 text-accent" />
-                Development Timeline (Conceptual)
+                Development Timeline
               </CardTitle>
               <CardDescription className="font-body">
-                An overview of the project's development phases.
+                An overview of the project's development phases and key implemented features.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -149,9 +113,11 @@ export default function TechStackPage() {
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
-                    <li>Basic Next.js setup with ShadCN UI.</li>
-                    <li>Core pages: Home, About, Coaches, Classes.</li>
-                    <li>Initial Contentful integration for Blog.</li>
+                    <li>Basic Next.js setup with ShadCN UI & Tailwind CSS.</li>
+                    <li>Core pages: Home, About, Coaches, Classes, Contact.</li>
+                    <li>Contentful integration for Blog (listing & detail pages).</li>
+                    <li>Basic layout, navigation (Navbar, Footer), and theme toggle (dark/light).</li>
+                    <li>Initial project structure and component organization.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -161,7 +127,7 @@ export default function TechStackPage() {
               <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-lg font-bold tracking-tighter mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Early Production</CardTitle>
+                    <CardTitle className="font-headline text-lg font-bold tracking-tighter mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Core Functionality</CardTitle>
                     <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Completed: July 2024</CardDescription>
@@ -169,12 +135,16 @@ export default function TechStackPage() {
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
-                    <li>Firebase project setup and SDK integration.</li>
-                    <li>Firestore for contact submissions, lesson reports, and events.</li>
-                    <li>Firebase Storage for PGN file uploads.</li>
-                    <li>Admin settings & basic admin CRUD operations.</li>
-                    <li>Interactive Analysis Board functionality.</li>
-                    <li>Deployment to Firebase App Hosting (Beta).</li>
+                    <li>Firebase project setup: Firestore for dynamic data.</li>
+                    <li>Admin section for Events: CRUD operations.</li>
+                    <li>Admin section for Lesson Reports: Create, View, Edit, Delete.</li>
+                    <li>Client-side PDF download for Lesson Reports.</li>
+                    <li>Coach admin profiles listing their lesson reports.</li>
+                    <li>Interactive Analysis Board page with PGN download.</li>
+                    <li>Event Calendar on homepage, fetching data from Firestore.</li>
+                    <li>Lichess TV embed on homepage.</li>
+                    <li>Deployment to Firebase App Hosting.</li>
+                    <li>UI/UX refinements: click effects, toast notifications, typography adjustments, loading states.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -190,10 +160,11 @@ export default function TechStackPage() {
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
                     <li>Genkit integration for AI-powered features (e.g., basic analysis hints).</li>
-                    <li>Firebase Authentication for user roles.</li>
+                    <li>Firebase Authentication for user roles (Admin, Coach, Student).</li>
                     <li>Refined UI/UX and improved error handling.</li>
                     <li>Comprehensive Firestore security rules.</li>
-                    <li>Further feature enhancements from deferred list.</li>
+                    <li>User profile management for coaches and students.</li>
+                    <li>Notifications (email/in-app) for events or report submissions.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -205,3 +176,5 @@ export default function TechStackPage() {
     </div>
   );
 }
+
+    
