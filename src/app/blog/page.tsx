@@ -67,7 +67,7 @@ export default async function BlogIndexPage() {
                 )}
                 <CardHeader>
                   <Link href={`/blog/${post.slug}`}>
-                    <CardTitle className="font-headline text-xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
+                    <CardTitle className="font-headline text-xl md:text-2xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
                       {post.title}
                     </CardTitle>
                   </Link>

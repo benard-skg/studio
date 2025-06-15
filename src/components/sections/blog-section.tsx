@@ -60,7 +60,7 @@ export default async function BlogSection() {
               )}
               <CardHeader>
                 <Link href={`/blog/${post.slug}`} className={cn("p-0.5 -m-0.5", linkClasses)}>
-                  <CardTitle className="font-headline text-xl font-extrabold tracking-tighter leading-tight hover:text-accent">
+                  <CardTitle className="font-headline text-2xl md:text-3xl font-extrabold tracking-tighter leading-tight hover:text-accent">
                     {post.title}
                   </CardTitle>
                 </Link>
