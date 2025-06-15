@@ -2,7 +2,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
-import { Settings, UserCircle, Save } from 'lucide-react';
+import { Settings, Info } from 'lucide-react';
 
 export default function AdminSettingsLoading() {
   return (
@@ -19,8 +19,8 @@ export default function AdminSettingsLoading() {
           {/* Card Header */}
           <div className="mb-6">
             <div className="flex items-center mb-2">
-              <Skeleton className="h-6 w-6 rounded-full mr-2" /> {/* UserCircle Icon */}
-              <Skeleton className="h-7 w-3/4" /> {/* Card Title: ChessTV Lichess Username */}
+              <Skeleton className="h-6 w-6 rounded-full mr-2" /> {/* Info Icon */}
+              <Skeleton className="h-7 w-3/4" /> {/* Card Title: Application Configuration */}
             </div>
             <Skeleton className="h-4 w-full mb-1" /> {/* Card Description Line 1 */}
             <Skeleton className="h-4 w-5/6" />      {/* Card Description Line 2 */}
@@ -29,11 +29,8 @@ export default function AdminSettingsLoading() {
           {/* Card Content */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <Skeleton className="h-5 w-1/3" /> {/* Label: Lichess Username */}
-              <Skeleton className="h-10 w-full rounded-md" /> {/* Input Field */}
+              <Skeleton className="h-5 w-full mx-auto" /> {/* Placeholder text */}
             </div>
-            <Skeleton className="h-10 w-full rounded-md" /> {/* Save Button */}
-            <Skeleton className="h-4 w-3/4 mx-auto mt-2" /> {/* Current username display placeholder */}
           </div>
         </div>
       </main>
