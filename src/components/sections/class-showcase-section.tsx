@@ -21,7 +21,7 @@ const classesData = [
   },
 ];
 
-const titleLinkClasses = "font-body text-base font-medium transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+const interactiveLinkClasses = "transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
 
 
 export default function ClassShowcaseSection() {
@@ -34,7 +34,7 @@ export default function ClassShowcaseSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/classes" className={cn(titleLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
+          <Link href="/classes" className={cn(interactiveLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
               Coaching Classes
           </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -47,7 +47,7 @@ export default function ClassShowcaseSection() {
             <Card
               key={cls.name}
               className={cn(
-                "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden", // Removed rounded-xl
+                "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden", 
                 classesData.length === 1 ? "w-full max-w-xl" : "max-w-md"
               )}
             >

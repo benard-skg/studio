@@ -8,7 +8,7 @@ import type { BlogPost } from '@/lib/types';
 import { Newspaper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const titleLinkClasses = "font-body text-base font-medium transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+const interactiveLinkClasses = "transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
 
 export default async function BlogSection() {
   const latestPost: BlogPost | null = await getLatestBlogPost();
@@ -25,7 +25,7 @@ export default async function BlogSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Newspaper className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/blog" className={cn(titleLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
+          <Link href="/blog" className={cn(interactiveLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
               Latest From The Blog
           </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
