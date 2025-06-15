@@ -28,8 +28,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { slugify } from '@/lib/utils';
 
-// StoredLessonReport interface is now imported from @/lib/types
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
@@ -57,7 +57,6 @@ export default function CoachAdminProfilePage() {
         return {
           id: docSnap.id,
           ...data,
-          // Ensure submittedAt is correctly typed for StoredLessonReport
           submittedAt: data.submittedAt as Timestamp, 
         } as StoredLessonReport;
       });
@@ -74,7 +73,7 @@ export default function CoachAdminProfilePage() {
   useEffect(() => {
     if (coachSlug) {
       const currentCoach = allCoachesData.find(c =>
-        c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') === coachSlug
+        slugify(c.name) === coachSlug
       );
 
       if (currentCoach) {
@@ -136,6 +135,13 @@ export default function CoachAdminProfilePage() {
     } catch(e) {
       return 'Invalid Date';
     }
+  };
+
+  const handlePlaceholderDownload = (reportName: string) => {
+    toast({
+        title: "Download Placeholder",
+        description: `Download action for "${reportName}" is not yet implemented.`,
+    });
   };
 
   if (isLoading && !coach && !error) {
@@ -235,36 +241,48 @@ export default function CoachAdminProfilePage() {
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="font-headline text-xl font-black tracking-tighter">Report for: {report.studentName}</CardTitle>
+                        <CardTitle className="font-headline text-xl font-black tracking-tighter">
+                          Report for: <Link href={`/admin/students/${slugify(report.studentName)}`} className="text-accent hover:underline">{report.studentName}</Link>
+                        </CardTitle>
                         <CardDescription className="font-body text-xs">
                           Lesson: {formatLessonDate(report.lessonDateTime)} | Submitted: {formatDate(report.submittedAt)}
                         </CardDescription>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Button variant="ghost" size="icon" asChild title="Edit Report">
-                          <Link href={`/admin/lesson-reports/edit/${report.id}`}>
-                            <Edit3 className="h-4 w-4 text-blue-500" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true); }} title="Delete Report">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => handlePlaceholderDownload(report.studentName)} title="Download Report">
+                                <Download className="h-4 w-4 text-green-500" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Download Report</p></TooltipContent>
+                          </Tooltip>
+                           <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/admin/lesson-reports/edit/${report.id}`}>
+                                    <Edit3 className="h-4 w-4 text-blue-500" />
+                                </Link>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Edit Report</p></TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true); }} title="Delete Report">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Delete Report</p></TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                        </div>
                     </div>
                   </CardHeader>
                   <CardContent className="text-sm space-y-1">
                     <p className="font-body"><strong>Topic:</strong> {report.topicCovered === 'Custom' ? report.customTopic : report.topicCovered}</p>
                     <p className="font-body"><strong>Key Concepts:</strong> <span className="text-muted-foreground line-clamp-2">{report.keyConcepts}</span></p>
-                    {report.pgnFilename && (
-                        <div className="flex items-center space-x-2">
-                            <p className="font-body"><strong>PGN:</strong> {report.pgnFilename}</p>
-                            {report.pgnFileUrl && (
-                                <a href={report.pgnFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-                                    <Download className="h-4 w-4 inline-block"/>
-                                </a>
-                            )}
-                        </div>
-                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -320,5 +338,4 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
-
     
