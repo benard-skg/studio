@@ -2,7 +2,7 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
-import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route, Server, Info, Lock, Users2, FileLock2 } from 'lucide-react';
+import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route, Server, Info, Lock, Users2, FileLock2, FileText, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -136,17 +136,16 @@ export default function TechStackPage() {
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
-                    <li>Firebase project setup: Firestore for dynamic data.</li>
-                    <li>Admin section for Events: CRUD operations & public-facing event detail pages.</li>
-                    <li>Admin section for Lesson Reports: Create, View (detailed), Edit, Delete functionalities.</li>
-                    <li>Client-side PDF download for Lesson Reports from coach admin & detailed view.</li>
-                    <li>Coach admin profiles listing their lesson reports; clickable report cards for detailed view.</li>
-                    <li>Interactive Analysis Board page with PGN download capability (via form).</li>
-                    <li>Event Calendar on homepage, fetching data from Firestore.</li>
-                    <li>Lichess TV embed on homepage.</li>
-                    <li>Form validation enhancements (scroll to error).</li>
-                    <li>UI/UX refinements: click effects, toast notifications, loading states, icon buttons with tooltips.</li>
-                    <li>Deployment to Firebase App Hosting.</li>
+                    <li><Database className="inline h-4 w-4 mr-1 text-muted-foreground"/>Firebase project setup: Firestore for dynamic data.</li>
+                    <li><Route className="inline h-4 w-4 mr-1 text-muted-foreground"/>Admin section for Events: CRUD operations & public-facing event detail pages.</li>
+                    <li><FileText className="inline h-4 w-4 mr-1 text-muted-foreground"/>Admin section for Lesson Reports: Create, View (detailed), Edit, Delete functionalities.</li>
+                    <li><Download className="inline h-4 w-4 mr-1 text-muted-foreground"/>Client-side PDF download for Lesson Reports from coach admin & detailed view.</li>
+                    <li><Info className="inline h-4 w-4 mr-1 text-muted-foreground"/>Coach admin profiles listing their lesson reports; clickable report cards for detailed view.</li>
+                    <li><MonitorSmartphone className="inline h-4 w-4 mr-1 text-muted-foreground"/>Interactive Analysis Board page with PGN download capability (via form).</li>
+                    <li><ListChecks className="inline h-4 w-4 mr-1 text-muted-foreground"/>Event Calendar on homepage, fetching data from Firestore.</li>
+                    <li><ExternalLink className="inline h-4 w-4 mr-1 text-muted-foreground"/>Lichess TV embed on homepage.</li>
+                    <li><Wrench className="inline h-4 w-4 mr-1 text-muted-foreground"/>Form validation enhancements (scroll to error).</li>
+                    <li><Palette className="inline h-4 w-4 mr-1 text-muted-foreground"/>UI/UX refinements: click effects, toast notifications, loading states, icon buttons with tooltips.</li>
                   </ul>
                 </CardContent>
               </Card>
