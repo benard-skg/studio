@@ -25,8 +25,6 @@ import type { LessonTopic, StoredLessonReport } from "@/lib/types";
 import { commonLessonTopics } from "@/lib/types";
 import { db } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
-// import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // PGN upload removed
-// import { v4 as uuidv4 } from 'uuid'; // PGN upload removed
 import { allCoachesData } from '@/components/sections/coach-profile-section';
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/utils";
@@ -38,17 +36,16 @@ const lessonReportSchema = z.object({
   ratingBefore: z.coerce.number().optional(),
   ratingAfter: z.coerce.number().optional(),
   topicCovered: z.string().min(1, "Topic covered is required").default(''),
-  customTopic: z.string().default(''),
-  keyConcepts: z.string().min(1, "Key concepts are required").default(''),
-  // pgnFile: z.custom<FileList>().optional(), // PGN field removed
+  customTopic: z.string().optional(), // Made optional
   gameExampleLinks: z.string().url("Must be a valid URL (e.g., Lichess, Chess.com analysis link)").optional().or(z.literal('')),
+  keyConcepts: z.string().min(1, "Key concepts are required").default(''),
   strengths: z.string().min(1, "Strengths observed are required").default(''),
   areasToImprove: z.string().min(1, "Areas to improve are required").default(''),
   mistakesMade: z.string().min(1, "Common mistakes made are required").default(''),
-  assignedPuzzles: z.string().default(''),
-  practiceGames: z.string().default(''),
+  assignedPuzzles: z.string().optional(), // Made optional
+  practiceGames: z.string().optional(), // Made optional
   readingVideos: z.string().url("Must be a valid URL for reading/video material").optional().or(z.literal('')),
-  additionalNotes: z.string().default(''),
+  additionalNotes: z.string().optional(), // Made optional
 });
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
@@ -74,7 +71,6 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
       topicCovered: "",
       customTopic: "",
       keyConcepts: "",
-      // pgnFile: undefined, // PGN field removed
       gameExampleLinks: "",
       strengths: "",
       areasToImprove: "",
@@ -88,7 +84,6 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
   React.useEffect(() => {
     if (reportToEdit) {
-      // Populate form with existing report data
       const { id, submittedAt, pgnFileUrl, pgnFilename, ...formDataToReset } = reportToEdit;
       const lessonDT = formDataToReset.lessonDateTime 
         ? new Date(formDataToReset.lessonDateTime).toISOString().substring(0, 16) 
@@ -105,15 +100,12 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
         customTopic: formDataToReset.customTopic ?? "",
         assignedPuzzles: formDataToReset.assignedPuzzles ?? "",
         practiceGames: formDataToReset.practiceGames ?? "",
-
       });
       if (formDataToReset.topicCovered) {
         setSelectedTopic(formDataToReset.topicCovered);
       }
-      // Clear any draft from localStorage when editing an existing report
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } else {
-      // Load draft from localStorage only if not editing an existing report
       const draft = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (draft) {
         try {
@@ -131,7 +123,6 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
   }, [reportToEdit, form]);
 
   React.useEffect(() => {
-    // Save to draft only if not editing an existing report
     if (!reportToEdit) {
       const subscription = form.watch((values) => {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(values));
@@ -143,47 +134,51 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
   async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
     setIsSubmitting(true);
 
-    // PGN upload logic removed
-    // let pgnFileUrl = "";
-    // let pgnFilename = "";
-    // ...
+    const dataForFirestore: { [key: string]: any } = {};
+    Object.entries(values).forEach(([key, value]) => {
+        if (value !== undefined) { // Only include defined values
+            dataForFirestore[key] = value;
+        }
+    });
+    // Ensure empty optional strings are converted to empty strings not undefined if they reach here as undefined.
+    // Zod's .default('') for strings should handle this, but being explicit for optional ones.
+    ['customTopic', 'gameExampleLinks', 'assignedPuzzles', 'practiceGames', 'readingVideos', 'additionalNotes'].forEach(key => {
+      if (dataForFirestore[key] === undefined) {
+        dataForFirestore[key] = ""; // Store empty string if field was optional and not provided
+      }
+    });
 
-    const reportDataToSave: Omit<z.infer<typeof lessonReportSchema>, 'pgnFile'> & { submittedAt?: any, updatedAt?: any } = {
-      ...values,
-    };
 
     try {
       if (reportToEdit && reportToEdit.id) {
-        // Update existing report
-        reportDataToSave.updatedAt = serverTimestamp(); // Add/update updatedAt timestamp
+        dataForFirestore.updatedAt = serverTimestamp();
         const reportDocRef = doc(db, "lessonReports", reportToEdit.id);
-        await updateDoc(reportDocRef, reportDataToSave);
+        await updateDoc(reportDocRef, dataForFirestore);
         toast({
           title: "Report Updated!",
           description: "The lesson report has been successfully updated.",
         });
-        // Redirect to the coach's admin page after update
         const coachSlug = slugify(reportToEdit.coachName);
         router.push(`/admin/coaches/${coachSlug}`);
 
       } else {
-        // Create new report
-        reportDataToSave.submittedAt = serverTimestamp();
-        await addDoc(collection(db, "lessonReports"), reportDataToSave);
+        dataForFirestore.submittedAt = serverTimestamp();
+        await addDoc(collection(db, "lessonReports"), dataForFirestore);
         toast({
           title: "Report Saved!",
           description: "The lesson report has been successfully saved.",
         });
         form.reset();
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
         setSelectedTopic("");
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
       }
     } catch (error) {
       console.error("Error saving lesson report:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       toast({
         variant: "destructive",
         title: reportToEdit ? "Update Failed" : "Save Failed",
-        description: `Could not ${reportToEdit ? 'update' : 'save'} the lesson report. Please try again.`,
+        description: `Could not ${reportToEdit ? 'update' : 'save'} the lesson report. ${errorMessage}`,
       });
     } finally {
       setIsSubmitting(false);
@@ -347,7 +342,6 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                   </FormItem>
                 )}
               />
-              {/* PGN File Upload Field Removed */}
               <FormField
                 control={form.control}
                 name="gameExampleLinks"
@@ -473,3 +467,4 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     </Card>
   );
 }
+
