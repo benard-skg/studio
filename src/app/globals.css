@@ -3,18 +3,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Playfair Display - Self-hosted */
+/* Montserrat - Self-hosted */
 @font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/PlayfairDisplay-Bold.woff2') format('woff2');
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/PlayfairDisplay-Black.woff2') format('woff2');
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat-Black.woff2') format('woff2');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
