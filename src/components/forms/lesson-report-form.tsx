@@ -4,7 +4,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +49,8 @@ const lessonReportSchema = z.object({
   additionalNotes: z.string().optional(),
 });
 
+type LessonReportFormValues = z.infer<typeof lessonReportSchema>;
+
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
 
 interface LessonReportFormProps {
@@ -61,7 +63,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedTopic, setSelectedTopic] = React.useState<string>(reportToEdit?.topicCovered || "");
 
-  const form = useForm<z.infer<typeof lessonReportSchema>>({
+  const form = useForm<LessonReportFormValues>({
     resolver: zodResolver(lessonReportSchema),
     defaultValues: {
       studentName: "",
@@ -132,20 +134,26 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     }
   }, [form, reportToEdit]);
 
-  async function onSubmit(values: z.infer<typeof lessonReportSchema>) {
+  async function onSubmit(values: LessonReportFormValues) {
     setIsSubmitting(true);
 
     const dataForFirestore: { [key: string]: any } = {};
-    Object.entries(values).forEach(([key, value]) => {
-        if (value !== undefined) {
-            dataForFirestore[key] = value;
-        }
+    
+    (Object.keys(values) as Array<keyof LessonReportFormValues>).forEach((key) => {
+      if (values[key] !== undefined) {
+        dataForFirestore[key] = values[key];
+      } else if (key === 'ratingBefore' || key === 'ratingAfter') {
+        // Do not add undefined numeric fields
+      } else {
+        // For optional string fields, ensure they are empty strings if undefined
+        dataForFirestore[key] = ""; 
+      }
     });
     
-    // Ensure empty optional strings are stored as empty strings not undefined
+    // Ensure specific optional string fields are handled
     ['customTopic', 'gameExampleLinks', 'assignedPuzzles', 'practiceGames', 'readingVideos', 'additionalNotes'].forEach(key => {
       if (dataForFirestore[key] === undefined) {
-        dataForFirestore[key] = ""; 
+        dataForFirestore[key] = "";
       }
     });
 
@@ -155,26 +163,26 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
         const reportDocRef = doc(db, "lessonReports", reportToEdit.id);
         await updateDoc(reportDocRef, dataForFirestore);
         
-        const coachSlug = slugify(reportToEdit.coachName);
+        const updatedCoachSlug = slugify(values.coachName); // Use coach name from form values
         toast({
           title: "Report Updated!",
           description: (
             <>
-              The lesson report has been successfully updated.{" "}
-              <Link href={`/admin/coaches/${coachSlug}`} className="text-sky-500 hover:text-sky-600 underline">
+              The lesson report for {values.studentName} has been successfully updated.{" "}
+              <Link href={`/admin/coaches/${updatedCoachSlug}`} className="text-sky-500 hover:text-sky-600 underline">
                 View
               </Link>
             </>
           ),
         });
-        router.push(`/admin/coaches/${coachSlug}`);
+        router.push(`/admin/coaches/${updatedCoachSlug}`);
 
       } else {
         dataForFirestore.submittedAt = serverTimestamp();
         await addDoc(collection(db, "lessonReports"), dataForFirestore);
         toast({
           title: "Report Saved!",
-          description: "The lesson report has been successfully saved.",
+          description: `The lesson report for ${values.studentName} has been successfully saved.`,
         });
         form.reset();
         setSelectedTopic("");
@@ -186,12 +194,32 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
       toast({
         variant: "destructive",
         title: reportToEdit ? "Update Failed" : "Save Failed",
-        description: `Could not ${reportToEdit ? 'update' : 'save'} the lesson report. ${errorMessage}`,
+        description: `Could not ${reportToEdit ? 'update' : 'save'} the lesson report for ${values.studentName}. ${errorMessage}`,
       });
     } finally {
       setIsSubmitting(false);
     }
   }
+
+  const onFormError = (errors: FieldErrors<LessonReportFormValues>) => {
+    const errorKeys = Object.keys(errors) as Array<keyof LessonReportFormValues>;
+    if (errorKeys.length > 0) {
+      const firstErrorKey = errorKeys[0];
+      const fieldError = errors[firstErrorKey];
+      
+      if (fieldError && fieldError.ref && typeof (fieldError.ref as HTMLElement).focus === 'function') {
+        const fieldElement = fieldError.ref as HTMLElement;
+        fieldElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => fieldElement.focus({ preventScroll: true }), 100); // Slight delay for scroll
+      } else {
+        // Fallback if ref is not directly focusable or available
+        const formFieldContainer = document.querySelector(`[data-formfield-name="${firstErrorKey}"]`) as HTMLElement;
+        if (formFieldContainer) {
+           formFieldContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+  };
 
   const handleClearDraft = () => {
     form.reset();
@@ -224,9 +252,9 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
+          <form onSubmit={form.handleSubmit(onSubmit, onFormError)} className="space-y-8" noValidate>
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="studentName">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Users className="mr-2 h-5 w-5 text-accent" />Basic Information</h3>
               <FormField
                 control={form.control}
@@ -244,7 +272,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                   control={form.control}
                   name="lessonDateTime"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-formfield-name="lessonDateTime">
                       <FormLabel>Date & Time of Lesson</FormLabel>
                       <FormControl><Input type="datetime-local" {...field} /></FormControl>
                       <FormMessage />
@@ -255,7 +283,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                   control={form.control}
                   name="coachName"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-formfield-name="coachName">
                       <FormLabel>Coach Name</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                         <FormControl>
@@ -281,7 +309,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                   control={form.control}
                   name="ratingBefore"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-formfield-name="ratingBefore">
                       <FormLabel>Rating Before (Optional)</FormLabel>
                       <FormControl><Input type="number" placeholder="e.g., 1200" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)} value={field.value ?? ''} /></FormControl>
                       <FormMessage />
@@ -292,7 +320,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                   control={form.control}
                   name="ratingAfter"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-formfield-name="ratingAfter">
                       <FormLabel>Rating After (Optional)</FormLabel>
                       <FormControl><Input type="number" placeholder="e.g., 1250" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)} value={field.value ?? ''} /></FormControl>
                       <FormMessage />
@@ -304,7 +332,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="topicCovered">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><BookOpen className="mr-2 h-5 w-5 text-accent" />Lesson Content</h3>
               <FormField
                 control={form.control}
@@ -331,7 +359,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                   control={form.control}
                   name="customTopic"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem data-formfield-name="customTopic">
                       <FormLabel>Custom Topic Description</FormLabel>
                       <FormControl><Input placeholder="Describe the custom topic" {...field} /></FormControl>
                       <FormMessage />
@@ -343,7 +371,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                 control={form.control}
                 name="keyConcepts"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="keyConcepts">
                     <FormLabel>Key Concepts (Bullet points recommended)</FormLabel>
                     <FormControl><Textarea placeholder="E.g., - Importance of center control..." {...field} rows={4} /></FormControl>
                     <FormMessage />
@@ -354,7 +382,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                 control={form.control}
                 name="gameExampleLinks"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="gameExampleLinks">
                     <FormLabel>Analysis Link (Lichess/Chess.com - Optional)</FormLabel>
                     <FormControl><Input type="url" placeholder="https://lichess.org/..." {...field} /></FormControl>
                     <FormMessage />
@@ -365,7 +393,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="strengths">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Target className="mr-2 h-5 w-5 text-accent" />Student Performance</h3>
               <FormField
                 control={form.control}
@@ -382,7 +410,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                 control={form.control}
                 name="areasToImprove"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="areasToImprove">
                     <FormLabel>Areas to Improve</FormLabel>
                     <FormControl><Textarea placeholder="What areas need focus?" {...field} rows={3} /></FormControl>
                     <FormMessage />
@@ -393,7 +421,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                 control={form.control}
                 name="mistakesMade"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="mistakesMade">
                     <FormLabel>Common Mistakes Made</FormLabel>
                     <FormControl><Textarea placeholder="List any recurring mistakes or patterns." {...field} rows={3} /></FormControl>
                     <FormMessage />
@@ -404,7 +432,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
+             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="assignedPuzzles">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-accent" />Homework / Next Steps</h3>
               <FormField
                 control={form.control}
@@ -421,7 +449,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                 control={form.control}
                 name="practiceGames"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="practiceGames">
                     <FormLabel>Practice Games</FormLabel>
                     <FormControl><Textarea placeholder="E.g., Play 3 games focusing on the Queen's Gambit." {...field} rows={3} /></FormControl>
                     <FormMessage />
@@ -432,7 +460,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
                 control={form.control}
                 name="readingVideos"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem data-formfield-name="readingVideos">
                     <FormLabel>Reading/Videos (Optional Link)</FormLabel>
                     <FormControl><Input type="url" placeholder="https://youtube.com/..." {...field} /></FormControl>
                     <FormMessage />
@@ -443,7 +471,7 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
             <Separator />
 
-            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
+            <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm" data-formfield-name="additionalNotes">
               <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><PlusCircle className="mr-2 h-5 w-5 text-accent" />Additional Notes</h3>
               <FormField
                 control={form.control}
@@ -475,3 +503,5 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     </Card>
   );
 }
+
+    

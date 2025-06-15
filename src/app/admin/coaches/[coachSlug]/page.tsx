@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
@@ -206,11 +207,20 @@ export default function CoachAdminProfilePage() {
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/admin/lesson-reports/create">
-                <FilePlus2 className="mr-2 h-5 w-5" /> Create New Report
-              </Link>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button asChild size="icon" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Link href="/admin/lesson-reports/create">
+                      <FilePlus2 className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create New Report</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {isLoading && <div className="flex justify-center py-4"><Loader2 className="h-8 w-8 animate-spin text-accent"/></div>}
@@ -310,3 +320,5 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
+
+    
