@@ -289,7 +289,7 @@ export default function CoachAdminProfilePage() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button asChild size="icon" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Button asChild size="icon" className="bg-accent text-accent-foreground hover:bg-accent/90 active:bg-accent/80">
                     <Link href="/admin/lesson-reports/create">
                       <FilePlus2 className="h-5 w-5" />
                     </Link>
@@ -312,7 +312,7 @@ export default function CoachAdminProfilePage() {
               {lessonReports.map(report => (
                 <Card 
                   key={report.id} 
-                  className="shadow-sm border-border bg-card hover:shadow-md transition-shadow duration-150 ease-in-out active:scale-[0.99] cursor-pointer"
+                  className="shadow-sm border-border bg-card hover:shadow-md hover:bg-accent/5 active:bg-accent/10 active:scale-95 transition-all duration-150 ease-in-out cursor-pointer"
                   onClick={() => handleCardClick(report.id)}
                 >
                   <CardHeader className="pb-3">
@@ -401,7 +401,7 @@ export default function CoachAdminProfilePage() {
               <AlertDialogAction
                 onClick={handleDeleteReport}
                 disabled={isDeleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80"
               >
                 {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                 Delete

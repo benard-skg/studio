@@ -31,8 +31,6 @@ interface EventCalendarSectionProps {
 }
 
 
-const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
-
 export default function EventCalendarSection({ events: initialEvents }: EventCalendarSectionProps) {
   const router = useRouter();
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState<Date>(startOfMonth(new Date()));
@@ -111,13 +109,13 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
               Loading calendar...
             </p>
           </div>
-          <div className="max-w-md mx-auto bg-card p-4 sm:p-6 rounded-xl shadow-lg border border-border animate-pulse">
+          <div className="max-w-md mx-auto bg-card p-4 sm:p-6 shadow-lg border border-border animate-pulse">
             <div className="flex items-center justify-between mb-4 px-1">
-              <div className="h-8 w-8 bg-muted rounded-md"></div>
-              <div className="h-6 w-32 bg-muted rounded-md"></div>
-              <div className="h-8 w-8 bg-muted rounded-md"></div>
+              <div className="h-8 w-8 bg-muted"></div>
+              <div className="h-6 w-32 bg-muted"></div>
+              <div className="h-8 w-8 bg-muted"></div>
             </div>
-            <div className="h-64 bg-muted rounded-md"></div>
+            <div className="h-64 bg-muted"></div>
           </div>
         </div>
       </section>
@@ -138,15 +136,15 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
           </p>
         </div>
 
-        <Card className="max-w-md mx-auto p-0 sm:p-2 rounded-xl shadow-lg border-border overflow-hidden">
+        <Card className="max-w-md mx-auto p-0 sm:p-2 shadow-lg border-border overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between py-3 px-4 sm:px-2 border-b border-border">
-            <Button variant="ghost" size="icon" onClick={goToPreviousMonth} aria-label="Previous month" className="hover:bg-accent/20">
+            <Button variant="ghost" size="icon" onClick={goToPreviousMonth} aria-label="Previous month" className="hover:bg-accent/20 active:bg-accent/30">
               <ChevronLeft className="h-5 w-5 text-accent" />
             </Button>
             <CardTitle className="font-headline text-xl font-black tracking-tighter text-foreground">
               {format(currentDisplayMonth, 'MMMM yyyy')}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="Next month" className="hover:bg-accent/20">
+            <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="Next month" className="hover:bg-accent/20 active:bg-accent/30">
               <ChevronRight className="h-5 w-5 text-accent" />
             </Button>
           </CardHeader>
@@ -169,16 +167,16 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
                 nav: "hidden",
                 table: "w-full border-collapse",
                 head_row: "flex justify-around mb-1",
-                head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
+                head_cell: "text-muted-foreground w-9 font-normal text-[0.8rem] uppercase",
                 row: "flex w-full mt-1.5 justify-around",
                 cell: "p-0 text-center text-sm relative focus-within:relative focus-within:z-20",
                 day: cn(
                   buttonVariants({ variant: "ghost" }),
-                  "h-9 w-9 p-0 font-normal text-muted-foreground rounded-full hover:bg-accent/10 hover:text-accent transition-all duration-200 ease-in-out hover:scale-110",
+                  "h-9 w-9 p-0 font-normal text-muted-foreground hover:bg-accent/10 hover:text-accent transition-all duration-200 ease-in-out hover:scale-110 active:scale-100",
                   "aria-selected:opacity-100"
                 ),
                 day_selected: "bg-accent text-accent-foreground font-bold scale-110 shadow-md animate-pulse-once",
-                day_today: "border-2 border-accent/70 text-accent font-semibold rounded-full",
+                day_today: "border-2 border-accent/70 text-accent font-semibold", // Keep today highlighted without full rounding if not selected
                 day_outside: "text-muted-foreground/50 opacity-70",
                 day_disabled: "text-muted-foreground/30 opacity-50 cursor-not-allowed",
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
@@ -199,12 +197,12 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
             <h3 className="font-headline text-2xl font-black tracking-tighter mb-4 text-center">
               Events on {format(selectedDate, 'MMMM dd, yyyy')}
             </h3>
-            <ScrollArea className="h-[300px] rounded-md border border-border shadow-sm bg-card">
+            <ScrollArea className="h-[300px] border border-border shadow-sm bg-card">
               <div className="space-y-3 p-4">
                 {eventsForSelectedDate.map(event => (
                   <Card
                     key={event.id || event.title || Math.random().toString()}
-                    className={cn("shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5", linkClasses)}
+                    className="shadow-sm hover:shadow-lg transition-all cursor-pointer border-border bg-background hover:bg-accent/5 active:bg-accent/10 active:scale-95 duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
                     onClick={() => event.detailsPageSlug && router.push(`/events/${event.detailsPageSlug}`)}
                     tabIndex={0}
                     onKeyPress={(e) => { if ((e.key === 'Enter' || e.key === ' ') && event.detailsPageSlug) router.push(`/events/${event.detailsPageSlug}`); }}
@@ -235,14 +233,14 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
           </div>
         )}
          {selectedDate && eventsForSelectedDate.length === 0 && eventDays.some(ed => isSameDay(ed, selectedDate)) && (
-           <div className="mt-8 max-w-xl mx-auto text-center p-6 bg-card rounded-lg shadow-md border border-border">
+           <div className="mt-8 max-w-xl mx-auto text-center p-6 bg-card shadow-md border border-border">
              <Info className="h-8 w-8 mx-auto text-muted-foreground mb-2"/>
              <p className="font-body text-muted-foreground">No specific event details listed for this day yet.</p>
              <p className="font-body text-xs text-muted-foreground/70 mt-1">It's marked as having activity, details might be general or coming soon.</p>
            </div>
         )}
          {selectedDate && !eventDays.some(ed => isSameDay(ed, selectedDate)) && (
-           <div className="mt-8 max-w-xl mx-auto text-center p-6 bg-card rounded-lg shadow-md border border-border">
+           <div className="mt-8 max-w-xl mx-auto text-center p-6 bg-card shadow-md border border-border">
             <CalendarIconLucide className="h-8 w-8 mx-auto text-muted-foreground mb-2"/>
             <p className="font-body text-muted-foreground">No events scheduled for {format(selectedDate, 'MMMM dd, yyyy')}.</p>
            </div>

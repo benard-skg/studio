@@ -16,14 +16,16 @@ const navItems = [
   { href: '/analysis-board', label: 'Analysis Board' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
-  // { href: '/admin/seed-report', label: 'Seed Report (Temp)' }, // Temporary link removed
 ];
 
-const linkClasses = "font-body text-sm font-medium transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
-const mobileLinkClasses = "font-body text-lg transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
+const linkBaseClasses = "font-body font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+const desktopLinkClasses = cn(linkBaseClasses, "text-sm hover:text-accent active:text-accent/80 active:scale-95");
+const mobileLinkClasses = cn(linkBaseClasses, "text-lg hover:text-accent active:text-accent/80 active:scale-95 py-1");
 
-// Define base interactive classes for the logo, without the focus ring/border
-const logoBaseInteractiveClasses = "transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none";
+const logoBaseClasses = "flex items-center space-x-2 font-headline font-bold tracking-tighter leading-tight transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+const desktopLogoClasses = cn(logoBaseClasses, "text-2xl hover:text-accent active:text-accent/80 active:scale-95");
+const mobileLogoClasses = cn(logoBaseClasses, "text-xl hover:text-accent active:text-accent/80 active:scale-95");
+
 
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
@@ -39,7 +41,25 @@ export default function Navbar() {
   }, []);
 
   if (!isMounted) {
-    return null;
+    // Render a placeholder or null to avoid hydration mismatch and layout shift
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Placeholder for logo */}
+            <div className="flex items-center space-x-2 text-2xl font-headline font-bold tracking-tighter">
+               <Crown className="h-7 w-7 text-accent" />
+               <span>LCA</span>
+            </div>
+            {/* Placeholder for nav items and buttons */}
+            <div className="flex items-center space-x-2">
+              <div className="h-9 w-9"></div>
+              <div className="md:hidden h-9 w-9"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
   }
 
   return (
@@ -48,10 +68,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20">
           <Link
             href="/"
-            className={cn(
-              "flex items-center space-x-2 text-2xl font-headline font-bold tracking-tighter leading-tight",
-              logoBaseInteractiveClasses
-            )}
+            className={desktopLogoClasses}
           >
             <Crown className="h-7 w-7 text-accent" />
             <span>LCA</span>
@@ -63,7 +80,7 @@ export default function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={linkClasses}
+                  className={desktopLinkClasses}
                 >
                   {item.label}
                 </Link>
@@ -82,17 +99,14 @@ export default function Navbar() {
                     <SheetTitle asChild>
                        <Link
                           href="/"
-                          className={cn(
-                            "flex items-center space-x-2 text-xl font-headline font-bold tracking-tighter leading-tight",
-                            logoBaseInteractiveClasses
-                          )}
+                          className={mobileLogoClasses}
                         >
                         <Crown className="h-6 w-6 text-accent" />
                         <span>LCA</span>
                       </Link>
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col space-y-6">
+                  <div className="flex flex-col space-y-5">
                     {navItems.map((item) => (
                       <SheetClose key={item.label} asChild>
                         <Link

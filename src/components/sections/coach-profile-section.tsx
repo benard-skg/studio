@@ -96,7 +96,8 @@ interface CoachProfileSectionProps {
   displayMode?: "all" | "singleRandom";
 }
 
-const linkClasses = "transition-all duration-200 ease-out hover:text-accent hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
+const linkClasses = "font-body text-base font-medium transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+
 
 export default function CoachProfileSection({ displayMode = "all" }: CoachProfileSectionProps) {
   const [coachesToDisplay, setCoachesToDisplay] = useState<Coach[]>(
@@ -130,7 +131,7 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
               Meet Our Coaches
             </h2>
           ) : (
-            <Link href="/coaches" className={cn("inline-block p-1 -m-1",linkClasses)}>
+            <Link href="/coaches" className={cn(linkClasses, "inline-block p-1 -m-1")}>
               <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight hover:text-accent">
                 Meet Our Coaches
               </h2>
@@ -161,7 +162,7 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
                   <CardHeader>
                     <div>
                       <CardTitle className="font-headline text-3xl font-black tracking-tighter leading-tight">
-                        <Link href={`/admin/coaches/${slugify(coach.name)}`} className={cn("p-1 -m-1",linkClasses)}>
+                        <Link href={`/admin/coaches/${slugify(coach.name)}`} className={cn(linkClasses, "text-foreground hover:text-accent p-0.5 -m-0.5")}>
                           {coach.name} {coach.nickname && `(${coach.nickname})`}
                         </Link>
                       </CardTitle>

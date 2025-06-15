@@ -35,7 +35,7 @@ const testimonials = [
 
 function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] }) {
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden h-full flex flex-col">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden h-full flex flex-col"> {/* Removed rounded-xl */}
       <CardContent className="p-6 text-center flex flex-col flex-grow">
         <Image
           src={testimonial.avatar}
@@ -98,7 +98,7 @@ export default function TestimonialsSection() {
                 <AccordionTrigger
                   className={cn(
                     buttonVariants({ variant: 'outline', size: 'lg' }),
-                    "w-auto mx-auto hover:no-underline"
+                    "w-auto mx-auto hover:no-underline" // Button variant will be squared by default now
                   )}
                 >
                   {openAccordionItem === 'more-testimonials' ? 'Show Less' : 'View All Testimonials'}

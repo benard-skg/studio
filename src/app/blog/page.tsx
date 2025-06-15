@@ -43,42 +43,39 @@ export default async function BlogIndexPage() {
         ) : (
           <div className={gridContainerClasses}>
             {blogPosts.map((post) => (
-              <Card
-                key={post.id}
-                className={cn(
-                  "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border",
-                  blogPosts.length === 1 && "w-full max-w-2xl"
-                )}
-              >
-                {post.thumbnail && post.thumbnail.fields.file.url && (
-                  <Link href={`/blog/${post.slug}`} className="block">
-                    <div className="aspect-[16/9] relative w-full">
-                      <Image
-                        src={`https:${post.thumbnail.fields.file.url}`}
-                        alt={post.thumbnail.fields.description || post.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    </div>
-                  </Link>
-                )}
-                <CardHeader>
-                  <Link href={`/blog/${post.slug}`}>
-                    <CardTitle className="font-headline text-xl md:text-2xl font-black tracking-tighter leading-tight hover:text-accent transition-colors">
-                      {post.title}
-                    </CardTitle>
-                  </Link>
-                  <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
-                </CardHeader>
-                {post.excerpt && (
-                   <CardContent className="flex-grow pb-4">
-                    <p className="font-body text-sm text-muted-foreground line-clamp-4">
-                      {post.excerpt}
-                    </p>
-                  </CardContent>
-                )}
-              </Card>
+              <Link key={post.id} href={`/blog/${post.slug}`} className="block group focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <Card
+                  className={cn(
+                    "flex flex-col shadow-lg group-hover:shadow-xl group-hover:bg-accent/5 group-active:bg-accent/10 group-active:scale-95 transition-all duration-300 overflow-hidden bg-card border-border h-full",
+                    blogPosts.length === 1 && "w-full max-w-2xl"
+                  )}
+                >
+                  {post.thumbnail && post.thumbnail.fields.file.url && (
+                      <div className="aspect-[16/9] relative w-full">
+                        <Image
+                          src={`https:${post.thumbnail.fields.file.url}`}
+                          alt={post.thumbnail.fields.description || post.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      </div>
+                  )}
+                  <CardHeader>
+                      <CardTitle className="font-headline text-xl md:text-2xl font-black tracking-tighter leading-tight group-hover:text-accent transition-colors">
+                        {post.title}
+                      </CardTitle>
+                    <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
+                  </CardHeader>
+                  {post.excerpt && (
+                     <CardContent className="flex-grow pb-4">
+                      <p className="font-body text-sm text-muted-foreground line-clamp-4">
+                        {post.excerpt}
+                      </p>
+                    </CardContent>
+                  )}
+                </Card>
+              </Link>
             ))}
           </div>
         )}

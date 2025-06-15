@@ -21,7 +21,8 @@ const classesData = [
   },
 ];
 
-const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
+const titleLinkClasses = "font-body text-base font-medium transition-all duration-200 ease-out hover:text-accent active:text-accent/80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
+
 
 export default function ClassShowcaseSection() {
   const gridContainerClasses = classesData.length === 1
@@ -33,10 +34,8 @@ export default function ClassShowcaseSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
-          <Link href="/classes" className={cn("inline-block p-1 -m-1", linkClasses)}>
-            <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight hover:text-accent">
+          <Link href="/classes" className={cn(titleLinkClasses, "inline-block p-1 -m-1 text-4xl md:text-5xl font-headline font-black tracking-tighter leading-tight text-foreground hover:text-accent")}>
               Coaching Classes
-            </h2>
           </Link>
           <p className="font-body text-lg text-muted-foreground mt-2">
             Choose the plan that best suits your chess journey.
@@ -48,7 +47,7 @@ export default function ClassShowcaseSection() {
             <Card
               key={cls.name}
               className={cn(
-                "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden",
+                "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden", // Removed rounded-xl
                 classesData.length === 1 ? "w-full max-w-xl" : "max-w-md"
               )}
             >
@@ -74,7 +73,7 @@ export default function ClassShowcaseSection() {
                 </p>
               </CardContent>
               <CardFooter className="bg-card pt-4">
-                <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-md">
+                <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90 active:bg-accent/80">
                   <Link href="/contact">Choose Plan</Link>
                 </Button>
               </CardFooter>
