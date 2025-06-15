@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,16 +37,16 @@ const lessonReportSchema = z.object({
   ratingBefore: z.coerce.number().optional(),
   ratingAfter: z.coerce.number().optional(),
   topicCovered: z.string().min(1, "Topic covered is required").default(''),
-  customTopic: z.string().optional(), // Made optional
+  customTopic: z.string().optional(),
   gameExampleLinks: z.string().url("Must be a valid URL (e.g., Lichess, Chess.com analysis link)").optional().or(z.literal('')),
   keyConcepts: z.string().min(1, "Key concepts are required").default(''),
   strengths: z.string().min(1, "Strengths observed are required").default(''),
   areasToImprove: z.string().min(1, "Areas to improve are required").default(''),
   mistakesMade: z.string().min(1, "Common mistakes made are required").default(''),
-  assignedPuzzles: z.string().optional(), // Made optional
-  practiceGames: z.string().optional(), // Made optional
+  assignedPuzzles: z.string().optional(),
+  practiceGames: z.string().optional(),
   readingVideos: z.string().url("Must be a valid URL for reading/video material").optional().or(z.literal('')),
-  additionalNotes: z.string().optional(), // Made optional
+  additionalNotes: z.string().optional(),
 });
 
 const LOCAL_STORAGE_KEY = "lessonReportDraft";
@@ -136,29 +137,36 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
 
     const dataForFirestore: { [key: string]: any } = {};
     Object.entries(values).forEach(([key, value]) => {
-        if (value !== undefined) { // Only include defined values
+        if (value !== undefined) {
             dataForFirestore[key] = value;
         }
     });
-    // Ensure empty optional strings are converted to empty strings not undefined if they reach here as undefined.
-    // Zod's .default('') for strings should handle this, but being explicit for optional ones.
+    
+    // Ensure empty optional strings are stored as empty strings not undefined
     ['customTopic', 'gameExampleLinks', 'assignedPuzzles', 'practiceGames', 'readingVideos', 'additionalNotes'].forEach(key => {
       if (dataForFirestore[key] === undefined) {
-        dataForFirestore[key] = ""; // Store empty string if field was optional and not provided
+        dataForFirestore[key] = ""; 
       }
     });
-
 
     try {
       if (reportToEdit && reportToEdit.id) {
         dataForFirestore.updatedAt = serverTimestamp();
         const reportDocRef = doc(db, "lessonReports", reportToEdit.id);
         await updateDoc(reportDocRef, dataForFirestore);
+        
+        const coachSlug = slugify(reportToEdit.coachName);
         toast({
           title: "Report Updated!",
-          description: "The lesson report has been successfully updated.",
+          description: (
+            <>
+              The lesson report has been successfully updated.{" "}
+              <Link href={`/admin/coaches/${coachSlug}`} className="text-sky-500 hover:text-sky-600 underline">
+                View
+              </Link>
+            </>
+          ),
         });
-        const coachSlug = slugify(reportToEdit.coachName);
         router.push(`/admin/coaches/${coachSlug}`);
 
       } else {
@@ -467,4 +475,3 @@ export default function LessonReportForm({ reportToEdit }: LessonReportFormProps
     </Card>
   );
 }
-

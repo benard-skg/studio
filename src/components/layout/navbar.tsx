@@ -16,7 +16,7 @@ const navItems = [
   { href: '/analysis-board', label: 'Analysis Board' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
-  { href: '/admin/seed-report', label: 'Seed Report (Temp)' }, // Temporary link
+  // { href: '/admin/seed-report', label: 'Seed Report (Temp)' }, // Temporary link removed
 ];
 
 const linkClasses = "font-body text-sm font-medium transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm";
