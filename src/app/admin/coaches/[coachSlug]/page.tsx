@@ -7,9 +7,9 @@ import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download } from 'lucide-react';
+import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download, Edit3 } from 'lucide-react';
 import { allCoachesData } from '@/components/sections/coach-profile-section';
-import type { Coach as CoachDataType } from '@/lib/types';
+import type { Coach as CoachDataType, StoredLessonReport } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -28,28 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
-interface StoredLessonReport {
-  id: string;
-  submittedAt: Timestamp;
-  pgnFilename?: string;
-  pgnFileUrl?: string;
-  studentName: string;
-  lessonDateTime: string;
-  coachName: string;
-  ratingBefore?: number;
-  ratingAfter?: number;
-  topicCovered: string;
-  customTopic?: string;
-  keyConcepts: string;
-  gameExampleLinks?: string;
-  strengths: string;
-  areasToImprove: string;
-  mistakesMade: string;
-  assignedPuzzles: string;
-  practiceGames: string;
-  readingVideos?: string;
-  additionalNotes?: string;
-}
+// StoredLessonReport interface is now imported from @/lib/types
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
@@ -72,10 +51,15 @@ export default function CoachAdminProfilePage() {
       const reportsCol = collection(db, "lessonReports");
       const q = query(reportsCol, where("coachName", "==", currentCoachName), orderBy("submittedAt", "desc"));
       const reportsSnapshot = await getDocs(q);
-      const reportsList = reportsSnapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      } as StoredLessonReport));
+      const reportsList = reportsSnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          // Ensure submittedAt is correctly typed for StoredLessonReport
+          submittedAt: data.submittedAt as Timestamp, 
+        } as StoredLessonReport;
+      });
       setLessonReports(reportsList);
     } catch (err) {
       console.error(`Error fetching lesson reports for ${currentCoachName}:`, err);
@@ -246,9 +230,16 @@ export default function CoachAdminProfilePage() {
                           Lesson: {formatLessonDate(report.lessonDateTime)} | Submitted: {formatDate(report.submittedAt)}
                         </CardDescription>
                       </div>
-                       <Button variant="ghost" size="icon" onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true); }} title="Delete Report">
+                      <div className="flex items-center space-x-1">
+                        <Button variant="ghost" size="icon" asChild title="Edit Report">
+                          <Link href={`/admin/lesson-reports/edit/${report.id}`}>
+                            <Edit3 className="h-4 w-4 text-blue-500" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => { setReportToDelete(report); setIsDeleteDialogOpen(true); }} title="Delete Report">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
+                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="text-sm space-y-1">

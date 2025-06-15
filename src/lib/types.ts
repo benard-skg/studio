@@ -54,7 +54,7 @@ export interface LessonReportData {
   topicCovered: string;
   customTopic?: string;
   keyConcepts: string;
-  pgnFile?: FileList; // For PGN upload
+  // pgnFile?: FileList; // Removed for now
   gameExampleLinks?: string; // For Lichess/Chess.com links
   strengths: string;
   areasToImprove: string;
@@ -88,3 +88,27 @@ export const commonLessonTopics: LessonTopic[] = [
   "Custom",
 ];
 
+// This interface is used on the coach's admin page and already reflects optional PGN fields.
+// It can be reused or adapted for the `reportToEdit` prop in the form.
+export interface StoredLessonReport {
+  id: string;
+  submittedAt: any; // Firestore Timestamp
+  pgnFilename?: string;
+  pgnFileUrl?: string;
+  studentName: string;
+  lessonDateTime: string; // ISO string
+  coachName: string;
+  ratingBefore?: number;
+  ratingAfter?: number;
+  topicCovered: string;
+  customTopic?: string;
+  keyConcepts: string;
+  gameExampleLinks?: string;
+  strengths: string;
+  areasToImprove: string;
+  mistakesMade: string;
+  assignedPuzzles: string;
+  practiceGames: string;
+  readingVideos?: string;
+  additionalNotes?: string;
+}
