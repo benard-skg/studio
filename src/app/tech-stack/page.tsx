@@ -2,7 +2,7 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { Metadata } from 'next';
-import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route, Server, Info } from 'lucide-react';
+import { Layers, Wind, BrainCircuit, Database, Code, BookOpen, Palette, MonitorSmartphone, Rocket, Wrench, ExternalLink, ListChecks, Route, Server, Info, Lock, Users2, FileLock2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -66,19 +66,19 @@ export default function TechStackPage() {
 
         <header className="mb-12 text-center">
             <Server className="mx-auto h-12 w-12 text-accent mb-4" />
-            <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
+            <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight leading-tight">
                 Application Technology & Info
             </h1>
         </header>
 
         <section className="mb-12">
-          <h2 className="font-headline text-2xl md:text-3xl font-bold tracking-tighter mb-6 text-center">Core Technologies</h2>
+          <h2 className="font-headline text-2xl md:text-3xl font-bold tracking-tight mb-6 text-center">Core Technologies</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {technologies.map((tech) => (
               <Card key={tech.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden bg-card border-border h-full">
                 <CardHeader className="flex flex-row items-center space-x-3 pb-3">
                   <tech.icon className="h-8 w-8 text-accent shrink-0" />
-                  <CardTitle className="font-headline text-lg font-bold tracking-tighter">{tech.name}</CardTitle>
+                  <CardTitle className="font-headline text-lg font-bold tracking-tight">{tech.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
                     <p className="font-body text-sm text-muted-foreground">{tech.description}</p>
@@ -93,7 +93,7 @@ export default function TechStackPage() {
         <section className="mb-0 pb-0">
           <Card className="mb-0">
             <CardHeader>
-              <CardTitle className="font-headline text-xl font-bold tracking-tighter flex items-center">
+              <CardTitle className="font-headline text-xl font-bold tracking-tight flex items-center">
                 <Rocket className="mr-3 h-6 w-6 text-accent" />
                 Development Timeline
               </CardTitle>
@@ -105,7 +105,7 @@ export default function TechStackPage() {
               <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-lg font-bold tracking-tighter mb-1 sm:mb-0">Version 0.1.0 - Initial Prototype</CardTitle>
+                    <CardTitle className="font-headline text-lg font-bold tracking-tight mb-1 sm:mb-0">Version 0.1.0 - Initial Prototype</CardTitle>
                     <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Completed: Approx. May 2024</CardDescription>
@@ -114,10 +114,11 @@ export default function TechStackPage() {
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
                     <li>Basic Next.js setup with ShadCN UI & Tailwind CSS.</li>
-                    <li>Core pages: Home, About, Coaches, Classes, Contact.</li>
+                    <li>Core pages: Home, About, Coaches, Classes, Contact, Tech Stack.</li>
                     <li>Contentful integration for Blog (listing & detail pages).</li>
                     <li>Basic layout, navigation (Navbar, Footer), and theme toggle (dark/light).</li>
                     <li>Initial project structure and component organization.</li>
+                    <li>Typography and initial color scheme defined.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -127,7 +128,7 @@ export default function TechStackPage() {
               <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-lg font-bold tracking-tighter mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Core Functionality</CardTitle>
+                    <CardTitle className="font-headline text-lg font-bold tracking-tight mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Early Production</CardTitle>
                     <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Completed: July 2024</CardDescription>
@@ -136,22 +137,26 @@ export default function TechStackPage() {
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
                     <li>Firebase project setup: Firestore for dynamic data.</li>
-                    <li>Admin section for Events: CRUD operations.</li>
-                    <li>Admin section for Lesson Reports: Create, View, Edit, Delete.</li>
-                    <li>Client-side PDF download for Lesson Reports.</li>
-                    <li>Coach admin profiles listing their lesson reports.</li>
-                    <li>Interactive Analysis Board page with PGN download.</li>
+                    <li>Admin section for Events: CRUD operations & public-facing event detail pages.</li>
+                    <li>Admin section for Lesson Reports: Create, View (detailed), Edit, Delete functionalities.</li>
+                    <li>Client-side PDF download for Lesson Reports from coach admin & detailed view.</li>
+                    <li>Coach admin profiles listing their lesson reports; clickable report cards for detailed view.</li>
+                    <li>Interactive Analysis Board page with PGN download capability (via form).</li>
                     <li>Event Calendar on homepage, fetching data from Firestore.</li>
                     <li>Lichess TV embed on homepage.</li>
+                    <li>Form validation enhancements (scroll to error).</li>
+                    <li>UI/UX refinements: click effects, toast notifications, loading states, icon buttons with tooltips.</li>
                     <li>Deployment to Firebase App Hosting.</li>
-                    <li>UI/UX refinements: click effects, toast notifications, typography adjustments, loading states.</li>
                   </ul>
                 </CardContent>
               </Card>
+
+              <Separator />
+
                <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-lg font-bold tracking-tighter mb-1 sm:mb-0">Version 0.3.0 - AI & Polish</CardTitle>
+                    <CardTitle className="font-headline text-lg font-bold tracking-tight mb-1 sm:mb-0">Version 0.3.0 - Blog & Content Refinements</CardTitle>
                     <Badge variant="secondary" className="bg-purple-500 text-white">Planned</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Target: Q3/Q4 2024</CardDescription>
@@ -159,15 +164,39 @@ export default function TechStackPage() {
                 <CardContent>
                   <p className="font-body text-sm mb-2">Key Features:</p>
                   <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
-                    <li>Genkit integration for AI-powered features (e.g., basic analysis hints).</li>
-                    <li>Firebase Authentication for user roles (Admin, Coach, Student).</li>
-                    <li>Refined UI/UX and improved error handling.</li>
-                    <li>Comprehensive Firestore security rules.</li>
-                    <li>User profile management for coaches and students.</li>
-                    <li>Notifications (email/in-app) for events or report submissions.</li>
+                    <li><BookOpen className="inline h-4 w-4 mr-1 text-muted-foreground"/>Enhanced Contentful integration: Author profiles, categories/tags.</li>
+                    <li><Palette className="inline h-4 w-4 mr-1 text-muted-foreground"/>Improved blog layout and navigation (e.g., pagination, filtering).</li>
+                    <li><Layers className="inline h-4 w-4 mr-1 text-muted-foreground"/>Consideration for comments or social sharing features for blog posts.</li>
+                    <li><ExternalLink className="inline h-4 w-4 mr-1 text-muted-foreground"/>SEO improvements for blog content (meta tags, structured data).</li>
+                    <li><Wrench className="inline h-4 w-4 mr-1 text-muted-foreground"/>Refinement of existing content presentation across site.</li>
                   </ul>
                 </CardContent>
               </Card>
+              
+              <Separator />
+
+              <Card className="border-border hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <CardTitle className="font-headline text-lg font-bold tracking-tight mb-1 sm:mb-0">Version 0.4.0 - Authentication & Advanced Features</CardTitle>
+                    <Badge variant="secondary" className="bg-purple-500 text-white">Planned</Badge>
+                  </div>
+                  <CardDescription className="font-body text-xs">Target: Q4 2024 / Q1 2025</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="font-body text-sm mb-2">Key Features:</p>
+                  <ul className="list-disc list-inside font-body text-sm space-y-1 text-muted-foreground">
+                    <li><Lock className="inline h-4 w-4 mr-1 text-muted-foreground"/>Firebase Authentication: User roles (Admin, Coach, Student).</li>
+                    <li><FileLock2 className="inline h-4 w-4 mr-1 text-muted-foreground"/>Secure Firebase Storage handling (e.g., PGN uploads if feature revisited).</li>
+                    <li><Users2 className="inline h-4 w-4 mr-1 text-muted-foreground"/>User profile management for authenticated users.</li>
+                    <li><ListChecks className="inline h-4 w-4 mr-1 text-muted-foreground"/>Notifications (email/in-app) for events or report submissions.</li>
+                    <li><BrainCircuit className="inline h-4 w-4 mr-1 text-muted-foreground"/>Genkit integration for AI-powered features (e.g., basic analysis hints, content suggestions).</li>
+                    <li><Wrench className="inline h-4 w-4 mr-1 text-muted-foreground"/>Comprehensive Firestore security rules review and role-based implementation.</li>
+                    <li><Palette className="inline h-4 w-4 mr-1 text-muted-foreground"/>Further UI/UX polish based on user feedback and testing.</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
             </CardContent>
           </Card>
         </section>
@@ -176,5 +205,3 @@ export default function TechStackPage() {
     </div>
   );
 }
-
-    
