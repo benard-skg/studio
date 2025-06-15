@@ -70,7 +70,7 @@ export default function TechStackPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <section className="max-w-2xl mx-auto mb-10 bg-sky-500/15 text-sky-900 dark:text-sky-200 border border-sky-500/30 rounded-xl p-6 shadow-lg">
           <p className="font-body text-base leading-relaxed">
             Beta Version: This application is in early production. Some features are still under development or being refined.
@@ -79,19 +79,19 @@ export default function TechStackPage() {
 
         <header className="mb-12 text-center">
             <Server className="mx-auto h-12 w-12 text-accent mb-4" />
-            <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+            <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
                 Application Technology & Info
             </h1>
         </header>
 
         <section className="mb-12">
-          <h2 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tighter mb-6 text-center">Core Technologies</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-black tracking-tighter mb-6 text-center">Core Technologies</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {technologies.map((tech) => (
               <Card key={tech.name} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border h-full">
                 <CardHeader className="flex flex-row items-center space-x-3 pb-3">
                   <tech.icon className="h-8 w-8 text-accent shrink-0" />
-                  <CardTitle className="font-headline text-xl font-extrabold tracking-tighter">{tech.name}</CardTitle>
+                  <CardTitle className="font-headline text-xl font-black tracking-tighter">{tech.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
                     <p className="font-body text-sm text-muted-foreground">{tech.description}</p>
@@ -106,7 +106,7 @@ export default function TechStackPage() {
         <section className="mb-12">
           <Card className="bg-amber-500/15 border-amber-500/30 text-amber-900 dark:text-amber-200 animate-double-subtle-pulse-5s">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter flex items-center">
+              <CardTitle className="font-headline text-2xl font-black tracking-tighter flex items-center">
                 <ListChecks className="mr-3 h-6 w-6 text-amber-600 dark:text-amber-400" />
                 Future Enhancements & Deferred Items
               </CardTitle>
@@ -123,13 +123,13 @@ export default function TechStackPage() {
             </CardContent>
           </Card>
         </section>
-        
+
         <Separator className="my-12" />
-        
-        <section className="mb-0 pb-0"> 
-          <Card className="mb-0"> 
+
+        <section className="mb-0 pb-0">
+          <Card className="mb-0">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl font-extrabold tracking-tighter flex items-center">
+              <CardTitle className="font-headline text-2xl font-black tracking-tighter flex items-center">
                 <Rocket className="mr-3 h-6 w-6 text-accent" />
                 Development Timeline (Conceptual)
               </CardTitle>
@@ -141,7 +141,7 @@ export default function TechStackPage() {
               <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-xl font-extrabold tracking-tighter mb-1 sm:mb-0">Version 0.1.0 - Initial Prototype</CardTitle>
+                    <CardTitle className="font-headline text-xl font-black tracking-tighter mb-1 sm:mb-0">Version 0.1.0 - Initial Prototype</CardTitle>
                     <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Completed: Approx. May 2024</CardDescription>
@@ -161,7 +161,7 @@ export default function TechStackPage() {
               <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-xl font-extrabold tracking-tighter mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Early Production</CardTitle>
+                    <CardTitle className="font-headline text-xl font-black tracking-tighter mb-1 sm:mb-0">Version 0.2.0 - Firebase Integration & Early Production</CardTitle>
                     <Badge variant="secondary" className="bg-green-600 text-white">Done</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Completed: July 2024</CardDescription>
@@ -181,7 +181,7 @@ export default function TechStackPage() {
                <Card className="border-border hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <CardTitle className="font-headline text-xl font-extrabold tracking-tighter mb-1 sm:mb-0">Version 0.3.0 - AI & Polish</CardTitle>
+                    <CardTitle className="font-headline text-xl font-black tracking-tighter mb-1 sm:mb-0">Version 0.3.0 - AI & Polish</CardTitle>
                     <Badge variant="secondary" className="bg-purple-500 text-white">Planned</Badge>
                   </div>
                   <CardDescription className="font-body text-xs">Target: Q3/Q4 2024</CardDescription>

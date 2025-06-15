@@ -4,15 +4,15 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { EventType as AppEventType } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
-import { Calendar, Clock, Tag } from 'lucide-react'; 
-import type { Metadata } from 'next'; 
+import { Calendar, Clock, Tag } from 'lucide-react';
+import type { Metadata } from 'next';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, Timestamp, limit, orderBy as firestoreOrderBy } from 'firebase/firestore'; // Renamed orderBy to avoid conflict
 
 interface EventType extends AppEventType {
   id: string;
   createdAt?: Timestamp;
-  updatedAt?: Timestamp; 
+  updatedAt?: Timestamp;
 }
 
 interface EventPageProps {
@@ -62,7 +62,7 @@ export async function generateMetadata(
       description: 'The event you are looking for could not be found.',
     };
   }
-  
+
   const parsedDate = isValid(parseISO(event.date)) ? format(parseISO(event.date), 'MMMM dd, yyyy') : 'Date TBD';
 
   return {
@@ -71,7 +71,7 @@ export async function generateMetadata(
     openGraph: {
       title: `${event.title} - LCA Event`,
       description: event.description || `Join us for ${event.title}!`,
-      type: 'article', 
+      type: 'article',
     },
   };
 }
@@ -105,7 +105,7 @@ export default async function EventPage({ params }: EventPageProps) {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
         <header className="mb-8 border-b border-border pb-6">
-          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight mb-4">
+          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-4">
             {event.title}
           </h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
@@ -137,13 +137,13 @@ export default async function EventPage({ params }: EventPageProps) {
 
         {event.description && (
           <section className="mb-8 prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg mx-auto">
-            <h2 className="font-headline text-2xl font-extrabold tracking-tighter mb-3">About this Event</h2>
+            <h2 className="font-headline text-2xl font-black tracking-tighter mb-3">About this Event</h2>
             {event.description.split('\n').map((paragraph, index) => (
               <p key={index} className="font-body">{paragraph}</p>
             ))}
           </section>
         )}
-        
+
         <p className="font-body text-xs text-muted-foreground text-center mt-12">Event ID: {event.id}</p>
         {event.createdAt && <p className="font-body text-xs text-muted-foreground text-center mt-1">Created: {format(event.createdAt.toDate(), 'MMM dd, yyyy HH:mm')}</p>}
         {event.updatedAt && <p className="font-body text-xs text-muted-foreground text-center mt-1">Last Updated: {format(event.updatedAt.toDate(), 'MMM dd, yyyy HH:mm')}</p>}

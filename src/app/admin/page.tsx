@@ -4,7 +4,7 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { useEffect, useState, useCallback } from 'react';
-import { AlertCircle, Loader2, Mail, Eye, Trash2 } from 'lucide-react'; 
+import { AlertCircle, Loader2, Mail, Eye, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns'; 
+import { format } from 'date-fns';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, orderBy, query, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
@@ -39,14 +39,14 @@ interface Submission {
 
 export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<Submission | null>(null);
-  
+
   const { toast } = useToast();
 
   const fetchSubmissions = useCallback(async () => {
@@ -56,7 +56,7 @@ export default function AdminPage() {
       const submissionsCol = collection(db, "contactSubmissions");
       const q = query(submissionsCol, orderBy("submittedAt", "desc"));
       const submissionsSnapshot = await getDocs(q);
-      const submissionsList = submissionsSnapshot.docs.map(docSnap => ({ 
+      const submissionsList = submissionsSnapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
       } as Submission));
@@ -71,7 +71,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    fetchSubmissions(); 
+    fetchSubmissions();
   }, [fetchSubmissions]);
 
   const openViewDialog = (submission: Submission) => {
@@ -107,7 +107,7 @@ export default function AdminPage() {
       setIsLoading(false);
     }
   };
-  
+
   const formatDate = (timestamp: Timestamp | undefined | null) => {
     if (!timestamp) return 'N/A';
     try {
@@ -122,7 +122,7 @@ export default function AdminPage() {
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-6 text-center">
-          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+          <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
             Admin - Contact Submissions
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -130,7 +130,7 @@ export default function AdminPage() {
           </p>
         </header>
 
-        {isLoading && ( 
+        {isLoading && (
           <div className="flex justify-center items-center py-10">
             <Loader2 className="h-10 w-10 animate-spin text-accent" />
             <p className="ml-3 font-body">Loading submissions...</p>
@@ -140,7 +140,7 @@ export default function AdminPage() {
         {!isLoading && error && (
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-destructive text-destructive p-6 rounded-lg shadow-md">
             <AlertCircle className="h-10 w-10 mb-3" />
-            <p className="font-headline text-2xl font-extrabold tracking-tighter mb-2">Error</p>
+            <p className="font-headline text-2xl font-black tracking-tighter mb-2">Error</p>
             <p className="font-body text-center">{error}</p>
           </div>
         )}
@@ -148,7 +148,7 @@ export default function AdminPage() {
         {!isLoading && !error && submissions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6 rounded-lg shadow-md">
             <Mail className="h-10 w-10 mb-3 text-muted-foreground" />
-            <p className="font-headline text-2xl font-extrabold tracking-tighter mb-2">No Submissions Yet</p>
+            <p className="font-headline text-2xl font-black tracking-tighter mb-2">No Submissions Yet</p>
             <p className="font-body text-center text-muted-foreground">
               When users submit messages through the contact form, they will appear here.
             </p>
@@ -188,7 +188,7 @@ export default function AdminPage() {
             </Table>
           </div>
         )}
-        
+
       </main>
       <Footer />
 
@@ -196,7 +196,7 @@ export default function AdminPage() {
         <AlertDialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline font-extrabold tracking-tighter">Submission from {selectedSubmission.name}</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-black tracking-tighter">Submission from {selectedSubmission.name}</AlertDialogTitle>
               <AlertDialogDescription className="font-body text-xs">
                 Received: {formatDate(selectedSubmission.submittedAt)}
               </AlertDialogDescription>
@@ -224,7 +224,7 @@ export default function AdminPage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline font-extrabold tracking-tighter">Delete Submission?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-black tracking-tighter">Delete Submission?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the submission from <strong>{submissionToDelete.name}</strong>? This action cannot be undone.
               </AlertDialogDescription>

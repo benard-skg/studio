@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { slugify, cn } from '@/lib/utils'; 
+import { slugify, cn } from '@/lib/utils';
 
 interface Coach {
   name: string;
-  nickname?: string; 
+  nickname?: string;
   title: string;
   imageSrc: string;
   imageAlt: string;
@@ -20,7 +20,7 @@ interface Coach {
   profileInfo: string;
 }
 
-export const allCoachesData: Coach[] = [ 
+export const allCoachesData: Coach[] = [
   {
     name: "Mahomole S.K",
     nickname: "KG",
@@ -100,7 +100,7 @@ const linkClasses = "transition-all duration-200 ease-out hover:text-accent hove
 
 export default function CoachProfileSection({ displayMode = "all" }: CoachProfileSectionProps) {
   const [coachesToDisplay, setCoachesToDisplay] = useState<Coach[]>(
-    displayMode === "all" ? allCoachesData : [] 
+    displayMode === "all" ? allCoachesData : []
   );
 
   useEffect(() => {
@@ -117,21 +117,21 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
   }, [displayMode]);
 
   if (coachesToDisplay.length === 0 && displayMode === "singleRandom") {
-    return null; 
+    return null;
   }
-  
+
   return (
     <section id="profile" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <UserCircle2 className="mx-auto h-12 w-12 text-accent mb-4" />
           {displayMode === 'all' ? (
-            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+            <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
               Meet Our Coaches
             </h2>
           ) : (
             <Link href="/coaches" className={cn("inline-block p-1 -m-1",linkClasses)}>
-              <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent">
+              <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight hover:text-accent">
                 Meet Our Coaches
               </h2>
             </Link>
@@ -153,14 +153,14 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
                     style={{ objectFit: 'cover' }}
                     className="w-full h-full"
                     data-ai-hint={coach.imageAiHint}
-                    priority={index === 0 && displayMode === "all"} 
+                    priority={index === 0 && displayMode === "all"}
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                 </div>
                 <div className="md:w-2/3">
                   <CardHeader>
                     <div>
-                      <CardTitle className="font-headline text-3xl font-extrabold tracking-tighter leading-tight">
+                      <CardTitle className="font-headline text-3xl font-black tracking-tighter leading-tight">
                         <Link href={`/admin/coaches/${slugify(coach.name)}`} className={cn("p-1 -m-1",linkClasses)}>
                           {coach.name} {coach.nickname && `(${coach.nickname})`}
                         </Link>
@@ -178,9 +178,9 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div 
+                    <div
                       className="font-body text-base leading-relaxed space-y-4 prose prose-sm dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: coach.profileInfo }} 
+                      dangerouslySetInnerHTML={{ __html: coach.profileInfo }}
                     />
                   </CardContent>
                 </div>
@@ -192,4 +192,3 @@ export default function CoachProfileSection({ displayMode = "all" }: CoachProfil
     </section>
   );
 }
-    

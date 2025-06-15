@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: 'Read the latest articles, strategy tips, and insights from the LCA team.',
 };
 
-export const revalidate = 60; 
+export const revalidate = 60;
 
 export default async function BlogIndexPage() {
   const blogPosts: BlogPost[] = await getBlogPosts();
@@ -28,7 +28,7 @@ export default async function BlogIndexPage() {
       <Navbar />
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-12 text-center">
-          <h1 className="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter leading-tight">
+          <h1 className="font-headline text-5xl md:text-6xl font-black tracking-tighter leading-tight">
             Articles from LCA Team
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
@@ -43,11 +43,11 @@ export default async function BlogIndexPage() {
         ) : (
           <div className={gridContainerClasses}>
             {blogPosts.map((post) => (
-              <Card 
-                key={post.id} 
+              <Card
+                key={post.id}
                 className={cn(
                   "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden bg-card border-border",
-                  blogPosts.length === 1 && "w-full max-w-2xl" 
+                  blogPosts.length === 1 && "w-full max-w-2xl"
                 )}
               >
                 {post.thumbnail && post.thumbnail.fields.file.url && (
@@ -65,15 +65,15 @@ export default async function BlogIndexPage() {
                 )}
                 <CardHeader>
                   <Link href={`/blog/${post.slug}`}>
-                    <CardTitle className="font-headline text-xl md:text-2xl font-extrabold tracking-tighter leading-tight hover:text-accent transition-colors">
+                    <CardTitle className="font-headline text-xl md:text-2xl font-black tracking-tighter leading-tight hover:text-accent transition-colors">
                       {post.title}
                     </CardTitle>
                   </Link>
                   <CardDescription className="font-body text-sm pt-1">{post.date}</CardDescription>
                 </CardHeader>
                 {post.excerpt && (
-                   <CardContent className="flex-grow pb-4"> 
-                    <p className="font-body text-sm text-muted-foreground line-clamp-4"> 
+                   <CardContent className="flex-grow pb-4">
+                    <p className="font-body text-sm text-muted-foreground line-clamp-4">
                       {post.excerpt}
                     </p>
                   </CardContent>

@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Loader2 } from 'lucide-react'; 
+import { Mail, Send, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react"; 
+import { useState } from "react";
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -37,7 +37,7 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function ContactSection() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const whatsappNumber = "+27834544862"; 
+  const whatsappNumber = "+27834544862";
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(ContactFormSchema),
@@ -78,7 +78,7 @@ export default function ContactSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <Mail className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+          <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
             Get in Touch
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -88,7 +88,7 @@ export default function ContactSection() {
 
         <div className="flex flex-col items-center my-6">
           <a
-            href={`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`} 
+            href={`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex flex-col items-center text-accent hover:text-accent/80 transition-colors"

@@ -2,14 +2,14 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, notFound, useRouter } from 'next/navigation'; 
+import { useParams, notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download } from 'lucide-react'; 
+import { AlertCircle, BookOpen, CalendarDays, FileText, Trash2, FilePlus2, Loader2, Download } from 'lucide-react';
 import { allCoachesData } from '@/components/sections/coach-profile-section';
-import type { Coach as CoachDataType } from '@/lib/types'; 
+import type { Coach as CoachDataType } from '@/lib/types';
 import { format, parseISO, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -28,14 +28,14 @@ import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 
-interface StoredLessonReport { 
+interface StoredLessonReport {
   id: string;
-  submittedAt: Timestamp; 
+  submittedAt: Timestamp;
   pgnFilename?: string;
   pgnFileUrl?: string;
   studentName: string;
-  lessonDateTime: string; 
-  coachName: string; 
+  lessonDateTime: string;
+  coachName: string;
   ratingBefore?: number;
   ratingAfter?: number;
   topicCovered: string;
@@ -53,7 +53,7 @@ interface StoredLessonReport {
 
 export default function CoachAdminProfilePage() {
   const params = useParams();
-  const router = useRouter(); 
+  const router = useRouter();
   const coachSlug = typeof params.coachSlug === 'string' ? params.coachSlug : undefined;
 
   const [coach, setCoach] = useState<CoachDataType | null>(null);
@@ -72,7 +72,7 @@ export default function CoachAdminProfilePage() {
       const reportsCol = collection(db, "lessonReports");
       const q = query(reportsCol, where("coachName", "==", currentCoachName), orderBy("submittedAt", "desc"));
       const reportsSnapshot = await getDocs(q);
-      const reportsList = reportsSnapshot.docs.map(docSnap => ({ 
+      const reportsList = reportsSnapshot.docs.map(docSnap => ({
         id: docSnap.id,
         ...docSnap.data()
       } as StoredLessonReport));
@@ -94,7 +94,7 @@ export default function CoachAdminProfilePage() {
 
       if (currentCoach) {
         setCoach(currentCoach);
-        fetchLessonReports(currentCoach.name); 
+        fetchLessonReports(currentCoach.name);
       } else {
         setError(`Coach profile not found for slug: "${coachSlug}".`);
         setCoach(null);
@@ -107,7 +107,7 @@ export default function CoachAdminProfilePage() {
       setLessonReports([]);
       setIsLoading(false);
     }
-  }, [coachSlug, fetchLessonReports]); 
+  }, [coachSlug, fetchLessonReports]);
 
   const handleDeleteReport = async () => {
     if (!reportToDelete || !coach) return;
@@ -142,18 +142,18 @@ export default function CoachAdminProfilePage() {
       return 'Invalid Date';
     }
   };
-  
+
   const formatLessonDate = (dateString: string) => {
     try {
       if (!dateString) return 'N/A';
-      const lessonDate = parseISO(dateString); 
+      const lessonDate = parseISO(dateString);
       return isValid(lessonDate) ? format(lessonDate, "MMM dd, yyyy, HH:mm") : 'Invalid Date';
     } catch(e) {
       return 'Invalid Date';
     }
   };
 
-  if (isLoading && !coach && !error) { 
+  if (isLoading && !coach && !error) {
     return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <Navbar />
@@ -166,7 +166,7 @@ export default function CoachAdminProfilePage() {
       </div>
     );
   }
-  
+
   if (error && !coach) {
      return (
       <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -174,7 +174,7 @@ export default function CoachAdminProfilePage() {
         <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-                <h1 className="font-headline text-3xl font-extrabold tracking-tighter mb-2">Error Loading Profile</h1>
+                <h1 className="font-headline text-3xl font-black tracking-tighter mb-2">Error Loading Profile</h1>
                 <p className="font-body text-muted-foreground">{error}</p>
                  <Button asChild className="mt-6">
                     <Link href="/coaches">Back to Coaches</Link>
@@ -185,7 +185,7 @@ export default function CoachAdminProfilePage() {
       </div>
     );
   }
-  
+
   if (!coach) {
     notFound();
   }
@@ -206,7 +206,7 @@ export default function CoachAdminProfilePage() {
               />
             </div>
             <div className="space-y-1 text-center md:text-left pt-2">
-              <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+              <h1 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
                 {coach.name} {coach.nickname && `(${coach.nickname})`}
               </h1>
               <p className="font-body text-xl text-muted-foreground">{coach.title}</p>
@@ -218,7 +218,7 @@ export default function CoachAdminProfilePage() {
 
         <section id="lesson-reports" className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="font-headline text-3xl font-extrabold tracking-tighter flex items-center">
+            <h2 className="font-headline text-3xl font-black tracking-tighter flex items-center">
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
@@ -228,7 +228,7 @@ export default function CoachAdminProfilePage() {
               </Link>
             </Button>
           </div>
-          
+
           {isLoading && <div className="flex justify-center py-4"><Loader2 className="h-8 w-8 animate-spin text-accent"/></div>}
           {!isLoading && error && <p className="text-destructive font-body mb-4">{error}</p>}
           {!isLoading && !error && lessonReports.length === 0 && (
@@ -241,7 +241,7 @@ export default function CoachAdminProfilePage() {
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="font-headline text-xl font-extrabold tracking-tighter">Report for: {report.studentName}</CardTitle>
+                        <CardTitle className="font-headline text-xl font-black tracking-tighter">Report for: {report.studentName}</CardTitle>
                         <CardDescription className="font-body text-xs">
                           Lesson: {formatLessonDate(report.lessonDateTime)} | Submitted: {formatDate(report.submittedAt)}
                         </CardDescription>
@@ -272,9 +272,9 @@ export default function CoachAdminProfilePage() {
         </section>
 
         <Separator className="my-8" />
-        
+
         <section id="coach-articles" className="mb-12">
-          <h2 className="font-headline text-3xl font-extrabold tracking-tighter mb-6 flex items-center">
+          <h2 className="font-headline text-3xl font-black tracking-tighter mb-6 flex items-center">
             <BookOpen className="mr-3 h-7 w-7 text-accent" />
             Articles Authored
           </h2>
@@ -284,7 +284,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="coach-calendar" className="mb-12">
-          <h2 className="font-headline text-3xl font-extrabold tracking-tighter mb-6 flex items-center">
+          <h2 className="font-headline text-3xl font-black tracking-tighter mb-6 flex items-center">
             <CalendarDays className="mr-3 h-7 w-7 text-accent" />
             Scheduled Items
           </h2>
@@ -297,7 +297,7 @@ export default function CoachAdminProfilePage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline text-xl font-extrabold tracking-tighter">Delete Lesson Report?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline text-xl font-black tracking-tighter">Delete Lesson Report?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the lesson report for <strong>{reportToDelete.studentName}</strong> (Lesson: {formatLessonDate(reportToDelete.lessonDateTime)})? This action cannot be undone.
               </AlertDialogDescription>

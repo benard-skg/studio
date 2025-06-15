@@ -13,16 +13,16 @@ import { format, parseISO, startOfMonth, addMonths, subMonths, isSameDay, isVali
 import { cn } from '@/lib/utils';
 import { Timestamp } from 'firebase/firestore'; // Import Timestamp
 
-interface EventTypeForCalendar extends Omit<AppEventType, 'id'> { 
-  id?: string; 
+interface EventTypeForCalendar extends Omit<AppEventType, 'id'> {
+  id?: string;
   title: string;
-  date: string; 
+  date: string;
   startTime: string;
   endTime?: string;
   type: string;
   description?: string;
   detailsPageSlug: string;
-  createdAt?: Timestamp; 
+  createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
 
@@ -41,9 +41,9 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
   const [animatedMonth, setAnimatedMonth] = useState<Date | null>(null);
 
   const [events, setEvents] = useState<EventTypeForCalendar[]>(initialEvents);
-  
+
   useEffect(() => {
-    setEvents(initialEvents); 
+    setEvents(initialEvents);
   }, [initialEvents]);
 
 
@@ -56,7 +56,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
     return events
       .map(event => {
         if (event && typeof event.date === 'string') {
-          const parsedDate = parseISO(event.date); 
+          const parsedDate = parseISO(event.date);
           return isValid(parsedDate) ? parsedDate : null;
         }
         return null;
@@ -81,13 +81,13 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
   const handleDayClick = (day: Date) => {
     setSelectedDate(day);
   };
-  
+
   const changeMonth = (newMonth: Date) => {
-    setAnimatedMonth(newMonth); 
+    setAnimatedMonth(newMonth);
     setTimeout(() => {
       setCurrentDisplayMonth(startOfMonth(newMonth));
-      setAnimatedMonth(null); 
-    }, 200); 
+      setAnimatedMonth(null);
+    }, 200);
   };
 
   const goToPreviousMonth = () => {
@@ -104,7 +104,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <CalendarIconLucide className="mx-auto h-12 w-12 text-accent mb-4" />
-            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+            <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
               Upcoming Events
             </h2>
             <p className="font-body text-lg text-muted-foreground mt-2">
@@ -127,10 +127,10 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
   return (
     <section id="event-calendar" className="py-16 md:py-24 bg-secondary transition-opacity duration-500 ease-in-out opacity-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="text-center mb-12">
           <CalendarIconLucide className="mx-auto h-12 w-12 text-accent mb-4" />
-          <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight">
+          <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight">
             Upcoming Events
           </h2>
           <p className="font-body text-lg text-muted-foreground mt-2">
@@ -143,7 +143,7 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
             <Button variant="ghost" size="icon" onClick={goToPreviousMonth} aria-label="Previous month" className="hover:bg-accent/20">
               <ChevronLeft className="h-5 w-5 text-accent" />
             </Button>
-            <CardTitle className="font-headline text-xl font-extrabold tracking-tighter text-foreground">
+            <CardTitle className="font-headline text-xl font-black tracking-tighter text-foreground">
               {format(currentDisplayMonth, 'MMMM yyyy')}
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="Next month" className="hover:bg-accent/20">
@@ -159,14 +159,14 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
               selected={selectedDate}
               onSelect={(day) => day && handleDayClick(day)}
               month={currentDisplayMonth}
-              onMonthChange={setCurrentDisplayMonth} 
+              onMonthChange={setCurrentDisplayMonth}
               showOutsideDays={true}
               className="p-0 w-full"
               classNames={{
                 months: "p-0",
                 month: "space-y-3 p-0",
-                caption: "hidden", 
-                nav: "hidden", 
+                caption: "hidden",
+                nav: "hidden",
                 table: "w-full border-collapse",
                 head_row: "flex justify-around mb-1",
                 head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
@@ -184,10 +184,10 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
               }}
               modifiers={{
-                eventDay: eventDays 
+                eventDay: eventDays
               }}
               modifiersClassNames={{
-                eventDay: 'event-day-modifier', 
+                eventDay: 'event-day-modifier',
               }}
               disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) && !isSameDay(date, new Date())}
             />
@@ -196,21 +196,21 @@ export default function EventCalendarSection({ events: initialEvents }: EventCal
 
         {selectedDate && eventsForSelectedDate.length > 0 && (
           <div className="mt-8 max-w-xl mx-auto">
-            <h3 className="font-headline text-2xl font-extrabold tracking-tighter mb-4 text-center">
+            <h3 className="font-headline text-2xl font-black tracking-tighter mb-4 text-center">
               Events on {format(selectedDate, 'MMMM dd, yyyy')}
             </h3>
             <ScrollArea className="h-[300px] rounded-md border border-border shadow-sm bg-card">
               <div className="space-y-3 p-4">
                 {eventsForSelectedDate.map(event => (
-                  <Card 
+                  <Card
                     key={event.id || event.title || Math.random().toString()}
                     className={cn("shadow-sm hover:shadow-lg transition-shadow cursor-pointer border-border bg-background hover:bg-accent/5", linkClasses)}
                     onClick={() => event.detailsPageSlug && router.push(`/events/${event.detailsPageSlug}`)}
-                    tabIndex={0} 
+                    tabIndex={0}
                     onKeyPress={(e) => { if ((e.key === 'Enter' || e.key === ' ') && event.detailsPageSlug) router.push(`/events/${event.detailsPageSlug}`); }}
                   >
                     <CardContent className="p-4">
-                      <h4 className="font-headline text-lg font-extrabold tracking-tighter text-accent mb-1">{event.title || "Untitled Event"}</h4>
+                      <h4 className="font-headline text-lg font-black tracking-tighter text-accent mb-1">{event.title || "Untitled Event"}</h4>
                       <div className="flex items-center text-sm text-muted-foreground mb-1">
                          <CalendarIconLucide className="h-4 w-4 mr-1.5" />
                          {event.startTime || "Time TBD"} {event.endTime ? `- ${event.endTime}` : ''}

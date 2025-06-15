@@ -13,7 +13,7 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/coaches', label: 'Coaches' },
   { href: '/classes', label: 'Classes' },
-  { href: '/analysis-board', label: 'Analysis Board' }, 
+  { href: '/analysis-board', label: 'Analysis Board' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -36,19 +36,19 @@ export default function Navbar() {
   }, []);
 
   if (!isMounted) {
-    return null; 
+    return null;
   }
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/80 backdrop-blur-md shadow-md' : 'bg-transparent'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className={cn(
-              "flex items-center space-x-2 text-2xl font-headline font-extrabold tracking-tighter leading-tight transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm p-1 -m-1",
-              linkClasses,
-              "text-2xl" 
+              "flex items-center space-x-2 text-2xl font-headline font-black tracking-tighter leading-tight transition-all duration-200 ease-out hover:text-accent hover:scale-[1.03] active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring rounded-sm p-1 -m-1",
+              linkClasses, // This was applying font-medium, which is overridden by font-black
+              "text-2xl"
             )}
           >
             <Crown className="h-7 w-7 text-accent" />
@@ -78,11 +78,11 @@ export default function Navbar() {
                 <SheetContent side="right" className="w-[280px] bg-background p-6">
                   <SheetHeader className="text-left mb-6">
                     <SheetTitle asChild>
-                       <Link 
-                          href="/" 
+                       <Link
+                          href="/"
                           className={cn(
-                            "flex items-center space-x-2 text-xl font-headline font-extrabold tracking-tighter leading-tight",
-                            mobileLinkClasses,
+                            "flex items-center space-x-2 text-xl font-headline font-black tracking-tighter leading-tight",
+                            mobileLinkClasses, // This was applying font-medium, which is overridden by font-black
                             "text-xl p-1 -m-1"
                           )}
                         >

@@ -24,7 +24,7 @@ const classesData = [
 const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-1 focus:ring-ring rounded-sm";
 
 export default function ClassShowcaseSection() {
-  const gridContainerClasses = classesData.length === 1 
+  const gridContainerClasses = classesData.length === 1
     ? "flex justify-center" // For a single, larger, centered card
     : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"; // For multiple cards
 
@@ -34,7 +34,7 @@ export default function ClassShowcaseSection() {
         <div className="text-center mb-12">
           <GraduationCap className="mx-auto h-12 w-12 text-accent mb-4" />
           <Link href="/classes" className={cn("inline-block p-1 -m-1", linkClasses)}>
-            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent">
+            <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight hover:text-accent">
               Coaching Classes
             </h2>
           </Link>
@@ -45,15 +45,15 @@ export default function ClassShowcaseSection() {
 
         <div className={gridContainerClasses}>
           {classesData.map((cls) => (
-            <Card 
-              key={cls.name} 
+            <Card
+              key={cls.name}
               className={cn(
                 "flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden",
-                classesData.length === 1 ? "w-full max-w-xl" : "max-w-md" 
+                classesData.length === 1 ? "w-full max-w-xl" : "max-w-md"
               )}
             >
               <CardHeader className="bg-card">
-                <CardTitle className="font-headline text-2xl md:text-3xl font-extrabold tracking-tighter leading-tight">{cls.name}</CardTitle>
+                <CardTitle className="font-headline text-2xl md:text-3xl font-black tracking-tighter leading-tight">{cls.name}</CardTitle>
                 <CardDescription className="font-body text-sm">{cls.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow space-y-4 pt-4">

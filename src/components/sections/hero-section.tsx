@@ -17,7 +17,7 @@ export default function HeroSection() {
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw" // Example sizes, adjust as needed
       />
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight mb-6">
+        <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter leading-tight mb-6">
           Master Your Chess Game
         </h1>
         <p className="font-body text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">

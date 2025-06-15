@@ -84,7 +84,7 @@ export default function LessonReportForm() {
     if (draft) {
       try {
         const parsedDraft = JSON.parse(draft);
-        const { pgnFile, ...restOfDraft } = parsedDraft; 
+        const { pgnFile, ...restOfDraft } = parsedDraft;
         form.reset(restOfDraft);
         if (parsedDraft.topicCovered) {
           setSelectedTopic(parsedDraft.topicCovered);
@@ -98,7 +98,7 @@ export default function LessonReportForm() {
 
   React.useEffect(() => {
     const subscription = form.watch((values) => {
-      const { pgnFile, ...valuesToStore } = values; 
+      const { pgnFile, ...valuesToStore } = values;
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(valuesToStore));
     });
     return () => subscription.unsubscribe();
@@ -178,7 +178,7 @@ export default function LessonReportForm() {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl md:text-3xl font-extrabold tracking-tighter">Create Lesson Report</CardTitle>
+        <CardTitle className="font-headline text-2xl md:text-3xl font-black tracking-tighter">Create Lesson Report</CardTitle>
         <CardDescription className="font-body">Document lesson details, student progress, and homework.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -186,7 +186,7 @@ export default function LessonReportForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-extrabold tracking-tighter flex items-center"><Users className="mr-2 h-5 w-5 text-accent" />Basic Information</h3>
+              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Users className="mr-2 h-5 w-5 text-accent" />Basic Information</h3>
               <FormField
                 control={form.control}
                 name="studentName"
@@ -264,7 +264,7 @@ export default function LessonReportForm() {
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-extrabold tracking-tighter flex items-center"><BookOpen className="mr-2 h-5 w-5 text-accent" />Lesson Content</h3>
+              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><BookOpen className="mr-2 h-5 w-5 text-accent" />Lesson Content</h3>
               <FormField
                 control={form.control}
                 name="topicCovered"
@@ -313,7 +313,7 @@ export default function LessonReportForm() {
                  <FormField
                     control={form.control}
                     name="pgnFile"
-                    render={({ field: { onChange, value, ...restField } }) => ( 
+                    render={({ field: { onChange, value, ...restField } }) => (
                       <FormItem>
                         <FormLabel>Game PGN Upload (Optional, Max 1MB)</FormLabel>
                         <FormControl>
@@ -345,7 +345,7 @@ export default function LessonReportForm() {
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-extrabold tracking-tighter flex items-center"><Target className="mr-2 h-5 w-5 text-accent" />Student Performance</h3>
+              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><Target className="mr-2 h-5 w-5 text-accent" />Student Performance</h3>
               <FormField
                 control={form.control}
                 name="strengths"
@@ -384,7 +384,7 @@ export default function LessonReportForm() {
             <Separator />
 
              <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-extrabold tracking-tighter flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-accent" />Homework / Next Steps</h3>
+              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-accent" />Homework / Next Steps</h3>
               <FormField
                 control={form.control}
                 name="assignedPuzzles"
@@ -423,7 +423,7 @@ export default function LessonReportForm() {
             <Separator />
 
             <section className="space-y-4 p-4 border rounded-lg bg-card shadow-sm">
-              <h3 className="font-headline text-xl font-extrabold tracking-tighter flex items-center"><PlusCircle className="mr-2 h-5 w-5 text-accent" />Additional Notes</h3>
+              <h3 className="font-headline text-xl font-black tracking-tighter flex items-center"><PlusCircle className="mr-2 h-5 w-5 text-accent" />Additional Notes</h3>
               <FormField
                 control={form.control}
                 name="additionalNotes"

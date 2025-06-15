@@ -12,10 +12,10 @@ const linkClasses = "transition-all duration-200 ease-out hover:scale-[1.02] act
 
 export default async function BlogSection() {
   const latestPost: BlogPost | null = await getLatestBlogPost();
-  const allPosts: BlogPost[] = await getBlogPosts(); 
+  const allPosts: BlogPost[] = await getBlogPosts();
 
   if (!latestPost) {
-    return null; 
+    return null;
   }
 
   const postsToDisplay = [latestPost];
@@ -26,7 +26,7 @@ export default async function BlogSection() {
         <div className="text-center mb-12">
           <Newspaper className="mx-auto h-12 w-12 text-accent mb-4" />
           <Link href="/blog" className={cn("inline-block p-1 -m-1",linkClasses)}>
-            <h2 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-tight hover:text-accent">
+            <h2 className="font-headline text-4xl md:text-5xl font-black tracking-tighter leading-tight hover:text-accent">
               Latest From The Blog
             </h2>
           </Link>
@@ -37,8 +37,8 @@ export default async function BlogSection() {
 
         <div className="flex justify-center">
           {postsToDisplay.map((post) => (
-            <Card 
-              key={post.slug} 
+            <Card
+              key={post.slug}
               className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl overflow-hidden w-full max-w-2xl mx-auto"
             >
               {post.featuredImage && post.featuredImage.fields.file.url && (
@@ -56,7 +56,7 @@ export default async function BlogSection() {
               )}
               <CardHeader>
                 <Link href={`/blog/${post.slug}`} className={cn("p-0.5 -m-0.5", linkClasses)}>
-                  <CardTitle className="font-headline text-2xl md:text-3xl font-extrabold tracking-tighter leading-tight hover:text-accent">
+                  <CardTitle className="font-headline text-2xl md:text-3xl font-black tracking-tighter leading-tight hover:text-accent">
                     {post.title}
                   </CardTitle>
                 </Link>
@@ -70,7 +70,7 @@ export default async function BlogSection() {
             </Card>
           ))}
         </div>
-        {allPosts.length > 1 && ( 
+        {allPosts.length > 1 && (
            <div className="text-center mt-12">
             <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 transition-all transform hover:scale-105 rounded-lg px-8 py-3 text-lg">
               <Link href="/blog">View All Posts</Link>
