@@ -18,7 +18,7 @@ buildEnvironmentVariables:
   - variable: CONTENTFUL_SPACE_ID
     value: "htjrh4mjuk93"
   - variable: CONTENTFUL_ACCESS_TOKEN
-    secret: projects/43925445120/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Corrected Project ID to Project Number
+    secret: projects/43925445120/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Using Project Number
   - variable: NODE_ENV # Ensure NODE_ENV is set for build
     value: "production"
 
@@ -40,7 +40,7 @@ runConfig:
     - variable: CONTENTFUL_SPACE_ID
       value: "htjrh4mjuk93"
     - variable: CONTENTFUL_ACCESS_TOKEN
-      secret: projects/43925445120/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Corrected Project ID to Project Number
+      secret: projects/43925445120/secrets/CONTENTFUL_ACCESS_TOKEN/versions/latest # Using Project Number
     - variable: NODE_ENV # Ensure NODE_ENV is set for runtime
       value: "production"
   minInstances: 0
