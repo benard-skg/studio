@@ -15,7 +15,10 @@
     "rewrites": [
       {
         "source": "**",
-        "apphosting": "lca-live"
+        "run": {
+          "serviceId": "lca-live",
+          "region": "us-central1"
+        }
       }
     ]
   },
