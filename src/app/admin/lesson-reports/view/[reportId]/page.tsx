@@ -7,8 +7,8 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import type { StoredLessonReport } from '@/lib/types';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { Loader2, AlertCircle, FileText, CalendarDays, User, Users, Target, BookOpen, Edit3, Download, Trash2, CheckSquare, ListChecks } from 'lucide-react';
+import { doc, getDoc, Timestamp, deleteDoc } from 'firebase/firestore';
+import { Loader2, AlertCircle, FileText, CalendarDays, BookOpen, Edit3, Download, Trash2, ListChecks, Target, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -25,6 +25,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { slugify } from '@/lib/utils';
 
 export default function ViewLessonReportPage() {
   const params = useParams();
@@ -192,18 +194,35 @@ export default function ViewLessonReportPage() {
                     Student: {report.studentName} | Coach: {report.coachName}
                     </CardDescription>
                 </div>
-                 <div className="flex space-x-2 mt-3 sm:mt-0">
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href={`/admin/lesson-reports/edit/${report.id}`}>
-                            <Edit3 className="mr-2 h-4 w-4"/> Edit
-                        </Link>
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handlePlaceholderDownload}>
-                        <Download className="mr-2 h-4 w-4"/> Download
-                    </Button>
-                    <Button variant="destructiveOutline" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
-                        <Trash2 className="mr-2 h-4 w-4"/> Delete
-                    </Button>
+                 <div className="flex space-x-1 mt-3 sm:mt-0">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/admin/lesson-reports/edit/${report.id}`}>
+                                    <Edit3 className="h-5 w-5 text-blue-500"/>
+                                </Link>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Edit Report</p></TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={handlePlaceholderDownload}>
+                                <Download className="h-5 w-5 text-green-500"/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Download Report</p></TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => setIsDeleteDialogOpen(true)}>
+                                <Trash2 className="h-5 w-5 text-destructive"/>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>Delete Report</p></TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                 </div>
             </div>
           </CardHeader>
