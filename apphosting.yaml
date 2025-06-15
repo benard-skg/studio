@@ -1,3 +1,4 @@
+
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
@@ -44,13 +45,6 @@ runConfig:
     - variable: NODE_ENV
       value: "production"
   maxInstances: 1 # Default value, can be adjusted
-
-# Optional: Add CPU and memory configuration if needed
-# cpu: 1
-# memoryMiB: 512
-
-# Optional: Add health check configuration if needed
-# healthChecks:
-#   livenessProbe:
-#     httpGet:
-#       path: "/api/health"
+  # Optional: Add CPU and memory configuration if needed
+  # cpu: 1
+  # memoryMiB: 512
