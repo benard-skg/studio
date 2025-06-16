@@ -60,7 +60,7 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --radius: 0.5rem;
+    --radius: 0rem; /* Removed default radius for square corners */
 
     /* Sidebar colors (Light theme) */
     --sidebar-background: 0 0% 98%; /* Off-White #FAFAFA */
@@ -108,7 +108,7 @@ body {
     --chart-3: 40 85% 60%;
     --chart-4: 290 70% 65%;
     --chart-5: 350 80% 60%;
-
+    
     /* Sidebar colors (Dark theme) */
     --sidebar-background: 0 0% 3%; /* Off-Black #080808 */
     --sidebar-foreground: 0 0% 90%; /* Light Gray (was 0 0% 85%) */
@@ -135,7 +135,7 @@ body {
   /* Optional: Add a dot to event days */
   .event-day-modifier::after {
     content: '';
-    @apply absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-accent rounded-full;
+    @apply absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-accent; /* Removed rounding from dot */
   }
   .dark .event-day-modifier::after {
      @apply bg-accent; /* Ensure dot is visible in dark mode */
@@ -150,6 +150,13 @@ body {
 }
 
 @layer utilities {
+  .overflow-wrap-break-word {
+    overflow-wrap: break-word;
+  }
+  .word-break-break-word {
+    word-break: break-word;
+  }
+
   @keyframes subtle-pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     2.5% { opacity: 0.7; transform: scale(0.98); } /* Pulse phase (0.375s of 15s) */

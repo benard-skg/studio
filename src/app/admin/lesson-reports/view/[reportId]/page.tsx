@@ -110,7 +110,6 @@ export default function ViewLessonReportPage() {
     toast({ title: "Generating PDF...", description: "Please wait a moment." });
 
     const printElementContainer = document.createElement('div');
-    // Hide the element from view
     printElementContainer.style.position = 'absolute';
     printElementContainer.style.left = '-9999px';
     printElementContainer.style.top = '-9999px';
@@ -119,10 +118,8 @@ export default function ViewLessonReportPage() {
     const root = createRoot(printElementContainer);
     
     try {
-      // Ensure rendering is complete before html2pdf tries to capture
       await new Promise<void>(resolve => {
         root.render(<LessonReportPrintableView report={report} />);
-        // Use a short timeout to allow React to render
         setTimeout(resolve, 500); 
       });
       
@@ -131,12 +128,12 @@ export default function ViewLessonReportPage() {
       const filename = `Lesson-Report_${slugify(report.studentName || 'student')}_${formattedDate}.pdf`;
 
       const opt = {
-        margin:       0.5, // inches
+        margin:       0.5,
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, logging: false, useCORS: true },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], autoPaging: 'text' } // Added autoPaging
       };
 
       await html2pdf().from(printElementContainer.firstChild).set(opt).save();
@@ -227,9 +224,9 @@ export default function ViewLessonReportPage() {
           {label}
         </dt>
         {isRichText && typeof value === 'string' ? (
-          <dd className="font-body text-base mt-1 ml-6 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: value.replace(/\n/g, '<br />') }} />
+          <dd className="font-body text-base mt-1 ml-6 whitespace-pre-wrap overflow-wrap-break-word word-break-break-word" dangerouslySetInnerHTML={{ __html: value.replace(/\n/g, '<br />') }} />
         ) : (
-          <dd className="font-body text-base mt-1 ml-6">{value}</dd>
+          <dd className="font-body text-base mt-1 ml-6 overflow-wrap-break-word word-break-break-word">{value}</dd>
         )}
       </div>
     ) : null

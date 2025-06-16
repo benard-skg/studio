@@ -177,7 +177,7 @@ export default function CoachAdminProfilePage() {
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, logging: false, useCORS: true },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], autoPaging: 'text' } // Added autoPaging
       };
 
       await html2pdf().from(printElementContainer.firstChild).set(opt).save();
@@ -260,7 +260,7 @@ export default function CoachAdminProfilePage() {
       <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
         <header className="mb-10">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
-            <div className="relative h-32 w-32 md:h-40 md:w-40 rounded-full overflow-hidden shrink-0 shadow-lg border-2 border-accent">
+            <div className="relative h-32 w-32 md:h-40 md:w-40 overflow-hidden shrink-0 shadow-lg border-2 border-accent">
               <Image
                 src={coach.imageSrc || "https://placehold.co/160x160.png"}
                 alt={`Avatar of ${coach.name}`}
