@@ -1,7 +1,7 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth'; // Added GoogleAuthProvider
 import { getStorage } from 'firebase/storage';
 
 // --- Critical Environment Variable Check ---
@@ -43,5 +43,7 @@ if (!getApps().length) {
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider(); // Export GoogleAuthProvider instance
 
-export { app, db, auth, storage };
+export { app, db, auth, storage, googleProvider };
+

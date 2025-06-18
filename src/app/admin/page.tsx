@@ -4,15 +4,16 @@
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { ShieldCheck } from 'lucide-react';
+import withAuth from '@/components/auth/withAuth'; // Import withAuth HOC
 
-export default function AdminPage() {
+function AdminPageContent() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-10 text-center">
           <ShieldCheck className="mx-auto h-16 w-16 text-accent mb-4" />
-          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight leading-tight">
             Admin Dashboard
           </h1>
           <p className="font-body text-lg text-muted-foreground mt-3">
@@ -31,3 +32,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+export default withAuth(AdminPageContent); // Wrap the component with withAuth

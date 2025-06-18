@@ -12,8 +12,9 @@ import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import withAuth from '@/components/auth/withAuth'; // Import withAuth HOC
 
-export default function EditLessonReportPage() {
+function EditLessonReportPageContent() {
   const params = useParams();
   const router = useRouter();
   const reportId = typeof params.reportId === 'string' ? params.reportId : undefined;
@@ -83,7 +84,7 @@ export default function EditLessonReportPage() {
         <main className="flex-grow pt-24 pb-12 container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-            <h1 className="font-headline text-3xl font-black tracking-tighter mb-2">Error Loading Report</h1>
+            <h1 className="font-headline text-3xl font-bold tracking-tight mb-2">Error Loading Report</h1>
             <p className="font-body text-muted-foreground">{error}</p>
             <Button asChild className="mt-6">
               <Link href="/admin">Back to Admin</Link>
@@ -103,7 +104,7 @@ export default function EditLessonReportPage() {
         <main className="flex-grow pt-24 pb-12 container mx-auto px-4 sm:px-6 lg:px-8">
            <div className="flex flex-col items-center justify-center py-10 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-            <h1 className="font-headline text-3xl font-black tracking-tighter mb-2">Report Not Found</h1>
+            <h1 className="font-headline text-3xl font-bold tracking-tight mb-2">Report Not Found</h1>
             <p className="font-body text-muted-foreground">The requested lesson report could not be found.</p>
              <Button asChild className="mt-6">
               <Link href="/admin">Back to Admin</Link>
@@ -126,3 +127,5 @@ export default function EditLessonReportPage() {
     </div>
   );
 }
+
+export default withAuth(EditLessonReportPageContent); // Wrap component

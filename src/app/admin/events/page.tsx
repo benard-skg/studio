@@ -43,6 +43,7 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, Timestamp, serverTimestamp } from 'firebase/firestore';
+import withAuth from '@/components/auth/withAuth'; // Import withAuth HOC
 
 interface EventType extends AppEventType {
   id: string;
@@ -50,7 +51,7 @@ interface EventType extends AppEventType {
   updatedAt?: Timestamp;
 }
 
-export default function AdminEventsPage() {
+function AdminEventsPageContent() {
   const [events, setEvents] = useState<EventType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -211,7 +212,7 @@ export default function AdminEventsPage() {
       <Navbar />
       <main className="flex-grow pt-20 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-6 flex flex-col sm:flex-row justify-between items-center">
-          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight text-center sm:text-left mb-4 sm:mb-0">
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight leading-tight text-center sm:text-left mb-4 sm:mb-0">
             Manage Events
           </h1>
           <Button onClick={openAddDialog} className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -230,7 +231,7 @@ export default function AdminEventsPage() {
         {!isLoading && !error && events.length === 0 && (
              <div className="mt-8 flex flex-col items-center justify-center py-10 bg-card border border-border text-foreground p-6">
                 <CalendarPlus className="h-10 w-10 mb-3 text-muted-foreground" />
-                <p className="font-headline text-xl font-bold tracking-tighter mb-2">No Events Found</p>
+                <p className="font-headline text-xl font-bold tracking-tight mb-2">No Events Found</p>
                 <p className="font-body text-center text-muted-foreground">
                 Click "Add New Event" to get started.
                 </p>
@@ -282,7 +283,7 @@ export default function AdminEventsPage() {
       <Dialog open={isAddEditDialogOpen} onOpenChange={setIsAddEditDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-headline font-bold tracking-tighter">{eventToEdit ? "Edit Event" : "Add New Event"}</DialogTitle>
+            <DialogTitle className="font-headline font-bold tracking-tight">{eventToEdit ? "Edit Event" : "Add New Event"}</DialogTitle>
             <DialogDescription>
               {eventToEdit ? "Modify the details of the existing event." : "Fill in the details to create a new event."}
             </DialogDescription>
@@ -343,7 +344,7 @@ export default function AdminEventsPage() {
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="font-headline font-bold tracking-tighter">{currentEvent.title}</DialogTitle>
+              <DialogTitle className="font-headline font-bold tracking-tight">{currentEvent.title}</DialogTitle>
               <DialogDescription className="font-body text-xs">
                 Event ID: {currentEvent.id}
               </DialogDescription>
@@ -377,7 +378,7 @@ export default function AdminEventsPage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline font-bold tracking-tighter">Delete Event?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline font-bold tracking-tight">Delete Event?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the event "<strong>{eventToDelete.title}</strong>"? This action cannot be undone.
               </AlertDialogDescription>
@@ -399,3 +400,5 @@ export default function AdminEventsPage() {
     </div>
   );
 }
+
+export default withAuth(AdminEventsPageContent); // Wrap component

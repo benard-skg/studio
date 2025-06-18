@@ -3,13 +3,14 @@ import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import LessonReportForm from '@/components/forms/lesson-report-form';
 import type { Metadata } from 'next';
+import withAuth from '@/components/auth/withAuth'; // Import withAuth HOC
 
 export const metadata: Metadata = {
   title: 'Create Lesson Report - LCA Admin',
   description: 'Document chess lesson details and student progress.',
 };
 
-export default function CreateLessonReportPage() {
+function CreateLessonReportPageContent() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
@@ -20,3 +21,5 @@ export default function CreateLessonReportPage() {
     </div>
   );
 }
+
+export default withAuth(CreateLessonReportPageContent); // Wrap component

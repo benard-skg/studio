@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Crown } from 'lucide-react';
+import { Menu, Crown, LogIn, Loader2 } from 'lucide-react';
 import { ThemeToggleButton } from './theme-toggle-button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth'; // Import useAuth
+import { UserAvatarDropdown } from '@/components/auth/UserAvatarDropdown'; // Import UserAvatarDropdown
 
 const navItems = [
   { href: '/about', label: 'About' },
@@ -16,10 +18,11 @@ const navItems = [
   { href: '/analysis-board', label: 'Analysis Board' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
+  // Conditionally add Admin link later if user is admin
 ];
 
-const linkBaseClasses = "font-body font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
-const desktopLinkClasses = cn(linkBaseClasses, "text-sm hover:text-accent active:text-accent/80 active:scale-95");
+const linkBaseClasses = "font-body font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 p-0.5 -m-0.5";
+const desktopLinkClasses = cn(linkBaseClasses, "hover:text-accent active:text-accent/80 active:scale-95"); // Removed text-sm
 const mobileLinkClasses = cn(linkBaseClasses, "text-lg hover:text-accent active:text-accent/80 active:scale-95 py-1");
 
 const logoBaseClasses = "flex items-center space-x-2 font-headline font-bold tracking-tighter leading-tight transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1";
@@ -30,6 +33,7 @@ const mobileLogoClasses = cn(logoBaseClasses, "text-xl hover:text-accent active:
 export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, loading: authLoading } = useAuth(); // Get user and loading state
 
   useEffect(() => {
     setIsMounted(true);
@@ -39,6 +43,27 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const finalNavItems = user ? [...navItems, { href: '/admin', label: 'Admin' }] : navItems;
+
+
+  const renderAuthControls = () => {
+    if (authLoading) {
+      return <div className="h-10 w-10 flex items-center justify-center"><Loader2 className="h-5 w-5 animate-spin" /></div>;
+    }
+    if (user) {
+      return <UserAvatarDropdown />;
+    }
+    return (
+      <Button asChild variant="ghost" size="sm" className="hover:bg-accent/20 active:bg-accent/30 transition-all">
+        <Link href="/signin" className="flex items-center">
+          <LogIn className="h-5 w-5 mr-1.5 text-accent" />
+          Sign In
+        </Link>
+      </Button>
+    );
+  };
+
 
   if (!isMounted) {
     // Render a placeholder or null to avoid hydration mismatch and layout shift
@@ -53,8 +78,9 @@ export default function Navbar() {
             </div>
             {/* Placeholder for nav items and buttons */}
             <div className="flex items-center space-x-2">
-              <div className="h-9 w-9"></div>
-              <div className="md:hidden h-9 w-9"></div>
+              <div className="h-9 w-9"></div> {/* Theme toggle placeholder */}
+              <div className="h-9 w-9"></div> {/* Auth placeholder */}
+              <div className="md:hidden h-9 w-9"></div> {/* Mobile menu placeholder */}
             </div>
           </div>
         </div>
@@ -75,8 +101,8 @@ export default function Navbar() {
           </Link>
 
           <div className="flex items-center space-x-2">
-            <nav className="hidden md:flex space-x-6">
-              {navItems.map((item) => (
+            <nav className="hidden md:flex space-x-6 items-center">
+              {finalNavItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
@@ -87,6 +113,7 @@ export default function Navbar() {
               ))}
             </nav>
             <ThemeToggleButton />
+            {renderAuthControls()} {/* Render auth controls */}
             <div className="md:hidden">
               <Sheet>
                 <SheetTrigger asChild>
@@ -107,7 +134,7 @@ export default function Navbar() {
                     </SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col space-y-5">
-                    {navItems.map((item) => (
+                    {finalNavItems.map((item) => (
                       <SheetClose key={item.label} asChild>
                         <Link
                           href={item.href}
@@ -119,6 +146,7 @@ export default function Navbar() {
                     ))}
                   </div>
                   <div className="mt-8 pt-6 border-t border-border">
+                    {/* Mobile Sign In/Out can be placed here if UserAvatarDropdown isn't suitable or if a simpler button is preferred */}
                   </div>
                 </SheetContent>
               </Sheet>

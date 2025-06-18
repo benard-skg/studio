@@ -32,9 +32,10 @@ import { collection, query, where, getDocs, orderBy, doc, deleteDoc, Timestamp }
 import { slugify, cn } from '@/lib/utils';
 import LessonReportPrintableView from '@/components/reports/lesson-report-printable-view';
 import html2pdf from 'html2pdf.js';
+import withAuth from '@/components/auth/withAuth'; // Import withAuth HOC
 
 
-export default function CoachAdminProfilePage() {
+function CoachAdminProfilePageContent() {
   const params = useParams();
   const router = useRouter();
   const coachSlug = typeof params.coachSlug === 'string' ? params.coachSlug : undefined;
@@ -177,7 +178,7 @@ export default function CoachAdminProfilePage() {
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, logging: false, useCORS: true },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], autoPaging: 'text' } // Added autoPaging
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], autoPaging: 'text' } 
       };
 
       await html2pdf().from(printElementContainer.firstChild).set(opt).save();
@@ -238,7 +239,7 @@ export default function CoachAdminProfilePage() {
         <main className="flex-grow pt-28 pb-16 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-                <h1 className="font-headline text-3xl font-bold tracking-tighter mb-2">Error Loading Profile</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight mb-2">Error Loading Profile</h1>
                 <p className="font-body text-muted-foreground">{error}</p>
                  <Button asChild className="mt-6">
                     <Link href="/coaches">Back to Coaches</Link>
@@ -270,7 +271,7 @@ export default function CoachAdminProfilePage() {
               />
             </div>
             <div className="space-y-1 text-center md:text-left pt-2">
-              <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tighter leading-tight">
+              <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight leading-tight">
                 {coach.name} {coach.nickname && `(${coach.nickname})`}
               </h1>
               <p className="font-body text-xl text-muted-foreground">{coach.title}</p>
@@ -282,7 +283,7 @@ export default function CoachAdminProfilePage() {
 
         <section id="lesson-reports" className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="font-headline text-2xl font-bold tracking-tighter flex items-center">
+            <h2 className="font-headline text-2xl font-bold tracking-tight flex items-center">
               <FileText className="mr-3 h-7 w-7 text-accent" />
               Lesson Reports
             </h2>
@@ -318,7 +319,7 @@ export default function CoachAdminProfilePage() {
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="font-headline text-lg font-bold tracking-tighter">
+                        <CardTitle className="font-headline text-lg font-bold tracking-tight">
                           Report for: <span className="text-accent">{report.studentName}</span>
                         </CardTitle>
                         <CardDescription className="font-body text-xs">
@@ -368,7 +369,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="coach-articles" className="mb-12">
-          <h2 className="font-headline text-2xl font-bold tracking-tighter mb-6 flex items-center">
+          <h2 className="font-headline text-2xl font-bold tracking-tight mb-6 flex items-center">
             <BookOpen className="mr-3 h-7 w-7 text-accent" />
             Articles Authored
           </h2>
@@ -378,7 +379,7 @@ export default function CoachAdminProfilePage() {
         <Separator className="my-8" />
 
         <section id="coach-calendar" className="mb-12">
-          <h2 className="font-headline text-2xl font-bold tracking-tighter mb-6 flex items-center">
+          <h2 className="font-headline text-2xl font-bold tracking-tight mb-6 flex items-center">
             <CalendarDays className="mr-3 h-7 w-7 text-accent" />
             Scheduled Items
           </h2>
@@ -391,7 +392,7 @@ export default function CoachAdminProfilePage() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-headline text-lg font-bold tracking-tighter">Delete Lesson Report?</AlertDialogTitle>
+              <AlertDialogTitle className="font-headline text-lg font-bold tracking-tight">Delete Lesson Report?</AlertDialogTitle>
               <AlertDialogDescription className="font-body">
                 Are you sure you want to delete the lesson report for <strong>{reportToDelete.studentName}</strong> (Lesson: {formatLessonDate(reportToDelete.lessonDateTime)})? This action cannot be undone.
               </AlertDialogDescription>
@@ -413,3 +414,5 @@ export default function CoachAdminProfilePage() {
     </div>
   );
 }
+
+export default withAuth(CoachAdminProfilePageContent); // Wrap component
