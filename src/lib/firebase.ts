@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'; // Added GoogleAuthProvider
 import { getStorage } from 'firebase/storage';
 
-// --- Critical Environment Variable Check ---
+// --- Critical Environment Variable Checks ---
 if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
   throw new Error(
     "CRITICAL: Firebase API Key is missing. NEXT_PUBLIC_FIREBASE_API_KEY is not set. " +
@@ -13,6 +13,15 @@ if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
     "restarted your Next.js development server."
   );
 }
+
+if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) {
+  throw new Error(
+    "CRITICAL: Firebase Auth Domain is missing. NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is not set. " +
+    "Please ensure this variable is defined (e.g., in .env.local or App Hosting config) " +
+    "and that you have restarted your Next.js development server if applicable."
+  );
+}
+
 
 // Firebase configuration will be read from environment variables
 const firebaseConfig: FirebaseOptions = {
@@ -46,4 +55,3 @@ const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider(); // Export GoogleAuthProvider instance
 
 export { app, db, auth, storage, googleProvider };
-
