@@ -8,7 +8,7 @@ import { Suspense } from 'react'; // Import Suspense
 import PageLoader from '@/components/layout/PageLoader'; // Import the PageLoader
 
 export const metadata: Metadata = {
-  title: 'LCA - Elevate Your Game',
+  title: 'Lipopo Chess Academy',
   description: 'Professional chess coaching to help you master strategy and achieve your chess goals.',
 };
 
