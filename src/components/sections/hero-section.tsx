@@ -28,7 +28,7 @@ export default function HeroSection() {
             <Link href="/classes">Explore Classes</Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="w-full transition-all transform hover:scale-105 px-8 py-3 text-lg">
-            <Link href="/contact">Book a Consultation</Link>
+            <Link href="/contact">Contact Us</Link>
           </Button>
         </div>
       </div>
