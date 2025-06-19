@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, UserCircle2, Loader2 } from 'lucide-react';
-import { Button } from '../ui/button';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { Button } from '@/components/ui/button'; // Corrected import path
+import { useRouter } from 'next/navigation';
 
 export function UserAvatarDropdown() {
   const { user, signOutUser, loading: authLoading } = useAuth();
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
 
   if (authLoading) {
     return <Button variant="ghost" size="icon" disabled><Loader2 className="h-5 w-5 animate-spin" /></Button>;
@@ -31,7 +31,7 @@ export function UserAvatarDropdown() {
   const userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : <UserCircle2 className="h-5 w-5" />;
 
   const handleSignOut = async () => {
-    await signOutUser();
+    await signOutUser(); // AuthContext will show toast
     router.push('/'); // Redirect to homepage after sign out
   };
 
