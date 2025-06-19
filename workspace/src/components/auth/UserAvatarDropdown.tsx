@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -31,8 +30,8 @@ export function UserAvatarDropdown() {
   const userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : <UserCircle2 className="h-5 w-5" />;
 
   const handleSignOut = async () => {
-    await signOutUser(); // AuthContext will show toast
-    router.push('/'); // Redirect to homepage after sign out
+    await signOutUser(); 
+    router.push('/'); 
   };
 
   return (
@@ -57,6 +56,11 @@ export function UserAvatarDropdown() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {/* Add other items like "Profile" or "Settings" here later if needed */}
+        {/* <DropdownMenuItem>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenuItem> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
