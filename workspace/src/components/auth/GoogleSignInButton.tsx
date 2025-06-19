@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'; // Import router hooks
+// Removed: import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 // Simple SVG for Google icon
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -19,22 +19,14 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function GoogleSignInButton() {
   const { signInWithGoogle, loading } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  // Removed: router, searchParams, pathname hooks
 
   const handleSignIn = async () => {
-    const user = await signInWithGoogle();
-    if (user) {
-      const redirectUrl = searchParams.get('redirect_url');
-      if (redirectUrl) {
-        router.push(redirectUrl);
-      } else if (pathname === '/signin') { // Check if currently on signin page
-        router.push('/admin'); // Default redirect to admin if signing in from /signin page
-      }
-      // If not on signin page and no redirect_url, stay on current page (or handle as needed)
-    }
-    // If signInWithGoogle returned null, an error toast was already shown by AuthContext
+    // signInWithGoogle from AuthContext now returns a Promise<User | null>
+    // The navigation is handled by the SignInPage's useEffect reacting to the user state change.
+    await signInWithGoogle();
+    // If signInWithGoogle returned null (error), an error toast was already shown by AuthContext.
+    // If successful, the user state in AuthContext updates, triggering SignInPage's useEffect.
   };
 
   return (
