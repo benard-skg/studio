@@ -4,6 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from '@/contexts/AuthContext'; // Import AuthProvider
+import { Suspense } from 'react'; // Import Suspense
+import PageLoader from '@/components/layout/PageLoader'; // Import the PageLoader
 
 export const metadata: Metadata = {
   title: 'LCA - Elevate Your Game',
@@ -31,7 +33,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider> {/* Wrap children with AuthProvider */}
-            {children}
+            <Suspense fallback={<PageLoader />}>
+              {children}
+            </Suspense>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
