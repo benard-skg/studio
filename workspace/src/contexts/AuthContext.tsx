@@ -5,14 +5,13 @@ import type { User } from 'firebase/auth';
 import { signInWithPopup, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import type { ReactNode } from 'react';
-import { createContext, useEffect, useState } from 'react';
-// Removed: import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { createContext, useEffect, useState, useCallback } from 'react'; // Added useCallback
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<User | null>; // Returns User or null
+  signInWithGoogle: () => Promise<User | null>;
   signOutUser: () => Promise<void>;
 }
 
@@ -31,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async (): Promise<User | null> => {
+  const signInWithGoogle = useCallback(async (): Promise<User | null> => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -40,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Signed In Successfully!",
         description: `Welcome, ${result.user.displayName || 'User'}!`,
       });
-      return result.user; // Return user on success
+      return result.user;
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
       toast({
@@ -48,13 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Sign In Failed",
         description: error.message || "Could not sign in with Google. Please try again.",
       });
-      return null; // Return null on failure
+      return null;
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]); // Dependencies: toast. setLoading & setUser from useState are stable. auth & googleProvider are module-level.
 
-  const signOutUser = async () => {
+  const signOutUser = useCallback(async () => {
     setLoading(true);
     try {
       await firebaseSignOut(auth);
@@ -63,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Signed Out",
         description: "You have been successfully signed out.",
       });
+      // Navigation is handled by the component calling signOutUser
     } catch (error: any) {
       console.error("Error signing out:", error);
        toast({
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]); // Dependencies: toast. setLoading, setUser & auth are stable.
 
   return (
     <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOutUser }}>
