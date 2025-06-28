@@ -1,9 +1,9 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation"; // Import router hooks
 
 // Simple SVG for Google icon, replace with a proper one if available or use an image
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -18,10 +18,24 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function GoogleSignInButton() {
   const { signInWithGoogle, loading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const handleSignIn = async () => {
+    await signInWithGoogle();
+    const redirectUrl = searchParams.get("redirect_url");
+    if (redirectUrl) {
+      router.push(redirectUrl);
+    } else if (pathname === "/signin") {
+      router.push("/admin"); // Default redirect to admin if signing in from /signin page
+    }
+    // If not on signin page and no redirect_url, stay on current page (or handle as needed)
+  };
 
   return (
     <Button
-      onClick={signInWithGoogle}
+      onClick={handleSignIn}
       disabled={loading}
       variant="outline"
       className="w-full flex items-center justify-center gap-3 py-3 text-base border-border hover:bg-accent/50 active:bg-accent/70 transition-all duration-150 ease-in-out"

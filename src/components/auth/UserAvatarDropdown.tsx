@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -14,9 +13,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, UserCircle2, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 export function UserAvatarDropdown() {
   const { user, signOutUser, loading: authLoading } = useAuth();
+  const router = useRouter(); // Initialize router
 
   if (authLoading) {
     return <Button variant="ghost" size="icon" disabled><Loader2 className="h-5 w-5 animate-spin" /></Button>;
@@ -27,6 +28,11 @@ export function UserAvatarDropdown() {
   }
 
   const userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : <UserCircle2 className="h-5 w-5" />;
+
+  const handleSignOut = async () => {
+    await signOutUser();
+    router.push('/'); // Redirect to homepage after sign out
+  };
 
   return (
     <DropdownMenu>
@@ -56,9 +62,8 @@ export function UserAvatarDropdown() {
           <span>Settings</span>
         </DropdownMenuItem> */}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOutUser} className="cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign Out</span>
+        <DropdownMenuItem onClick={handleSignOut} className="text-destructive cursor-pointer">
+          <LogOut className="mr-2 h-4 w-4" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
