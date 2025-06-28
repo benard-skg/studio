@@ -1,3 +1,5 @@
+"use client";
+
 // Simple not-found page for Next.js app directory routing
 // No client-side hooks are used here
 
