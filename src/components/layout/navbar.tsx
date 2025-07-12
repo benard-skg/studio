@@ -15,7 +15,6 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/coaches', label: 'Coaches' },
   { href: '/classes', label: 'Classes' },
-  { href: '/analysis-board', label: 'Analysis Board' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
   // Conditionally add Admin link later if user is admin
